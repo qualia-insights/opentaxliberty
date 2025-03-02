@@ -32,7 +32,11 @@
 	"tag": "f1_14[0]"
   },
   "filing_status": {
-	"value": "qualifying_surviving_spouse"
+	"value": "treating_nonresident_alien",
+	"spouse_or_child_name": "No spouse of child",
+	"spouse_or_child_name_tag": "f1_18[0]",
+	"nonresident_alien_name": "ET",
+	"nonresident_alien_name_tag": "f1_19[0]"
   },
   "w-2": [
 	{"organization": "Data Entry Inc", "box_1": 550},

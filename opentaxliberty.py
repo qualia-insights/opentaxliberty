@@ -137,12 +137,13 @@ def get_filing_status_tag_and_value(key: str) -> tuple[str, str]:
         return "c1_3[2]", "/4"
     elif key == "qualifying_surviving_spouse":
         return "c1_3[1]", "/5"
+    elif key == "treating_nonresident_alien":
+        return "c1_4[0]", "/1"
     else:
-        error_msg = f"Unknown filing status: '{key}'. Valid options are: 'single', 'head_of_household', 'married_filing_jointy', 'married_filing_separately', 'qualifying_surviving_spouse'"
+        error_msg = f"Unknown filing status: '{key}'. Valid options are: 'single', 'head_of_household', 'married_filing_jointy', 'married_filing_separately', 'qualifying_surviving_spouse','treating_nonresident_alien'"
         logger.error(error_msg)
         raise ValueError(error_msg)
         
-
 def process_input_json(input_json_data: Dict[str, Any], writer: PdfWriter):
     for key in input_json_data:
         if key == "configuration":
@@ -163,9 +164,18 @@ def process_input_json(input_json_data: Dict[str, Any], writer: PdfWriter):
             try:
                 filing_status_tag, filing_status_value = get_filing_status_tag_and_value(input_json_data[key]['value'])
                 write_field_pdf(writer, filing_status_tag, filing_status_value)
+    
+                # Process any additional sub-keys that have corresponding tag fields
+                for sub_key, sub_value in input_json_data[key].items():
+                    # Skip the 'value' key as it's already processed
+                    if sub_key == 'value':
+                        continue
+            
+                    # Check if there's a corresponding tag field
+                    tag_key = f"{sub_key}_tag"
+                    if tag_key in input_json_data[key] and input_json_data[key][tag_key]:
+                        write_field_pdf(writer, input_json_data[key][tag_key], sub_value) 
             except ValueError as e:
-                # Since you're using FastAPI, you could convert this to an HTTP exception
-                # Or handle it based on your application's error handling strategy
                 raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=str(e))
         else:
             write_field_pdf(writer, input_json_data[key]['tag'], input_json_data[key]['value'])
