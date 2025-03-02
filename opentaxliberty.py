@@ -121,7 +121,7 @@ def get_filing_status_tag(key: str) -> str:
         logger.debug("single filing status detected")
         return "c1_3[0]"
     elif key == "head_of_household":
-        return "c1_3[0]"
+        return "c1_4[0]"
     elif key == "married_filing_jointy":
         return "c1_3[0]"
     elif key == "married_filing_separately":
