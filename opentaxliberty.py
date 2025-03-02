@@ -15,14 +15,77 @@
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 # 
 #  OpenTaxLiberty for tax year 2024 
-import argparse
+
+# FASTAPI dependencies
+from typing import Union                                                        
+from enum import Enum                                                           
+from fastapi import FastAPI, status, HTTPException, File, UploadFile
+from pydantic import BaseModel
+
+import argparse  ### DO I NEED THIS AFTER IT IS CONVERTED to FASTAPI?
 import os
 import sys
 import json
 from typing import Dict, Any
 from pathlib import Path
+import logging
+from datetime import datetime
+
+# pypdf dependencies
 from pypdf import PdfReader, PdfWriter
 from pypdf.constants import AnnotationDictionaryAttributes
+
+# Configure logging
+logging.basicConfig(level=logging.INFO)
+logger = logging.getLogger(__name__)
+
+description = """
+
+Open Tax Liberty is a fastapi application that will take as input a json
+configuration file then produce tax forms filled out for the user.
+                                                                                
+""" 
+
+tags_metadata = [                                                               
+    {                                                                           
+        "name": "system",                                                       
+        "description": "Queries the system and prints specs for  GPUs and versions of libraries",
+    },                                                                          
+    {                                                                           
+        "name": "models",                                                       
+        "description": "Manage models. So _fancy_ they have their own docs.",   
+        "externalDocs": {                                                       
+            "description": "models external docs",                              
+            "url": "https://fastapi.tiangolo.com/",                             
+        },                                                                      
+    },                                                                          
+]
+
+app = FastAPI(                                                                  
+    title="Open Tax Liberty",                                                 
+    description=description,                                                    
+    summary="Open Tax Liberty.",      
+    version="0.0.1",                                                            
+    #terms_of_service="http://example.com/terms/",                              
+    contact={                                                                   
+        "name": "Todd V. Rovito",                                               
+        "url": "https://github.com/qualia-insights/opentaxliberty",                                                
+        "email": "rovitotv@gmail.com",                                          
+    },                                                                          
+    license_info={                                                              
+        "name": "AGPLv3",                                                       
+        "url": "https://www.gnu.org/licenses/agpl-3.0.en.html",                 
+    },                                                                          
+    openapi_tags = tags_metadata,                                               
+)  
+
+# configuration ===============================================================  
+UPLOAD_DIR = "/tmp/uploads"
+os.makedirs(UPLOAD_DIR, exist_ok=True)
+
+# a global configuration dictionary                                             
+config = {}                                                                     
+config['json_input_content'] = ""
 
 def write_field_pdf(field_name, field_value):
     writer.update_page_form_field_values(
@@ -78,23 +141,22 @@ def check_arguments(input_json_file_name: str):
         print(f"Error: input_json argument does not exist: {input_json_path}", file=sys.stderr)
         sys.exit(3)
 
-def parse_and_validate_input_json(input_json_file_name: str) -> Dict[str, Any]:
+def parse_and_validate_input_json(input_json_data: str) -> Dict[str, Any]:
     try:
-        with open(input_json_file_name, 'r') as f:
-            data = json.load(f)  # Load the JSON data from the file
-            # check template
-            template_file_path = Path(data['configuration']['template_1040_pdf'])
-            if template_file_path.exists() == False:
-                print(f"Error: configuration:template_1040_pdf does not exist: {template_file_path}", file=sys.stderr)
-                sys.exit(3)
-            # check output file path existence
-            output_file_name_path = Path(data['configuration']['output_file_name'])
-            output_path = output_file_name_path.parent
-            if output_path.is_dir() == False:                                 
-                print(f"Error: configuration:output_file_name parent is _NOT_ a directory: {output_path}", file=sys.stderr)
-                sys.exit(3) 
+        data = json.loads(input_json_data)  # Load the JSON data from input data
+        # check template
+        template_file_path = Path(data['configuration']['template_1040_pdf'])
+        if template_file_path.exists() == False:
+            print(f"Error: configuration:template_1040_pdf does not exist: {template_file_path}", file=sys.stderr)
+            sys.exit(3)
+        # check output file path existence
+        output_file_name_path = Path(data['configuration']['output_file_name'])
+        output_path = output_file_name_path.parent
+        if output_path.is_dir() == False:                                 
+            print(f"Error: configuration:output_file_name parent is _NOT_ a directory: {output_path}", file=sys.stderr)
+            sys.exit(3) 
 
-            return data
+        return data
     except json.JSONDecodeError:
         print(f"Error: Invalid JSON format in file: {input_json_file_name}")
         sys.exit(4)
@@ -102,6 +164,56 @@ def parse_and_validate_input_json(input_json_file_name: str) -> Dict[str, Any]:
         print(f"An unexpected error occurred: {e}")
         sys.exit(4)
 
+@app.post("/api/process-tax-form", status_code=status.HTTP_201_CREATED)
+async def process_tax_form(
+    config_file: UploadFile = File(...),
+    pdf_form: UploadFile = File(...),
+):
+    """
+    Process a tax form PDF using a JSON configuration file.
+    
+    Args:
+        config_file (UploadFile): JSON configuration file that defines how to process the form
+        pdf_form (UploadFile): The PDF tax form to process
+    
+    Returns:
+        ProcessingResult: Results of the form processing
+    """
+    # Generate unique ID for this processing request
+    form_id = str(uuid.uuid4())
+    timestamp = datetime.now().isoformat()
+    
+    # Create directories for this processing job
+    job_dir = os.path.join(UPLOAD_DIR, form_id)
+    os.makedirs(job_dir, exist_ok=True)
+    
+    try:
+        # Save configuration file
+        config_path = os.path.join(job_dir, f"config_{config_file.filename}")
+        with open(config_path, "wb") as f:
+            f.write(await config_file.read())
+            
+        # Save PDF file
+        pdf_path = os.path.join(job_dir, f"form_{pdf_form.filename}")
+        with open(pdf_path, "wb") as f:
+            f.write(await pdf_form.read())
+
+        return 200
+
+    except Exception as e:
+        logger.error(f"Error processing form: {str(e)}")
+        raise HTTPException(status_code=500, detail=f"Error processing form: {str(e)}")
+
+@app.get("/")
+async def root():
+    return {"message": "Open Tax Liberty Form Processing API is running. Use /api/process-tax-form endpoint to process forms."}
+
+if __name__ == "__main__":
+    import uvicorn
+    uvicorn.run(app, host="0.0.0.0", port=8000)
+
+'''
+# this is the original program before it was a fastapi application
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()                                          
     parser.add_argument("input_json", help="input file in json format to process")
@@ -124,3 +236,4 @@ if __name__ == "__main__":
 
     with open(input_json_data["configuration"]["output_file_name"], "wb") as output_stream:
         writer.write(output_stream)
+'''

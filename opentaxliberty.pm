@@ -24,7 +24,8 @@
 #	nohup podman image build -f opentaxliberty.pm -t opentaxliberty:20250301 . > ~/temp/20250301_opentaxliberty.log 2>&1 &
 #
 # to run container:
-#   podman run -it --rm --mount type=bind,source=/home/rovitotv,target=/home/rovitotv opentaxliberty:20250301 
+#   podman run -it --rm -p 8000:8000 --mount type=bind,source=/home/rovitotv,target=/home/rovitotv opentaxliberty:20250301 
+#   podman run -it --rm -p 8000:8000 --mount type=bind,source=/home/rovitotv/,target=/home/rovitotv opentaxliberty:20250301 sh -c "cd /home/rovitotv/code/qualia_insights/opentaxliberty && fastapi dev opentaxliberty.py --host 0.0.0.0"
 FROM alpine:latest
 
 MAINTAINER rovitotv@gmail.com
@@ -33,6 +34,7 @@ RUN apk update && apk upgrade
 RUN apk add --no-cache py3-pip
 RUN apk add --no-cache py3-pytest
 RUN apk add --no-cache ipython
+RUN apk add --no-cache curl
 
 RUN pip3 install --upgrade --break-system-packages pip 
 RUN pip3 install --break-system-packages pypdf
