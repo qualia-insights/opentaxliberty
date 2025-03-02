@@ -83,7 +83,7 @@ app = FastAPI(
 )  
 
 # configuration ===============================================================  
-UPLOAD_DIR = "/home/rovitotv/temp/uploads"
+UPLOAD_DIR = "/workspace/temp/uploads"
 os.makedirs(UPLOAD_DIR, exist_ok=True)
 
 def write_field_pdf(writer, field_name, field_value):

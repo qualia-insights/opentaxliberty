@@ -4,6 +4,6 @@
 # the tests
 
 podman run -it --rm \
-	--mount type=bind,source=/home/rovitotv,target=/home/rovitotv \
+	--mount type=bind,source=$HOME,target=/workspace \
 	opentaxliberty:20250301 \
-	sh -c "cd /home/rovitotv/code/qualia_insights/opentaxliberty/tests && pytest-3 -s"
+	sh -c "cd /workspace/code/qualia_insights/opentaxliberty/tests && pytest-3 -s"
