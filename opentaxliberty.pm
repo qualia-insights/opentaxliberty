@@ -36,6 +36,6 @@ RUN apk add --no-cache ipython
 
 RUN pip3 install --upgrade --break-system-packages pip 
 RUN pip3 install --break-system-packages pypdf
-RUN pip3 install "fastapi[standard]"
+RUN pip3 install --break-system-packages "fastapi[standard]"
 
 ENV SHELL /bin/ash
