@@ -33,8 +33,10 @@
   },
   "filing_status": {
 	"value": "treating_nonresident_alien",
-	"spouse_or_child_name": "No spouse of child",
+	"_comment": "leave the field spouse_or_child_name blank if not needed",
+	"spouse_or_child_name": "",
 	"spouse_or_child_name_tag": "f1_18[0]",
+	"_comment": "leave the field nonresident_alien_name blank if not needed",
 	"nonresident_alien_name": "ET",
 	"nonresident_alien_name_tag": "f1_19[0]"
   },
@@ -43,5 +45,12 @@
 	{"organization": "Fast Food", "box_1": 3907.57},
 	{"organization": "Mexican Buffet", "box_1": 1576.59},
 	{"tag": "f1_32[0]"}
- ]
+  ],
+  "digital_assets": {
+	"_comment": "for yes set value = /1 and field c1_5[0]",
+	"_comment": "for no set value = /2 and field c1_5[1]",
+	"value": "/2",
+	"tag": "c1_5[1]"
+  }
+  
 }

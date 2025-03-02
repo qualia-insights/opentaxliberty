@@ -100,12 +100,13 @@ def remove_job_directory(directory_path_str: str):
         logger.error(f"Error deleting file or directory: {str(e)}")
 
 def write_field_pdf(writer: PdfWriter, field_name: str, field_value: str):
-    writer.update_page_form_field_values(
-        writer.pages[0],
-        #{"f1_32[0]": "11.11"},
-        {field_name: field_value},
-        auto_regenerate = False,
-    )
+    if not field_value == "":
+        writer.update_page_form_field_values(
+            writer.pages[0],
+            #{"f1_32[0]": "11.11"},
+            {field_name: field_value},
+            auto_regenerate = False,
+        )
 
 def get_widgets():
     fields = []
