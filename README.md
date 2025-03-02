@@ -2,7 +2,7 @@
 
 [![License: AGPL v3](https://img.shields.io/badge/License-AGPL%20v3-blue.svg)](https://www.gnu.org/licenses/agpl-3.0)
 
-A simple Python program that will complete your US based federal and Ohio taxes
+A FastAPI Python program that will complete your US based federal and Ohio taxes
 for you. This software is open source software under the AGPLv3. The only
 software dependency is pypdf2. This program is inspired by [Open Tax
 Solver](https://opentaxsolver.sourceforge.net/forms.html) but with many
