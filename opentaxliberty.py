@@ -85,7 +85,7 @@ app = FastAPI(
 UPLOAD_DIR = "/home/rovitotv/temp/uploads"
 os.makedirs(UPLOAD_DIR, exist_ok=True)
 
-def write_field_pdf(field_name, field_value):
+def write_field_pdf(writer, field_name, field_value):
     writer.update_page_form_field_values(
         writer.pages[0],
         #{"f1_32[0]": "11.11"},
@@ -114,7 +114,7 @@ def fill_header():
     #write_field_pdf("c1_5[0]", "/1")   # digital assets
     write_field_pdf("c1_6[0]", "/1")   # someone can claim you as a dependent
 
-def process_input_json(input_json_data: Dict[str, Any]):
+def process_input_json(input_json_data: Dict[str, Any], writer):
     for key in input_json_data:
         if key == "configuration":
             continue
@@ -123,15 +123,15 @@ def process_input_json(input_json_data: Dict[str, Any]):
             total_box_1 = 0
             for index in range(0, len(w2_data)-1):
                 total_box_1 += w2_data[index]['box_1']
-            write_field_pdf(w2_data[-1]['tag'], total_box_1)
+            write_field_pdf(writer, w2_data[-1]['tag'], total_box_1)
             continue
         elif key == "ssn":
             ssn_string = input_json_data[key]['value']
             ssns = ssn_string.split("-")
             ssn_output = ("%s         %s         %s" % (ssns[0], ssns[1], ssns[2]))
-            write_field_pdf(input_json_data[key]['tag'], ssn_output)
+            write_field_pdf(writer, input_json_data[key]['tag'], ssn_output)
         else:
-            write_field_pdf(input_json_data[key]['tag'], input_json_data[key]['value'])
+            write_field_pdf(writer, input_json_data[key]['tag'], input_json_data[key]['value'])
 
 def check_arguments(input_json_file_name: str):
     input_json_path = Path(input_json_file_name)
@@ -194,6 +194,19 @@ async def process_tax_form(
             f.write(await pdf_form.read())
 
         json_dict = parse_and_validate_input_json(config_path, pdf_path, job_dir)
+        reader = PdfReader(pdf_path)
+        writer = PdfWriter()
+
+        page = reader.pages[0]
+        fields = reader.get_fields()
+        #keys_list = list(fields.keys())
+        #fields_widgets = get_widgets()
+        writer.append(reader)
+        process_input_json(json_dict, writer)
+
+        output_file = os.path.join(job_dir, json_dict["configuration"]["output_file_name"])
+        with open(output_file, "wb") as output_stream:
+            writer.write(output_stream)
 
         return 200
 
