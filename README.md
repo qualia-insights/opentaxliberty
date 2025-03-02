@@ -7,6 +7,7 @@ taxes for you.  This software is open source software under the AGPLv3.  The
 only software dependency is pypdf2. This program is inspired by 
 [Open Tax Solver](https://opentaxsolver.sourceforge.net/forms.html) but with
 many differences:
+
     - Open Tax Liberty is written in Python
     - Open Tax Liberty uses a json file for configuration
 
