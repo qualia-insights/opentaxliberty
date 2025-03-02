@@ -90,10 +90,11 @@ os.makedirs(UPLOAD_DIR, exist_ok=True)
 # FastAPI Program =============================================================  
 
 # Define a function to delete the file and its directory
-def remove_job_directory(directory_path: str):
+def remove_job_directory(directory_path_str: str):
     try:
         # Recursively Delete the directory
-        if os.path.exists(directory_path):
+        directory_path = Path(directory_path_str)
+        if directory_path.exists():
             shutil.rmtree(directory_path)
             logger.info(f"Deleted directory: {directory_path}")
     except Exception as e:
