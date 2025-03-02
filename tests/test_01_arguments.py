@@ -2,26 +2,23 @@ import pytest
 import subprocess
 import shlex
 import os
+from pathlib import Path
 
 '''
 curl -X POST "http://localhost:8000/api/process-tax-form"   -H "accept: application/json"   -H "Content-Type: multipart/form-data"   -F "config_file=@bob_student_example.json"   -F "pdf_form=@/home/rovitotv/code/taxes/2024/f1040_blank.pdf" --output processed_form.pdf
 '''
-def test_no_arguments():
+def test_perfect_arguments():
     try:
-        result = subprocess.run(["python3", "../opentaxliberty.py"], 
+        command_string = 'curl -X POST "http://mse-8:8000/api/process-tax-form"   -H "accept: application/json"   -H "Content-Type: multipart/form-data"   -F "config_file=@../bob_student_example.json"   -F "pdf_form=@/home/rovitotv/code/taxes/2024/f1040_blank.pdf" --output processed_form.pdf'
+        command_list = shlex.split(command_string)
+        result = subprocess.run(command_list, 
                 capture_output=True, text=True, check=True)
+        # check to make sure the output of processed_form.pdf exists
+        file_path = Path("processed_form.pdf")
+        assert file_path.exists(), f"Output file {file_path} does not exist"
+        file_path.unlink()
     except subprocess.CalledProcessError as e:
         print(f"Command failed with return code {e.returncode}")
         print(f"Stdout: {e.stdout}")  # If capture_output was True
         print(f"Stderr: {e.stderr}")  # If capture_output was True
         assert e.returncode == 2
-
-def test_bad_input_file_arguments():
-    try:
-        result = subprocess.run(["python3", "../opentaxliberty.py","file_no_exists.json"], 
-                capture_output=True, text=True, check=True)
-    except subprocess.CalledProcessError as e:
-        print(f"Command failed with return code {e.returncode}")
-        print(f"Stdout: {e.stdout}")  # If capture_output was True
-        print(f"Stderr: {e.stderr}")  # If capture_output was True
-        assert e.returncode == 3
