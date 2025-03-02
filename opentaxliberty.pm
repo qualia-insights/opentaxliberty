@@ -21,10 +21,10 @@
 # includes Python, ipython, pytest, and pypdf
 #
 # To build container:
-#	nohup podman image build -f opentaxliberty.pm -t opentaxliberty:20250223 . > ~/temp/20250223_opentaxliberty.log 2>&1 &
+#	nohup podman image build -f opentaxliberty.pm -t opentaxliberty:20250301 . > ~/temp/20250301_opentaxliberty.log 2>&1 &
 #
 # to run container:
-#   podman run -it --rm --mount type=bind,source=/home/rovitotv,target=/home/rovitotv opentaxliberty:20250223 
+#   podman run -it --rm --mount type=bind,source=/home/rovitotv,target=/home/rovitotv opentaxliberty:20250301 
 FROM alpine:latest
 
 MAINTAINER rovitotv@gmail.com
@@ -36,6 +36,6 @@ RUN apk add --no-cache ipython
 
 RUN pip3 install --upgrade --break-system-packages pip 
 RUN pip3 install --break-system-packages pypdf
+RUN pip3 install "fastapi[standard]"
 
-WORKDIR /home/rovitotv/code/
 ENV SHELL /bin/ash
