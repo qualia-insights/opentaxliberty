@@ -179,7 +179,20 @@ def process_input_json(input_json_data: Dict[str, Any], writer: PdfWriter):
             except ValueError as e:
                 raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=str(e))
         else:
-            write_field_pdf(writer, input_json_data[key]['tag'], input_json_data[key]['value'])
+            if 'tag' in input_json_data[key].keys() and 'value' in input_json_data[key].keys():
+                write_field_pdf(writer, input_json_data[key]['tag'], input_json_data[key]['value'])
+            # Process any additional sub-keys that have corresponding tag fields
+            for sub_key, sub_value in input_json_data[key].items():
+                # Skip the 'value' key as it's already processed
+                if sub_key == 'value':
+                    continue
+                elif sub_key == '_comment':
+                    continue
+            
+                # Check if there's a corresponding tag field
+                tag_key = f"{sub_key}_tag"
+                if tag_key in input_json_data[key] and input_json_data[key][tag_key]:
+                    write_field_pdf(writer, input_json_data[key][tag_key], sub_value) 
 
 def parse_and_validate_input_json(input_json_file_name: str, 
         pdf_template_file_name: str, job_dir: str) -> Dict[str, Any]:
