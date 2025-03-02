@@ -1,0 +1,41 @@
+{
+  "configuration": {
+     "tax_year": 2024,
+     "template_1040_pdf": "../f1040_template.pdf",
+     "output_file_name": "/home/rovitotv/temp/bob_student_f1040.pdf"
+  },
+  "first_name_middle_initial": {
+	"value": "Bob S",
+	"tag": "f1_04[0]"
+  },
+  "last_name": {
+	"value": "Example",
+	"tag": "f1_05[0]"
+  },
+  "ssn": {
+	"value": "222-22-2222",
+	"tag": "f1_06[0]"
+  },
+  "home_adress": {
+	"value": "9370 Liberty Street",
+	"tag": "f1_10[0]"
+  },
+  "city": {
+	"value": "Dayton",
+	"tag": "f1_12[0]"
+  },
+  "state": {
+	"value": "Ohio",
+	"tag": "f1_13[0]"
+  },
+  "zip": {
+	"value": "45468",
+	"tag": "f1_14[0]"
+  },
+  "w-2": [
+	{"organization": "Data Entry Inc", "box_1": 550},
+	{"organization": "Fast Food", "box_1": 3907.57},
+	{"organization": "Mexican Buffet", "box_1": 1576.59},
+	{"tag": "f1_32[0]"}
+ ]
+}
