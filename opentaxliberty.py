@@ -20,6 +20,7 @@
 from typing import Union                                                        
 from enum import Enum                                                           
 from fastapi import FastAPI, status, HTTPException, File, UploadFile
+from fastapi.responses import FileResponse
 from pydantic import BaseModel
 
 import argparse  ### DO I NEED THIS AFTER IT IS CONVERTED to FASTAPI?
@@ -141,7 +142,12 @@ def parse_and_validate_input_json(input_json_file_name: str,
         print(f"An unexpected error occurred: {e}")
         sys.exit(4)
 
-@app.post("/api/process-tax-form", status_code=status.HTTP_201_CREATED)
+class processing_response(BaseModel):
+    """Response model for successful processing"""
+    message: str
+    filename: str
+
+@app.post("/api/process-tax-form", response_class=FileResponse)
 async def process_tax_form(
     config_file: UploadFile = File(...),
     pdf_form: UploadFile = File(...),
@@ -190,7 +196,11 @@ async def process_tax_form(
         with open(output_file, "wb") as output_stream:
             writer.write(output_stream)
 
-        return 200
+        # send the file back to the requestor
+        return FileResponse(
+            path=output_file,
+            media_type="application/pdf",
+            filename=json_dict["configuration"]["output_file_name"])
 
     except Exception as e:
         logger.error(f"Error processing form: {str(e)}")
