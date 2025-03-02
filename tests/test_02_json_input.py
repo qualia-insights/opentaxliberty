@@ -3,6 +3,10 @@ import subprocess
 import os
 
 '''
+curl -X POST "http://localhost:8000/api/process-tax-form"   -H "accept: application/json"   -H "Content-Type: multipart/form-data"   -F "config_file=@bob_student_example.json"   -F "pdf_form=@/home/rovitotv/code/taxes/2024/f1040_blank.pdf" --output processed_form.pdf
+'''
+
+'''
 def test_bad_json():
     # create a bad json file with fstring
     bad_json_block = """

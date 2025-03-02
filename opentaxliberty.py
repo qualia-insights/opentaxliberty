@@ -23,7 +23,6 @@ from fastapi import FastAPI, status, HTTPException, File, UploadFile, Background
 from fastapi.responses import FileResponse
 from pydantic import BaseModel
 
-import argparse  ### DO I NEED THIS AFTER IT IS CONVERTED to FASTAPI?
 import os
 import sys
 import json
@@ -33,7 +32,6 @@ import logging
 import uuid
 from datetime import datetime
 import shutil
-
 
 # pypdf dependencies
 from pypdf import PdfReader, PdfWriter
@@ -142,19 +140,28 @@ def parse_and_validate_input_json(input_json_file_name: str,
         # check template
         template_file_path = Path(pdf_template_file_name)
         if template_file_path.exists() == False:
-            error_str = (f"Error: configuration:template_1040_pdf does not exist: {template_file_path}")
+            error_str = f"Error: Template PDF does not exist: {template_file_path}"
             logging.error(error_str)
-            raise FileNotFoundError(error_str)
+            raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, 
+                                detail=error_str)
     
         with open(input_json_file_name, 'r') as f:
-            data = json.load(f)  # Load the JSON data from the file
-            return data
-    except json.JSONDecodeError:
-        print(f"Error: Invalid JSON format in file: {input_json_file_name}")
-        sys.exit(4)
+            try:
+                data = json.load(f)  # Load the JSON data from the file
+                return data
+            except json.JSONDecodeError as e:
+                error_str = f"Error: Invalid JSON format in uploaded configuration file: {str(e)}"
+                logging.error(error_str)
+                raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, 
+                                    detail=error_str)
+    except HTTPException:
+        # re-raise HTTP exceptions to be handled by FastAPI
+        raise
     except Exception as e: # Catch other potential errors
-        print(f"An unexpected error occurred: {e}")
-        sys.exit(4)
+        error_str = f"An unexpected error occurred while processing configuration: {str(e)}"
+        logging.error(error_str)
+        raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, 
+                            detail=error_str)
 
 class processing_response(BaseModel):
     """Response model for successful processing"""
