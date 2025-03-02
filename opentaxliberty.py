@@ -19,7 +19,7 @@
 # FASTAPI dependencies
 from typing import Union                                                        
 from enum import Enum                                                           
-from fastapi import FastAPI, status, HTTPException, File, UploadFile
+from fastapi import FastAPI, status, HTTPException, File, UploadFile, BackgroundTasks
 from fastapi.responses import FileResponse
 from pydantic import BaseModel
 
@@ -32,6 +32,7 @@ from pathlib import Path
 import logging
 import uuid
 from datetime import datetime
+import shutil
 
 
 # pypdf dependencies
@@ -85,6 +86,18 @@ app = FastAPI(
 # configuration ===============================================================  
 UPLOAD_DIR = "/workspace/temp/uploads"
 os.makedirs(UPLOAD_DIR, exist_ok=True)
+
+# FastAPI Program =============================================================  
+
+# Define a function to delete the file and its directory
+def remove_job_directory(directory_path: str):
+    try:
+        # Recursively Delete the directory
+        if os.path.exists(directory_path):
+            shutil.rmtree(directory_path)
+            logger.info(f"Deleted directory: {directory_path}")
+    except Exception as e:
+        logger.error(f"Error deleting file or directory: {str(e)}")
 
 def write_field_pdf(writer, field_name, field_value):
     writer.update_page_form_field_values(
@@ -149,6 +162,7 @@ class processing_response(BaseModel):
 
 @app.post("/api/process-tax-form", response_class=FileResponse)
 async def process_tax_form(
+    background_tasks: BackgroundTasks,
     config_file: UploadFile = File(...),
     pdf_form: UploadFile = File(...),
 ):
@@ -156,6 +170,7 @@ async def process_tax_form(
     Process a tax form PDF using a JSON configuration file.
     
     Args:
+        background_tasks: Background tasks to run after returning response
         config_file (UploadFile): JSON configuration file that defines how to process the form
         pdf_form (UploadFile): The PDF tax form to process
     
@@ -195,6 +210,9 @@ async def process_tax_form(
         output_file = os.path.join(job_dir, json_dict["configuration"]["output_file_name"])
         with open(output_file, "wb") as output_stream:
             writer.write(output_stream)
+
+        # Add the cleanup task to run after the response is sent
+        background_tasks.add_task(remove_job_directory, job_dir)
 
         # send the file back to the requestor
         return FileResponse(
