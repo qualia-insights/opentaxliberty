@@ -57,7 +57,11 @@
 	"born_before_jan_2_1960": "/1",
 	"born_before_jan_2_1960_tag": "c1_9[0]",
 	"are_blind": "/1",
-	"are_blind": "c1_10[0]"
+	"are_blind_tag": "c1_10[0]",
+	"spouse_born_before_jan_2_1960": "/1",
+	"spouse_born_before_jan_2_1960_tag": "c1_11[0]",
+	"spouse_is_blind": "/1",
+	"spouse_is_blind_tag": "c1_12[0]"
   },
 
   "w-2": [
