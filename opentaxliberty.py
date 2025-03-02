@@ -147,6 +147,7 @@ def parse_and_validate_input_json(input_json_file_name: str,
     
         with open(input_json_file_name, 'r') as f:
                 data = json.load(f)  # Load the JSON data from the file
+                # validation of the file would occur here
                 return data
     except json.JSONDecodeError as e:
         error_str = f"Error: Invalid JSON format in uploaded configuration file: {str(e)}"

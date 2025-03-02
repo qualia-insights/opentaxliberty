@@ -28,12 +28,6 @@ def test_bad_json():
         os.remove("bad_json.json")
         assert "HTTP/1.1 400 Bad Request" in result.stderr, "result code of 400 was not found in curl output"
                                                                     
-        '''            
-        # check to make sure the output of processed_form.pdf exists            
-        file_path = Path("/workspace/temp/processed_form.pdf")                  
-        assert file_path.exists(), f"Output file {file_path} does not exist"    
-        file_path.unlink()                                                      
-                                                                                
         # check to make sure the background tasks removed the job_dir           
         time.sleep(2)                                                           
         job_directory = Path('/workspace/temp/uploads')                         
@@ -42,7 +36,6 @@ def test_bad_json():
                 pytest.fail(f"There should be no files in the {job_directory} but the file {file_path} exists")
             elif file_path.is_dir():                                            
                 pytest.fail(f"There should be no directories in the {job_directory} but the directory {file_path} exists")
-        '''
 
     except subprocess.CalledProcessError as e:
         print(f"Command failed with return code {e.returncode}")
