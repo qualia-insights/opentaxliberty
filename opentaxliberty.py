@@ -116,18 +116,32 @@ def get_widgets():
                 fields.append(annot)
     return fields
 
-def get_filing_status_tag(key: str) -> str:
+def get_filing_status_tag_and_value(key: str) -> tuple[str, str]:
+    """
+    Returns a tuple containing (tag, value) for the filing status.
+    
+    Args:
+        key: The filing status key (e.g., 'single', 'married_filing_jointly')
+        
+    Returns:
+        tuple: (tag, value) where tag is the PDF form field name and value is what to write
+    """
     if key == "single":
         logger.debug("single filing status detected")
-        return "c1_3[0]"
+        return "c1_3[0]", "/1"
     elif key == "head_of_household":
-        return "c1_4[0]"
-    elif key == "married_filing_jointy":
-        return "c1_3[0]"
+        return "c1_3[0]", "/2"
+    elif key == "married_filing_jointly":
+        return "c1_3[1]", "/3"
     elif key == "married_filing_separately":
-        return "c1_3[0]"
+        return "c1_3[2]", "/4"
     elif key == "qualifying_surviving_spouse":
-        return "c1_3[0]"
+        return "c1_3[1]", "/5"
+    else:
+        error_msg = f"Unknown filing status: '{key}'. Valid options are: 'single', 'head_of_household', 'married_filing_jointy', 'married_filing_separately', 'qualifying_surviving_spouse'"
+        logger.error(error_msg)
+        raise ValueError(error_msg)
+        
 
 def process_input_json(input_json_data: Dict[str, Any], writer: PdfWriter):
     for key in input_json_data:
@@ -146,8 +160,13 @@ def process_input_json(input_json_data: Dict[str, Any], writer: PdfWriter):
             ssn_output = ("%s         %s         %s" % (ssns[0], ssns[1], ssns[2]))
             write_field_pdf(writer, input_json_data[key]['tag'], ssn_output)
         elif key == "filing_status":
-            filing_status_tag = get_filing_status_tag(input_json_data[key]['value'])
-            write_field_pdf(writer, filing_status_tag, "/1")
+            try:
+                filing_status_tag, filing_status_value = get_filing_status_tag_and_value(input_json_data[key]['value'])
+                write_field_pdf(writer, filing_status_tag, filing_status_value)
+            except ValueError as e:
+                # Since you're using FastAPI, you could convert this to an HTTP exception
+                # Or handle it based on your application's error handling strategy
+                raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=str(e))
         else:
             write_field_pdf(writer, input_json_data[key]['tag'], input_json_data[key]['value'])
 

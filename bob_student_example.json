@@ -32,7 +32,7 @@
 	"tag": "f1_14[0]"
   },
   "filing_status": {
-	"value": "head_of_household"
+	"value": "qualifying_surviving_spouse"
   },
   "w-2": [
 	{"organization": "Data Entry Inc", "box_1": 550},
