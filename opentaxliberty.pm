@@ -23,8 +23,10 @@
 # To build container:
 #	nohup podman image build -f opentaxliberty.pm -t opentaxliberty:20250301 . > ~/temp/20250301_opentaxliberty.log 2>&1 &
 #
-# to run container:
+# run container and produce a shell:
 #   podman run -it --rm -p 8000:8000 --mount type=bind,source=/home/rovitotv,target=/home/rovitotv opentaxliberty:20250301 
+#
+# run the container with FastAPI development mode
 #   podman run -it --rm -p 8000:8000 --mount type=bind,source=/home/rovitotv/,target=/home/rovitotv opentaxliberty:20250301 sh -c "cd /home/rovitotv/code/qualia_insights/opentaxliberty && fastapi dev opentaxliberty.py --host 0.0.0.0"
 FROM alpine:latest
 
