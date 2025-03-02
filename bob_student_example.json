@@ -31,6 +31,9 @@
 	"value": "45468",
 	"tag": "f1_14[0]"
   },
+  "filing_status": {
+	"value": "single"
+  },
   "w-2": [
 	{"organization": "Data Entry Inc", "box_1": 550},
 	{"organization": "Fast Food", "box_1": 3907.57},

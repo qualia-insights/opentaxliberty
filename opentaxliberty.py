@@ -38,7 +38,8 @@ from pypdf import PdfReader, PdfWriter
 from pypdf.constants import AnnotationDictionaryAttributes
 
 # Configure logging
-logging.basicConfig(level=logging.INFO)
+log_level = os.environ.get("LOG_LEVEL", "INFO").upper()
+logging.basicConfig(level=getattr(logging, log_level))
 logger = logging.getLogger(__name__)
 
 description = """
@@ -98,7 +99,7 @@ def remove_job_directory(directory_path_str: str):
     except Exception as e:
         logger.error(f"Error deleting file or directory: {str(e)}")
 
-def write_field_pdf(writer, field_name, field_value):
+def write_field_pdf(writer: PdfWriter, field_name: str, field_value: str):
     writer.update_page_form_field_values(
         writer.pages[0],
         #{"f1_32[0]": "11.11"},
@@ -114,8 +115,21 @@ def get_widgets():
             if annot[AnnotationDictionaryAttributes.Subtype] == "/Widget":
                 fields.append(annot)
     return fields
-    
-def process_input_json(input_json_data: Dict[str, Any], writer):
+
+def get_filing_status_tag(key: str) -> str:
+    if key == "single":
+        logger.debug("single filing status detected")
+        return "c1_3[0]"
+    elif key == "head_of_household":
+        return "c1_3[0]"
+    elif key == "married_filing_jointy":
+        return "c1_3[0]"
+    elif key == "married_filing_separately":
+        return "c1_3[0]"
+    elif key == "qualifying_surviving_spouse":
+        return "c1_3[0]"
+
+def process_input_json(input_json_data: Dict[str, Any], writer: PdfWriter):
     for key in input_json_data:
         if key == "configuration":
             continue
@@ -131,6 +145,9 @@ def process_input_json(input_json_data: Dict[str, Any], writer):
             ssns = ssn_string.split("-")
             ssn_output = ("%s         %s         %s" % (ssns[0], ssns[1], ssns[2]))
             write_field_pdf(writer, input_json_data[key]['tag'], ssn_output)
+        elif key == "filing_status":
+            filing_status_tag = get_filing_status_tag(input_json_data[key]['value'])
+            write_field_pdf(writer, filing_status_tag, "/1")
         else:
             write_field_pdf(writer, input_json_data[key]['tag'], input_json_data[key]['value'])
 
