@@ -5,5 +5,5 @@
 
 podman run -it --rm \
 	--mount type=bind,source=/home/rovitotv,target=/home/rovitotv \
-	opentaxliberty:20250223 \
-	sh -c "cd qualia_insights/opentaxliberty/tests && pytest-3 -s"
+	opentaxliberty:20250301 \
+	sh -c "cd /home/rovitotv/codequalia_insights/opentaxliberty/tests && pytest-3 -s"
