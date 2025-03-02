@@ -41,7 +41,7 @@ logger = logging.getLogger(__name__)
 
 description = """
 
-Open Tax Liberty is a fastapi application that will take as input a json
+Open Tax Liberty is a FastAPI application that will take as input a json
 configuration file then produce tax forms filled out for the user.
                                                                                 
 """ 
