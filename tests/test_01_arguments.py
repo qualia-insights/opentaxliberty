@@ -9,12 +9,12 @@ curl -X POST "http://localhost:8000/api/process-tax-form"   -H "accept: applicat
 '''
 def test_perfect_arguments():
     try:
-        command_string = 'curl -X POST "http://mse-8:8000/api/process-tax-form"   -H "accept: application/json"   -H "Content-Type: multipart/form-data"   -F "config_file=@../bob_student_example.json"   -F "pdf_form=@/home/rovitotv/code/taxes/2024/f1040_blank.pdf" --output processed_form.pdf'
+        command_string = 'curl -X POST "http://mse-8:8000/api/process-tax-form"   -H "accept: application/json"   -H "Content-Type: multipart/form-data"   -F "config_file=@../bob_student_example.json"   -F "pdf_form=@/home/rovitotv/code/taxes/2024/f1040_blank.pdf" --output /home/rovitotv/temp/processed_form.pdf'
         command_list = shlex.split(command_string)
         result = subprocess.run(command_list, 
                 capture_output=True, text=True, check=True)
         # check to make sure the output of processed_form.pdf exists
-        file_path = Path("processed_form.pdf")
+        file_path = Path("/home/rovitotv/temp/processed_form.pdf")
         assert file_path.exists(), f"Output file {file_path} does not exist"
         file_path.unlink()
     except subprocess.CalledProcessError as e:
@@ -25,7 +25,7 @@ def test_perfect_arguments():
 
 def test_missing_arguments():
     try:
-        command_string = 'curl -v -X POST "http://mse-8:8000/api/process-tax-form"   -H "accept: application/json"   -H "Content-Type: multipart/form-data"   -F "config_file=@../bob_student_example.json"   --output processed_form.pdf'
+        command_string = 'curl -v -X POST "http://mse-8:8000/api/process-tax-form"   -H "accept: application/json"   -H "Content-Type: multipart/form-data"   -F "config_file=@../bob_student_example.json"   --output /home/rovitotv/temp/processed_form.pdf'
         command_list = shlex.split(command_string)
         result = subprocess.run(command_list, 
                 capture_output=True, text=True, check=True)
