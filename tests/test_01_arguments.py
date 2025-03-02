@@ -22,3 +22,16 @@ def test_perfect_arguments():
         print(f"Stdout: {e.stdout}")  # If capture_output was True
         print(f"Stderr: {e.stderr}")  # If capture_output was True
         assert e.returncode == 2
+
+def test_missing_arguments():
+    try:
+        command_string = 'curl -v -X POST "http://mse-8:8000/api/process-tax-form"   -H "accept: application/json"   -H "Content-Type: multipart/form-data"   -F "config_file=@../bob_student_example.json"   --output processed_form.pdf'
+        command_list = shlex.split(command_string)
+        result = subprocess.run(command_list, 
+                capture_output=True, text=True, check=True)
+        #assert "HTTP/1.1 422 Unprocessable Entity" in result.stdout
+    except subprocess.CalledProcessError as e:
+        print(f"Command failed with return code {e.returncode}")
+        print(f"Stdout: {e.stdout}")  # If capture_output was True
+        print(f"Stderr: {e.stderr}")  # If capture_output was True
+        assert e.returncode == 2
