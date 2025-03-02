@@ -5,12 +5,9 @@ import os
 from pathlib import Path
 import time
 
-'''
-curl -X POST "http://localhost:8000/api/process-tax-form"   -H "accept: application/json"   -H "Content-Type: multipart/form-data"   -F "config_file=@bob_student_example.json"   -F "pdf_form=@/home/rovitotv/code/taxes/2024/f1040_blank.pdf" --output processed_form.pdf
-'''
 def test_perfect_arguments():
     try:
-        command_string = 'curl -v -X POST "http://mse-8:8000/api/process-tax-form"   -H "accept: application/json"   -H "Content-Type: multipart/form-data"   -F "config_file=@../bob_student_example.json"   -F "pdf_form=@/workspace/code/taxes/2024/f1040_blank.pdf" --output /workspace/temp/processed_form.pdf'
+        command_string = 'curl -v "http://mse-8:8000/api/process-tax-form"   -H "accept: application/json"   -H "Content-Type: multipart/form-data"   -F "config_file=@../bob_student_example.json"   -F "pdf_form=@/workspace/code/taxes/2024/f1040_blank.pdf" --output /workspace/temp/processed_form.pdf'
         command_list = shlex.split(command_string)
         result = subprocess.run(command_list, 
                 capture_output=True, text=True, check=True)
@@ -38,7 +35,7 @@ def test_perfect_arguments():
 
 def test_missing_arguments():
     try:
-        command_string = 'curl -v -X POST "http://mse-8:8000/api/process-tax-form"   -H "accept: application/json"   -H "Content-Type: multipart/form-data"   -F "config_file=@../bob_student_example.json"   --output /workspace/temp/processed_form.pdf'
+        command_string = 'curl -v "http://mse-8:8000/api/process-tax-form"   -H "accept: application/json"   -H "Content-Type: multipart/form-data"   -F "config_file=@../bob_student_example.json"   --output /workspace/temp/processed_form.pdf'
         command_list = shlex.split(command_string)
         result = subprocess.run(command_list, 
                 capture_output=True, text=True, check=True)

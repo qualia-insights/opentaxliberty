@@ -1,12 +1,11 @@
 import pytest
 import subprocess
 import os
+import shlex                                                                    
+from pathlib import Path                                                        
+import time
 
-'''
-curl -X POST "http://localhost:8000/api/process-tax-form"   -H "accept: application/json"   -H "Content-Type: multipart/form-data"   -F "config_file=@bob_student_example.json"   -F "pdf_form=@/home/rovitotv/code/taxes/2024/f1040_blank.pdf" --output processed_form.pdf
-'''
 
-'''
 def test_bad_json():
     # create a bad json file with fstring
     bad_json_block = """
@@ -22,15 +21,36 @@ def test_bad_json():
         print(f"Error: error creating file: {e}") 
     
     try:
-        result = subprocess.run(["python3", "../opentaxliberty.py", "bad_json.json"], 
+        command_string = 'curl -v "http://mse-8:8000/api/process-tax-form"   -H "accept: application/json"   -H "Content-Type: multipart/form-data"   -F "config_file=@bad_json.json"   -F "pdf_form=@/workspace/code/taxes/2024/f1040_blank.pdf" --output /workspace/temp/processed_form.pdf'
+        command_list = shlex.split(command_string)                              
+        result = subprocess.run(command_list,                                   
                 capture_output=True, text=True, check=True)
+        os.remove("bad_json.json")
+        assert "HTTP/1.1 400 Bad Request" in result.stderr, "result code of 400 was not found in curl output"
+                                                                    
+        '''            
+        # check to make sure the output of processed_form.pdf exists            
+        file_path = Path("/workspace/temp/processed_form.pdf")                  
+        assert file_path.exists(), f"Output file {file_path} does not exist"    
+        file_path.unlink()                                                      
+                                                                                
+        # check to make sure the background tasks removed the job_dir           
+        time.sleep(2)                                                           
+        job_directory = Path('/workspace/temp/uploads')                         
+        for file_path in job_directory.glob('**/*'):                            
+            if file_path.is_file():                                             
+                pytest.fail(f"There should be no files in the {job_directory} but the file {file_path} exists")
+            elif file_path.is_dir():                                            
+                pytest.fail(f"There should be no directories in the {job_directory} but the directory {file_path} exists")
+        '''
+
     except subprocess.CalledProcessError as e:
         print(f"Command failed with return code {e.returncode}")
         print(f"Stdout: {e.stdout}")  # If capture_output was True
         print(f"Stderr: {e.stderr}")  # If capture_output was True
-        os.remove("bad_json.json")
         assert e.returncode == 4
 
+'''
 def test_good_json():
     try:
         result = subprocess.run(["python3", "../opentaxliberty.py", "../bob_student_example.json"], 

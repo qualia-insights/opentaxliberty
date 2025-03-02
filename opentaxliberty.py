@@ -146,14 +146,13 @@ def parse_and_validate_input_json(input_json_file_name: str,
                                 detail=error_str)
     
         with open(input_json_file_name, 'r') as f:
-            try:
                 data = json.load(f)  # Load the JSON data from the file
                 return data
-            except json.JSONDecodeError as e:
-                error_str = f"Error: Invalid JSON format in uploaded configuration file: {str(e)}"
-                logging.error(error_str)
-                raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, 
-                                    detail=error_str)
+    except json.JSONDecodeError as e:
+        error_str = f"Error: Invalid JSON format in uploaded configuration file: {str(e)}"
+        logging.error(error_str)
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, 
+            detail=error_str)
     except HTTPException:
         # re-raise HTTP exceptions to be handled by FastAPI
         raise
@@ -228,8 +227,15 @@ async def process_tax_form(
             media_type="application/pdf",
             filename=json_dict["configuration"]["output_file_name"])
 
+    except HTTPException as http_ex:
+        # Cleanup before re-raising the HTTPException
+        remove_job_directory(job_dir)
+        # Re-raise the original HTTPException with its specific status code
+        raise http_ex
     except Exception as e:
         logger.error(f"Error processing form: {str(e)}")
+        # cleanup before rasing a generic exception
+        remove_job_directory(job_dir)
         raise HTTPException(status_code=500, detail=f"Error processing form: {str(e)}")
 
 @app.get("/")
