@@ -29,7 +29,9 @@ import json
 from typing import Dict, Any
 from pathlib import Path
 import logging
+import uuid
 from datetime import datetime
+
 
 # pypdf dependencies
 from pypdf import PdfReader, PdfWriter
@@ -80,12 +82,8 @@ app = FastAPI(
 )  
 
 # configuration ===============================================================  
-UPLOAD_DIR = "/tmp/uploads"
+UPLOAD_DIR = "/home/rovitotv/temp/uploads"
 os.makedirs(UPLOAD_DIR, exist_ok=True)
-
-# a global configuration dictionary                                             
-config = {}                                                                     
-config['json_input_content'] = ""
 
 def write_field_pdf(field_name, field_value):
     writer.update_page_form_field_values(
@@ -141,22 +139,19 @@ def check_arguments(input_json_file_name: str):
         print(f"Error: input_json argument does not exist: {input_json_path}", file=sys.stderr)
         sys.exit(3)
 
-def parse_and_validate_input_json(input_json_data: str) -> Dict[str, Any]:
+def parse_and_validate_input_json(input_json_file_name: str, 
+        pdf_template_file_name: str, job_dir: str) -> Dict[str, Any]:
     try:
-        data = json.loads(input_json_data)  # Load the JSON data from input data
         # check template
-        template_file_path = Path(data['configuration']['template_1040_pdf'])
+        template_file_path = Path(pdf_template_file_name)
         if template_file_path.exists() == False:
-            print(f"Error: configuration:template_1040_pdf does not exist: {template_file_path}", file=sys.stderr)
-            sys.exit(3)
-        # check output file path existence
-        output_file_name_path = Path(data['configuration']['output_file_name'])
-        output_path = output_file_name_path.parent
-        if output_path.is_dir() == False:                                 
-            print(f"Error: configuration:output_file_name parent is _NOT_ a directory: {output_path}", file=sys.stderr)
-            sys.exit(3) 
-
-        return data
+            error_str = (f"Error: configuration:template_1040_pdf does not exist: {template_file_path}")
+            logging.error(error_str)
+            raise FileNotFoundError(error_str)
+    
+        with open(input_json_file_name, 'r') as f:
+            data = json.load(f)  # Load the JSON data from the file
+            return data
     except json.JSONDecodeError:
         print(f"Error: Invalid JSON format in file: {input_json_file_name}")
         sys.exit(4)
@@ -188,7 +183,7 @@ async def process_tax_form(
     os.makedirs(job_dir, exist_ok=True)
     
     try:
-        # Save configuration file
+        # Save json configuration file
         config_path = os.path.join(job_dir, f"config_{config_file.filename}")
         with open(config_path, "wb") as f:
             f.write(await config_file.read())
@@ -197,6 +192,8 @@ async def process_tax_form(
         pdf_path = os.path.join(job_dir, f"form_{pdf_form.filename}")
         with open(pdf_path, "wb") as f:
             f.write(await pdf_form.read())
+
+        json_dict = parse_and_validate_input_json(config_path, pdf_path, job_dir)
 
         return 200
 
