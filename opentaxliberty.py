@@ -88,6 +88,9 @@ os.makedirs(UPLOAD_DIR, exist_ok=True)
 
 # FastAPI Program =============================================================  
 
+def is_number(value):
+    return isinstance(value, (int, float))
+
 # Define a function to delete the file and its directory
 def remove_job_directory(directory_path_str: str):
     try:
@@ -145,6 +148,7 @@ def process_input_json(input_json_data: Dict[str, Any], writer: PdfWriter):
                 if "_comment" in w2_data[index].keys():
                     continue
                 total_box_1 += w2_data[index]['box_1']
+            input_json_data["income"]["L1a"] = total_box_1  # make L1a = total_box_1
             write_field_pdf(writer, w2_data[-1]['tag'], total_box_1)
         else:
             if 'tag' in input_json_data[key].keys() and 'value' in input_json_data[key].keys():
@@ -159,6 +163,13 @@ def process_input_json(input_json_data: Dict[str, Any], writer: PdfWriter):
                 elif "sum" in sub_key:
                     tag_key = f"{sub_key}_tag"
                     if tag_key in input_json_data[key] and input_json_data[key][tag_key]:
+                        sum_fields_list = input_json_data[key][sub_key]
+                        sum_calculation = 0
+                        for index in range(0, len(sum_fields_list)):
+                            value = input_json_data[key][sum_fields_list[index]]
+                            if is_number(value):
+                                sum_calculation += value
+                        write_field_pdf(writer, input_json_data[key][tag_key], sum_calculation)
                 else:
                     # Check if there's a corresponding tag field
                     tag_key = f"{sub_key}_tag"
