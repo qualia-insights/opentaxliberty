@@ -47,7 +47,7 @@
 	"tag": "c1_5[1]"
   },
   "standard_deduction": {
-	"_comment": "use /1 for checkmark or /Off for no checkmark",
+	"_comment": "use /1 for checkmark or /Off for no checkmark for all fields in standard deduction box",
 	"you_as_a_dependent": "/1",
 	"you_as_a_dependent_tag": "c1_6[0]",
 	"your_spouse_as_a_dependent": "/1",
@@ -63,7 +63,25 @@
 	"spouse_is_blind": "/1",
 	"spouse_is_blind_tag": "c1_12[0]"
   },
+  "dependents": {
+	"_comment": "use /1 for checkmark or /Off for no checkmark if you have more than 4 dependents",
+        "check_if_more_than_4_dependents": "/1",
+	"check_if_more_than_4_dependents_tag": "c1_13[0]",
 
+	"_comment": "dependent 1",
+	"dependent_1_first_last_name": "Bob Example Junior",
+	"dependent_1_first_last_name_tag": "f1_20[0]",
+	"dependent_1_ssn": "333      33      3333",
+	"dependent_1_ssn_tag": "f1_21[0]",
+	"dependent_1_relationship": "Son",
+	"dependent_1_relationship_tag": "f1_22[0]",
+	"dependent_1_child_tax_credit": "/1",
+	"dependent_1_child_tax_credit_tag": "c1_14[0]",
+	"dependent_1_credit_for_other_dependents": "/1",
+	"dependent_1_credit_for_other_dependents_tag": "c1_15[0]"
+
+
+  },
   "w-2": [
 	{"organization": "Data Entry Inc", "box_1": 550},
 	{"organization": "Fast Food", "box_1": 3907.57},
