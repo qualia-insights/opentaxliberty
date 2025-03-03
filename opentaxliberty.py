@@ -156,11 +156,14 @@ def process_input_json(input_json_data: Dict[str, Any], writer: PdfWriter):
                     continue
                 elif sub_key == '_comment':
                     continue
-            
-                # Check if there's a corresponding tag field
-                tag_key = f"{sub_key}_tag"
-                if tag_key in input_json_data[key] and input_json_data[key][tag_key]:
-                    write_field_pdf(writer, input_json_data[key][tag_key], sub_value) 
+                elif "sum" in sub_key:
+                    tag_key = f"{sub_key}_tag"
+                    if tag_key in input_json_data[key] and input_json_data[key][tag_key]:
+                else:
+                    # Check if there's a corresponding tag field
+                    tag_key = f"{sub_key}_tag"
+                    if tag_key in input_json_data[key] and input_json_data[key][tag_key]:
+                        write_field_pdf(writer, input_json_data[key][tag_key], sub_value) 
 
 def parse_and_validate_input_json(input_json_file_name: str, 
         pdf_template_file_name: str, job_dir: str) -> Dict[str, Any]:
