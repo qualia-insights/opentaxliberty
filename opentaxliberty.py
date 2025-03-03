@@ -108,43 +108,6 @@ def write_field_pdf(writer: PdfWriter, field_name: str, field_value: str):
             auto_regenerate = False,
         )
 
-def get_widgets():
-    fields = []
-    for page in reader.pages:
-        for annot in page.annotations:
-            annot = annot.get_object()
-            if annot[AnnotationDictionaryAttributes.Subtype] == "/Widget":
-                fields.append(annot)
-    return fields
-
-def get_filing_status_tag_and_value(key: str) -> tuple[str, str]:
-    """
-    Returns a tuple containing (tag, value) for the filing status.
-    
-    Args:
-        key: The filing status key (e.g., 'single', 'married_filing_jointly')
-        
-    Returns:
-        tuple: (tag, value) where tag is the PDF form field name and value is what to write
-    """
-    if key == "single":
-        logger.debug("single filing status detected")
-        return "c1_3[0]", "/1"
-    elif key == "head_of_household":
-        return "c1_3[0]", "/2"
-    elif key == "married_filing_jointly":
-        return "c1_3[1]", "/3"
-    elif key == "married_filing_separately":
-        return "c1_3[2]", "/4"
-    elif key == "qualifying_surviving_spouse":
-        return "c1_3[1]", "/5"
-    elif key == "treating_nonresident_alien":
-        return "c1_4[0]", "/1"
-    else:
-        error_msg = f"Unknown filing status: '{key}'. Valid options are: 'single', 'head_of_household', 'married_filing_jointy', 'married_filing_separately', 'qualifying_surviving_spouse','treating_nonresident_alien'"
-        logger.error(error_msg)
-        raise ValueError(error_msg)
-        
 def process_input_json(input_json_data: Dict[str, Any], writer: PdfWriter):
     for key in input_json_data:
         if key == "configuration":
@@ -157,23 +120,6 @@ def process_input_json(input_json_data: Dict[str, Any], writer: PdfWriter):
                     continue
                 total_box_1 += w2_data[index]['box_1']
             write_field_pdf(writer, w2_data[-1]['tag'], total_box_1)
-        elif key == "filing_status":
-            try:
-                filing_status_tag, filing_status_value = get_filing_status_tag_and_value(input_json_data[key]['value'])
-                write_field_pdf(writer, filing_status_tag, filing_status_value)
-    
-                # Process any additional sub-keys that have corresponding tag fields
-                for sub_key, sub_value in input_json_data[key].items():
-                    # Skip the 'value' key as it's already processed
-                    if sub_key == 'value':
-                        continue
-            
-                    # Check if there's a corresponding tag field
-                    tag_key = f"{sub_key}_tag"
-                    if tag_key in input_json_data[key] and input_json_data[key][tag_key]:
-                        write_field_pdf(writer, input_json_data[key][tag_key], sub_value) 
-            except ValueError as e:
-                raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=str(e))
         else:
             if 'tag' in input_json_data[key].keys() and 'value' in input_json_data[key].keys():
                 write_field_pdf(writer, input_json_data[key]['tag'], input_json_data[key]['value'])
@@ -266,8 +212,6 @@ async def process_tax_form(
 
         page = reader.pages[0]
         fields = reader.get_fields()
-        #keys_list = list(fields.keys())
-        #fields_widgets = get_widgets()
         writer.append(reader)
         process_input_json(json_dict, writer)
 

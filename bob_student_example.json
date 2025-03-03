@@ -42,17 +42,35 @@
 	"presidential_spouse_tag": "c1_2[0]"
   },
   "filing_status": {
-	"value": "treating_nonresident_alien",
+	"_comment": "only one of these boxes should be turned on, the values are different so read the comments!",
+
+	"_comment": "single: on = /1, head of household: on = /2, off = /Off",
+	"single_or_HOH": "/Off",
+	"single_or_HOH_tag": "c1_3[0]",
+
+	"_comment": "married filing jointly: on = /3, qualifying surviving spouse: on = /4, off = /Off",
+	"married_filing_jointly_or_QSS": "/3",
+	"married_filing_jointly_or_QSS_tag": "c1_3[1]",
+
+	"_comment": "married filing separately: on = /4, off = /Off",
+	"married_filing_separately": "/4",
+	"married_filing_separately_tag": "c1_3[2]",
+
+	"_comment": "treating nonresident alien: on = /1, off = /Off",
+	"treating_nonresident_alien": "/1",
+	"treating_nonresident_alien_tag": "c1_4[0]",
+
 	"_comment": "leave the field spouse_or_child_name blank if not needed",
-	"spouse_or_child_name": "",
+	"spouse_or_child_name": "Not Mine",
 	"spouse_or_child_name_tag": "f1_18[0]",
+
 	"_comment": "leave the field nonresident_alien_name blank if not needed",
 	"nonresident_alien_name": "ET",
 	"nonresident_alien_name_tag": "f1_19[0]"
   },
   "digital_assets": {
-	"_comment": "for YES set value = /1 and tag to c1_5[0]",
-	"_comment": "for NO set value = /2 and tag to c1_5[1]",
+	"_comment": "for YES set value = /1 and tag = c1_5[0]",
+	"_comment": "for NO set value = /2 and tag = c1_5[1]",
 	"value": "/2",
 	"tag": "c1_5[1]"
   },
