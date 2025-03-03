@@ -153,9 +153,10 @@ def process_input_json(input_json_data: Dict[str, Any], writer: PdfWriter):
             w2_data = input_json_data[key]
             total_box_1 = 0
             for index in range(0, len(w2_data)-1):
+                if "_comment" in w2_data[index].keys():
+                    continue
                 total_box_1 += w2_data[index]['box_1']
             write_field_pdf(writer, w2_data[-1]['tag'], total_box_1)
-            continue
         elif key == "ssn":
             ssn_string = input_json_data[key]['value']
             ssns = ssn_string.split("-")

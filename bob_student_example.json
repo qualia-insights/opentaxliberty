@@ -41,8 +41,8 @@
 	"nonresident_alien_name_tag": "f1_19[0]"
   },
   "digital_assets": {
-	"_comment": "for YES set value = /1 and field c1_5[0]",
-	"_comment": "for NO set value = /2 and field c1_5[1]",
+	"_comment": "for YES set value = /1 and tag to c1_5[0]",
+	"_comment": "for NO set value = /2 and tag to c1_5[1]",
 	"value": "/2",
 	"tag": "c1_5[1]"
   },
@@ -65,7 +65,7 @@
   },
   "dependents": {
 	"_comment": "use /1 for checkmark or /Off for no checkmark if you have more than 4 dependents",
-        "check_if_more_than_4_dependents": "/1",
+        "check_if_more_than_4_dependents": "/Off",
 	"check_if_more_than_4_dependents_tag": "c1_13[0]",
 
 	"_comment": "dependent 1",
@@ -117,6 +117,7 @@
 	"dependent_4_credit_for_other_dependents_tag": "c1_20[0]"
   },
   "w-2": [
+	{"_comment": "box_1 are summed to compute L1a"},
 	{"organization": "Data Entry Inc", "box_1": 550},
 	{"organization": "Fast Food", "box_1": 3907.57},
 	{"organization": "Mexican Buffet", "box_1": 1576.59},
