@@ -157,11 +157,6 @@ def process_input_json(input_json_data: Dict[str, Any], writer: PdfWriter):
                     continue
                 total_box_1 += w2_data[index]['box_1']
             write_field_pdf(writer, w2_data[-1]['tag'], total_box_1)
-        elif key == "ssn":
-            ssn_string = input_json_data[key]['value']
-            ssns = ssn_string.split("-")
-            ssn_output = ("%s         %s         %s" % (ssns[0], ssns[1], ssns[2]))
-            write_field_pdf(writer, input_json_data[key]['tag'], ssn_output)
         elif key == "filing_status":
             try:
                 filing_status_tag, filing_status_value = get_filing_status_tag_and_value(input_json_data[key]['value'])

@@ -3,33 +3,36 @@
      "tax_year": 2024,
      "output_file_name": "bob_student_f1040.pdf"
   },
-  "first_name_middle_initial": {
-	"value": "Bob S",
-	"tag": "f1_04[0]"
-  },
-  "last_name": {
-	"value": "Example",
-	"tag": "f1_05[0]"
-  },
-  "ssn": {
-	"value": "222-22-2222",
-	"tag": "f1_06[0]"
-  },
-  "home_adress": {
-	"value": "9370 Liberty Street",
-	"tag": "f1_10[0]"
-  },
-  "city": {
-	"value": "Dayton",
-	"tag": "f1_12[0]"
-  },
-  "state": {
-	"value": "Ohio",
-	"tag": "f1_13[0]"
-  },
-  "zip": {
-	"value": "45468",
-	"tag": "f1_14[0]"
+  "name_address_ssn": {
+	"_comment": "this is the header block of the top of the 1040, it is ok to leave a field blank",
+        "first_name_middle_initial": "Bob S",
+	"first_name_middle_initial_tag": "f1_04[0]",
+  	"last_name": "Example",
+	"last_name_tag": "f1_05[0]",
+  	"ssn": "222        22        2222",
+	"ssn_tag": "f1_06[0]",
+	"spouse_first_name_middle_inital": "Linda S",
+        "spouse_first_name_middle_inital_tag": "f1_07[0]",
+	"spouse_last_name": "Example",
+        "spouse_last_name_tag": "f1_08[0]",
+  	"spouse_ssn": "222        22        3333",
+	"spouse_ssn_tag": "f1_09[0]",
+        "home_address": "9370 Liberty Street",
+	"home_address_tag": "f1_10[0]",
+        "apartment_no": "10",
+	"apartment_no_tag": "f1_11[0]",
+        "city": "Dayton",
+	"city_tag": "f1_12[0]",
+  	"state": "Ohio",
+	"state_tag": "f1_13[0]",
+  	"zip": "45468",
+	"zip_tag": "f1_14[0]",
+	"foreign_country_name": "Italy",
+	"foreign_country_name_tag": "f1_15[0]",
+	"foreign_country_province": "Tuscany",
+	"foreign_country_province_tag": "f1_16[0]",
+	"foreign_country_postal_code": "999999",
+	"foreign_country_postal_code_tag": "f1_17[0]"
   },
   "filing_status": {
 	"value": "treating_nonresident_alien",
