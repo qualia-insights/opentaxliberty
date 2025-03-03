@@ -108,6 +108,32 @@ def write_field_pdf(writer: PdfWriter, field_name: str, field_value: str):
             auto_regenerate = False,
         )
 
+def read_field_pdf(reader: PdfReader, field_name: str) -> str:
+    """
+    Read the value of a form field from a PDF.
+    
+    Args:
+        reader (PdfReader): The PDF reader object
+        field_name (str): The name of the field to read
+        
+    Returns:
+        str: The value of the field, or empty string if field doesn't exist or has no value
+    """
+    fields = reader.get_fields()
+    
+    # Check if the field exists
+    if field_name in fields:
+        field = fields[field_name]
+        
+        # Handle different field types appropriately
+        if isinstance(field, dict) and "/V" in field:
+            return str(field["/V"])
+        elif not isinstance(field, dict):
+            return str(field)
+    
+    # Return empty string if field doesn't exist or has no value
+    return ""
+
 def process_input_json(input_json_data: Dict[str, Any], writer: PdfWriter):
     for key in input_json_data:
         if key == "configuration":

@@ -150,5 +150,24 @@
 	{"organization": "Fast Food", "box_1": 3907.57},
 	{"organization": "Mexican Buffet", "box_1": 1576.59},
 	{"tag": "f1_32[0]"}
-  ]
+  ],
+  "income": {
+	"_comment": "this is for lines 1 - 15 that make up income",
+	"L1b": "L1b",
+	"L1b_tag": "f1_33[0]",
+	"L1c": "L1c",
+	"L1c_tag": "f1_34[0]",
+	"L1d": "L1d",
+	"L1d_tag": "f1_35[0]",
+	"L1e": "L1e",
+	"L1e_tag": "f1_36[0]",
+	"L1f": "L1f",
+	"L1f_tag": "f1_37[0]",
+	"L1g": "L1g",
+	"L1g_tag": "f1_38[0]",
+	"L1h": "L1h",
+	"L1h_tag": "f1_39[0]",
+	"L1i": "L1i",
+	"L1i_tag": "f1_40[0]"
+  }
 }
