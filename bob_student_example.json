@@ -32,7 +32,14 @@
 	"foreign_country_province": "Tuscany",
 	"foreign_country_province_tag": "f1_16[0]",
 	"foreign_country_postal_code": "999999",
-	"foreign_country_postal_code_tag": "f1_17[0]"
+	"foreign_country_postal_code_tag": "f1_17[0]",
+	
+	"_comment": "presendial election campaign box, if you want to have $3 go to this fund",
+	"_comment": "use /1 for check mark or /Off for no check mark",
+	"presidential_you": "/1",
+	"presidential_you_tag": "c1_1[0]",
+	"presidential_spouse": "/1",
+	"presidential_spouse_tag": "c1_2[0]"
   },
   "filing_status": {
 	"value": "treating_nonresident_alien",
