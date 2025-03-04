@@ -10,6 +10,8 @@ differences:
 - Open Tax Liberty is written in Python
 - Open Tax Liberty uses a json file for configuration
 
+The software is still a work in progress.  
+
 ## Tax Forms for 2024 Tax Year
 
 Official Tax Forms with Instructions.  These forms are needed by Open Tax
@@ -22,6 +24,17 @@ convenience to the government sites.
    * **Schedule B**: (Interest & Dividends)   [f1040sb.pdf](http://www.irs.gov/pub/irs-pdf/f1040sb.pdf)
    * **Schedule C**: (Business Taxes)   [f1040sc.pdf](http://www.irs.gov/pub/irs-pdf/f1040sc.pdf)
    * **Schedule D**: (Capital Gains/Losses)   [f1040sd.pdf](http://www.irs.gov/pub/irs-pdf/f1040sd.pdf)
+
+## Todo
+
+- [ ] complete the json config file for 1040
+- [ ] complete the json config file for schedule A
+- [ ] complete the json config file for schedule B
+- [ ] complete the json config file for schedule C
+- [ ] complete the json config file for schedule D
+- [ ] complete the json config file for State of Ohio
+- [ ] Integrate [jsonscheme](https://python-jsonschema.readthedocs.io/en/stable/)
+    - this library should be able to validate our configuration files
 
 ## License
 
