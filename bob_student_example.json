@@ -1,7 +1,8 @@
 {
   "configuration": {
      "tax_year": 2024,
-     "output_file_name": "bob_student_f1040.pdf"
+     "output_file_name": "bob_student_f1040.pdf",
+     "form": "1040"
   },
   "name_address_ssn": {
 	"_comment": "this is the header block of the top of the 1040, it is ok to leave a field blank",
