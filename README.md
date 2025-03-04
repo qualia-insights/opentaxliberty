@@ -36,6 +36,14 @@ convenience to the government sites.
 - [ ] Integrate [jsonscheme](https://python-jsonschema.readthedocs.io/en/stable/)
     - this library should be able to validate our configuration files
 
+## How to use curl to execute Open Tax Liberty
+
+- curl can be used to execute the Open Tax Liberty with the command below
+
+```bash
+curl -v "http://mse-8:8000/api/process-tax-form"   -H "accept: application/json"   -H "Content-Type: multipart/form-data"   -F "config_file=@../bob_student_example.json"   -F "pdf_form=@/$HOME/code/taxes/2024/f1040_blank.pdf" --output /$HOME/temp/processed_form.pdf
+```
+
 ## License
 
 This project is licensed under the GNU Affero General Public License v3.0 (AGPL-3.0).
