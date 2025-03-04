@@ -171,6 +171,17 @@ def process_input_json(input_json_data: Dict[str, Any], writer: PdfWriter):
                                 sum_calculation += value
                         write_field_pdf(writer, input_json_data[key][tag_key], sum_calculation)
                         input_json_data[key][sub_key] = sum_calculation
+                elif "subtract" in sub_key:
+                    tag_key = f"{sub_key}_tag"
+                    if tag_key in input_json_data[key] and input_json_data[key][tag_key]:
+                        sub_fields_list = input_json_data[key][sub_key]
+                        sub_calculation = input_json_data[key][sub_fields_list[0]]
+                        for index in range(1, len(sub_fields_list)):
+                            value = input_json_data[key][sub_fields_list[index]]
+                            if is_number(value):
+                                sub_calculation = sub_calculation - value
+                        write_field_pdf(writer, input_json_data[key][tag_key], sub_calculation)
+                        input_json_data[key][sub_key] = sub_calculation
                 else:
                     # Check if there's a corresponding tag field
                     tag_key = f"{sub_key}_tag"
