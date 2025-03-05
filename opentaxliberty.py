@@ -102,6 +102,7 @@ def remove_job_directory(directory_path_str: str):
     except Exception as e:
         logger.error(f"Error deleting file or directory: {str(e)}")
 
+'''
 def write_field_pdf(writer: PdfWriter, field_name: str, field_value: str):
     if not field_value == "":
         writer.update_page_form_field_values(
@@ -110,6 +111,41 @@ def write_field_pdf(writer: PdfWriter, field_name: str, field_value: str):
             {field_name: field_value},
             auto_regenerate = False,
         )
+'''
+
+def write_field_pdf(writer: PdfWriter, field_name: str, field_value: str):
+    """
+    Update a form field across all pages of a PDF.
+    
+    Args:
+        writer (PdfWriter): The PDF writer object
+        field_name (str): The name of the field to update
+        field_value (str): The value to set the field to
+    """
+    if field_value == "":
+        return
+        
+    # Try to update the field on each page
+    field_found = False
+    for page_num in range(len(writer.pages)):
+        try:
+            # Check if this page has the field by attempting to update it
+            writer.update_page_form_field_values(
+                writer.pages[page_num],
+                {field_name: field_value},
+                auto_regenerate=False
+            )
+            field_found = True
+            # If we don't want to update the same field on multiple pages,
+            # we could break here after the first success
+            # break
+        except Exception as e:
+            # Field might not exist on this page, continue to next page
+            continue
+            
+    # Optionally log if field wasn't found on any page
+    if not field_found:
+        logging.debug(f"Field '{field_name}' not found on any page")
 
 def read_field_pdf(reader: PdfReader, field_name: str) -> str:
     """
@@ -265,8 +301,8 @@ async def process_tax_form(
         reader = PdfReader(pdf_path)
         writer = PdfWriter()
 
-        page = reader.pages[0]
-        fields = reader.get_fields()
+        # page = reader.pages[0]
+        # fields = reader.get_fields()
         writer.append(reader)
         process_input_json(json_dict, writer)
 

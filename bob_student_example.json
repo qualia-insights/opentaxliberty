@@ -218,5 +218,17 @@
 	"L14_sum_tag": "f1_59[0]",
 	"L15_subtract": ["L11_subtract", "L14_sum"],
 	"L15_subtract_tag": "f1_60[0]"
+  },
+  "tax_and_credits": {
+	"L16_check_8814": "/1",
+	"L16_check_8814_tag": "c2_1[0]",
+	"L16_check_4972": "/1",
+	"L16_check_4972_tag": "c2_2[0]",
+	"L16_check_3": "/1",
+	"L16_check_3_tag": "c2_3[0]",
+	"L16_check_3_field": 0,
+	"L16_check_3_field_tag": "f2_01[0]",
+	"L16": 0,
+	"L16_tag": "f2_02[0]"
   }
 }

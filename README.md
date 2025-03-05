@@ -33,8 +33,9 @@ convenience to the government sites.
 - [ ] complete the json config file for schedule C
 - [ ] complete the json config file for schedule D
 - [ ] complete the json config file for State of Ohio
-- [ ] Integrate [jsonscheme](https://python-jsonschema.readthedocs.io/en/stable/)
-    - this library should be able to validate our configuration files
+- [ ] Integrate some sort of jsonscheme
+    - [pydantic](https://docs.pydantic.dev/latest/), this is used by FastAPI
+    - [jsonscheme](https://python-jsonschema.readthedocs.io/en/stable/)
 
 ## How to use curl to execute Open Tax Liberty
 
