@@ -147,11 +147,13 @@
   },
   "w-2": [
 	{"_comment": "box_1 are summed to compute L1a"},
+	{"_comment": "box_2 are summed to compute L25a"},
 	{"_comment": "w-2 section should be above the income section"},
-	{"organization": "Data Entry Inc", "box_1": 550},
-	{"organization": "Fast Food", "box_1": 3907.57},
-	{"organization": "Mexican Buffet", "box_1": 1576.59},
-	{"tag": "f1_32[0]"}
+	{"organization": "Data Entry Inc", "box_1": 550, "box_2": 0},
+	{"organization": "Fast Food", "box_1": 3907.57, "box_2": 54.31},
+	{"organization": "Mexican Buffet", "box_1": 1576.59, "box_2": 15.00},
+	{"box_1_tag": "f1_32[0]"},
+	{"box_2_tag": "f2_11[0]"}
   ],
   "income": {
 	"_comment": "this is for lines 1 - 15 that make up income",

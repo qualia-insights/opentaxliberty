@@ -169,12 +169,18 @@ def process_input_json(input_json_data: Dict[str, Any], writer: PdfWriter):
         elif key == "w-2":
             w2_data = input_json_data[key]
             total_box_1 = 0
-            for index in range(0, len(w2_data)-1):
+            total_box_2 = 0
+            for index in range(0, len(w2_data)-2):
                 if "_comment" in w2_data[index].keys():
                     continue
+                elif "tag" in w2_data[index].keys():
+                    continue
                 total_box_1 += w2_data[index]['box_1']
+                total_box_2 += w2_data[index]['box_2']
             input_json_data["income"]["L1a"] = total_box_1  # make L1a = total_box_1
-            write_field_pdf(writer, w2_data[-1]['tag'], total_box_1)
+            input_json_data["income"]["L25a"] = total_box_2
+            write_field_pdf(writer, w2_data[-2]['box_1_tag'], total_box_1)
+            write_field_pdf(writer, w2_data[-1]['box_2_tag'], total_box_2)
         else:
             if 'tag' in input_json_data[key].keys() and 'value' in input_json_data[key].keys():
                 write_field_pdf(writer, input_json_data[key]['tag'], input_json_data[key]['value'])
