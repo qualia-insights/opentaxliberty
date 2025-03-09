@@ -248,5 +248,13 @@
         "L23_tag": "f2_09[0]",                                                  
         "L24_sum": ["L22_subtract", "L23"],                                     
         "L24_sum_tag": "f2_10[0]" 
+  },
+  "Payments": {
+	"_comment": "this is for lines 25 - 33 that make up payments",             
+        "_comment": "always leave L25a blank, it is filled in by w2 from above", 
+        "L25a": "",                                                              
+        "L25a_tag": "f2_11[0]",
+	"L25b": 0,
+        "L25b_tag": "f2_12[0]"
   }
 }
