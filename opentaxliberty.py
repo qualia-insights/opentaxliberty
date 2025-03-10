@@ -32,6 +32,7 @@ import logging
 import uuid
 from datetime import datetime
 import shutil
+from collections import defaultdict
 
 # pypdf dependencies
 from pypdf import PdfReader, PdfWriter
@@ -41,6 +42,11 @@ from pypdf.constants import AnnotationDictionaryAttributes
 log_level = os.environ.get("LOG_LEVEL", "INFO").upper()
 logging.basicConfig(level=getattr(logging, log_level))
 logger = logging.getLogger(__name__)
+
+# tracks what errors are reported to try and deduplicate errors that are reported
+reported_errors = defaultdict(set)
+# Track if any critical errors occurred during processing
+has_critical_errors = False
 
 description = """
 
@@ -175,6 +181,9 @@ def process_input_json(input_json_data: Dict[str, Any], writer: PdfWriter):
         ValueError: If a value cannot be processed correctly
         TypeError: If a value has an unexpected type
     """
+    global has_critical_errors
+    reset_error_tracking()  # Reset error tracking at the beginning
+    
     try:
         if not isinstance(input_json_data, dict):
             raise TypeError(f"Expected input_json_data to be a dictionary, got {type(input_json_data).__name__}")
@@ -194,11 +203,16 @@ def process_input_json(input_json_data: Dict[str, Any], writer: PdfWriter):
                     process_generic_section(input_json_data, key, writer)
             except Exception as key_error:
                 logging.error(f"Error processing key '{key}': {str(key_error)}")
-                raise
+                has_critical_errors = True
+                # Don't re-raise here, continue processing other sections
+        
+        # Check if any critical errors occurred during processing
+        if has_critical_errors:
+            raise ValueError("Critical errors occurred during form processing. Check logs for details.")
+                
     except Exception as e:
         logging.error(f"Global error in process_input_json: {str(e)}")
         raise
-
 
 def process_w2_section(input_json_data: Dict[str, Any], key: str, writer: PdfWriter):
     """Process the W-2 section of the input JSON data."""
@@ -346,9 +360,9 @@ def process_generic_section(input_json_data: Dict[str, Any], key: str, writer: P
         logging.error(f"Error processing section '{key}': {str(section_error)}")
         raise
 
-
 def process_sum_calculation(input_json_data: Dict[str, Any], key: str, sub_key: str, writer: PdfWriter):
     """Process a sum calculation within a section."""
+    global has_critical_errors
     tag_key = f"{sub_key}_tag"
     if tag_key in input_json_data[key] and input_json_data[key][tag_key]:
         try:
@@ -356,33 +370,67 @@ def process_sum_calculation(input_json_data: Dict[str, Any], key: str, sub_key: 
             if not isinstance(sum_fields_list, list):
                 error_msg = f"Sum field list for '{sub_key}' is not a list"
                 logging.error(error_msg)
+                has_critical_errors = True
                 raise TypeError(error_msg)
                 
             sum_calculation = 0
+            missing_fields = []
+            
             for index in range(0, len(sum_fields_list)):
                 field_key = sum_fields_list[index]
+                
+                # Check if field exists in the section
                 if field_key not in input_json_data[key]:
-                    error_msg = f"Field '{field_key}' referenced in sum '{sub_key}' not found"
-                    logging.error(error_msg)
-                    raise KeyError(error_msg)
+                    # Only record missing fields, don't raise error yet
+                    missing_fields.append(field_key)
+                    continue
                     
                 value = input_json_data[key][field_key]
                 if is_number(value):
                     sum_calculation += value
                 else:
-                    error_msg = f"Non-numeric value for field '{field_key}' in sum '{sub_key}': {value}"
+                    error_id = f"non_numeric_{key}_{field_key}"
+                    if error_id not in reported_errors['type_error']:
+                        error_msg = f"Non-numeric value for field '{field_key}' in sum '{sub_key}': {value}"
+                        logging.error(error_msg)
+                        reported_errors['type_error'].add(error_id)
+                        has_critical_errors = True
+                        raise TypeError(error_msg)
+            
+            # After processing all available fields, check if any were missing
+            if missing_fields:
+                # Create a unique error ID for this set of missing fields
+                error_id = f"{key}_{sub_key}_missing_" + "_".join(missing_fields)
+                
+                # Only log this error if we haven't seen it before
+                if error_id not in reported_errors['key_error']:
+                    error_msg = f"Fields {missing_fields} referenced in sum '{sub_key}' not found"
                     logging.error(error_msg)
-                    raise TypeError(error_msg)
+                    reported_errors['key_error'].add(error_id)
                     
+                    # Mark as critical error if all fields are missing
+                    if len(missing_fields) == len(sum_fields_list):
+                        has_critical_errors = True
+                        raise KeyError(error_msg)
+            
+            # Write the field with whatever value we calculated
             write_field_pdf(writer, input_json_data[key][tag_key], sum_calculation)
             input_json_data[key][sub_key] = sum_calculation
-        except Exception as sum_error:
-            logging.error(f"Error calculating sum for '{sub_key}': {str(sum_error)}")
+            
+        except (TypeError, KeyError) as e:
+            # Re-raise critical errors
             raise
-
+        except Exception as sum_error:
+            error_id = f"{key}_{sub_key}_calc_error"
+            if error_id not in reported_errors['calc_error']:
+                logging.error(f"Error calculating sum for '{sub_key}': {str(sum_error)}")
+                reported_errors['calc_error'].add(error_id)
+                has_critical_errors = True
+            raise  # Re-raise to ensure processing fails
 
 def process_subtraction_calculation(input_json_data: Dict[str, Any], key: str, sub_key: str, writer: PdfWriter):
     """Process a subtraction calculation within a section."""
+    global has_critical_errors
     tag_key = f"{sub_key}_tag"
     if tag_key in input_json_data[key] and input_json_data[key][tag_key]:
         try:
@@ -390,40 +438,70 @@ def process_subtraction_calculation(input_json_data: Dict[str, Any], key: str, s
             if not isinstance(sub_fields_list, list):
                 error_msg = f"Subtract field list for '{sub_key}' is not a list"
                 logging.error(error_msg)
+                has_critical_errors = True
                 raise TypeError(error_msg)
                 
             if len(sub_fields_list) < 2:
                 error_msg = f"Subtract field list for '{sub_key}' needs at least 2 fields, got {len(sub_fields_list)}"
                 logging.error(error_msg)
+                has_critical_errors = True
                 raise ValueError(error_msg)
+            
+            # Check for missing fields before processing
+            missing_fields = []
+            for field_key in sub_fields_list:
+                if field_key not in input_json_data[key]:
+                    missing_fields.append(field_key)
+            
+            if missing_fields:
+                # Create a unique error ID for this set of missing fields
+                error_id = f"{key}_{sub_key}_missing_" + "_".join(missing_fields)
                 
+                # Only log this error if we haven't seen it before
+                if error_id not in reported_errors['key_error']:
+                    error_msg = f"Fields {missing_fields} referenced in subtract '{sub_key}' not found"
+                    logging.error(error_msg)
+                    reported_errors['key_error'].add(error_id)
+                    
+                    # If all fields are missing, this is a critical error
+                    if len(missing_fields) == len(sub_fields_list):
+                        has_critical_errors = True
+                        raise KeyError(error_msg)
+                    
+                    # If the first field (minuend) is missing, we can't proceed
+                    if sub_fields_list[0] in missing_fields:
+                        has_critical_errors = True
+                        raise KeyError(f"Missing required field '{sub_fields_list[0]}' for subtraction in '{sub_key}'")
+            
             # Get first value (minuend)
-            if sub_fields_list[0] not in input_json_data[key]:
-                error_msg = f"Field '{sub_fields_list[0]}' referenced in subtract '{sub_key}' not found"
-                logging.error(error_msg)
-                raise KeyError(error_msg)
-                
             sub_calculation = input_json_data[key][sub_fields_list[0]]
             if not is_number(sub_calculation):
-                error_msg = f"Non-numeric first value for subtract '{sub_key}': {sub_calculation}"
-                logging.error(error_msg)
-                raise TypeError(error_msg)
+                error_id = f"non_numeric_{key}_{sub_fields_list[0]}"
+                if error_id not in reported_errors['type_error']:
+                    error_msg = f"Non-numeric first value for subtract '{sub_key}': {sub_calculation}"
+                    logging.error(error_msg)
+                    reported_errors['type_error'].add(error_id)
+                    has_critical_errors = True
+                    raise TypeError(error_msg)
                 
             # Subtract remaining values (subtrahends)
             for index in range(1, len(sub_fields_list)):
                 field_key = sub_fields_list[index]
                 if field_key not in input_json_data[key]:
-                    error_msg = f"Field '{field_key}' referenced in subtract '{sub_key}' not found"
-                    logging.error(error_msg)
-                    raise KeyError(error_msg)
+                    # We already logged this above, so just skip
+                    continue
                     
                 value = input_json_data[key][field_key]
                 if is_number(value):
                     sub_calculation = sub_calculation - value
                 else:
-                    error_msg = f"Non-numeric value for field '{field_key}' in subtract '{sub_key}': {value}"
-                    logging.error(error_msg)
-                    raise TypeError(error_msg)
+                    error_id = f"non_numeric_{key}_{field_key}"
+                    if error_id not in reported_errors['type_error']:
+                        error_msg = f"Non-numeric value for field '{field_key}' in subtract '{sub_key}': {value}"
+                        logging.error(error_msg)
+                        reported_errors['type_error'].add(error_id)
+                        has_critical_errors = True
+                        raise TypeError(error_msg)
                     
             # Format negative values as "-0-" per IRS convention
             if sub_calculation < 0:
@@ -432,11 +510,18 @@ def process_subtraction_calculation(input_json_data: Dict[str, Any], key: str, s
                 display_value = sub_calculation
                 
             write_field_pdf(writer, input_json_data[key][tag_key], display_value)
-            input_json_data[key][sub_key] = 0  # Reset to 0 after calculation
-        except Exception as sub_error:
-            logging.error(f"Error calculating subtraction for '{sub_key}': {str(sub_error)}")
+            input_json_data[key][sub_key] = sub_calculation
+            
+        except (TypeError, ValueError, KeyError) as e:
+            # Re-raise these as they're important validation errors
             raise
-
+        except Exception as sub_error:
+            error_id = f"{key}_{sub_key}_calc_error"
+            if error_id not in reported_errors['calc_error']:
+                logging.error(f"Error calculating subtraction for '{sub_key}': {str(sub_error)}")
+                reported_errors['calc_error'].add(error_id)
+                has_critical_errors = True
+            raise  # Re-raise to ensure processing fails
 
 def process_regular_field(input_json_data: Dict[str, Any], key: str, sub_key: str, sub_value: Any, writer: PdfWriter):
     """Process a regular field within a section."""
@@ -447,6 +532,12 @@ def process_regular_field(input_json_data: Dict[str, Any], key: str, sub_key: st
         except Exception as field_error:
             logging.error(f"Error writing field '{sub_key}' with tag '{input_json_data[key][tag_key]}': {str(field_error)}")
             raise
+
+def reset_error_tracking():
+    """Reset the error tracking system between processing runs."""
+    global reported_errors
+    reported_errors = defaultdict(set)
+    has_critical_errors = False
 
 def parse_and_validate_input_json(input_json_file_name: str, 
         pdf_template_file_name: str, job_dir: str) -> Dict[str, Any]:
@@ -506,7 +597,7 @@ async def process_tax_form(
     # Create directories for this processing job
     job_dir = os.path.join(UPLOAD_DIR, form_id)
     os.makedirs(job_dir, exist_ok=True)
-    
+
     try:
         # Save json configuration file
         config_path = os.path.join(job_dir, f"config_{config_file.filename}")
