@@ -26,7 +26,7 @@ from pydantic import BaseModel
 import os
 import sys
 import json
-from typing import Dict, Any
+from typing import Dict, Any, List, Tuple
 from pathlib import Path
 import logging
 import uuid
@@ -189,204 +189,264 @@ def process_input_json(input_json_data: Dict[str, Any], writer: PdfWriter):
                     # Just skip configuration section as it's handled elsewhere
                     continue
                 elif key == "w-2":
-                    # Process W-2 data
-                    try:
-                        w2_data = input_json_data[key]
-                        if not isinstance(w2_data, list):
-                            raise TypeError(f"W-2 data should be a list, got {type(w2_data).__name__}")
-                            
-                        total_box_1 = 0
-                        total_box_2 = 0
-                        
-                        # Process each W-2 entry
-                        for index in range(0, len(w2_data)-2):
-                            try:
-                                if "_comment" in w2_data[index].keys():
-                                    continue
-                                elif "tag" in w2_data[index].keys():
-                                    continue
-                                
-                                # Validate box_1 and box_2 exist and are numeric
-                                if 'box_1' not in w2_data[index]:
-                                    logging.warning(f"Missing 'box_1' in W-2 entry {index}")
-                                    continue
-                                    
-                                if not is_number(w2_data[index]['box_1']):
-                                    logging.warning(f"Non-numeric 'box_1' value in W-2 entry {index}: {w2_data[index]['box_1']}")
-                                    continue
-                                    
-                                total_box_1 += w2_data[index]['box_1']
-                                
-                                if 'box_2' in w2_data[index] and is_number(w2_data[index]['box_2']):
-                                    total_box_2 += w2_data[index]['box_2']
-                                else:
-                                    logging.warning(f"Missing or non-numeric 'box_2' in W-2 entry {index}")
-                            except Exception as e:
-                                logging.error(f"Error processing W-2 entry {index}: {str(e)}")
-                                
-                        # Check if we have valid tags to write to
-                        try:
-                            # Check if we have Income section to update L1a
-                            if "income" in input_json_data:
-                                input_json_data["income"]["L1a"] = total_box_1
-                            else:
-                                logging.warning("Cannot update L1a: 'income' section missing")
-                                
-                            # Check if we have Payments section to update L25a
-                            if "payments" in input_json_data:
-                                input_json_data["payments"]["L25a"] = total_box_2
-                            else:
-                                logging.warning("Cannot update L25a: 'payments' section missing")
-                                
-                            # Write the totals to the PDF if we have valid tag keys
-                            if len(w2_data) >= 2:
-                                if 'box_1_tag' in w2_data[-2]:
-                                    write_field_pdf(writer, w2_data[-2]['box_1_tag'], total_box_1)
-                                else:
-                                    logging.warning("Cannot write total_box_1: 'box_1_tag' missing in W-2 data")
-                                    
-                                if 'box_2_tag' in w2_data[-1]:
-                                    write_field_pdf(writer, w2_data[-1]['box_2_tag'], total_box_2)
-                                else:
-                                    logging.warning("Cannot write total_box_2: 'box_2_tag' missing in W-2 data")
-                            else:
-                                logging.warning("W-2 data list is too short to contain tag references")
-                        except Exception as tag_error:
-                            logging.error(f"Error writing W-2 totals to PDF: {str(tag_error)}")
-                    except Exception as w2_error:
-                        logging.error(f"Error processing W-2 section: {str(w2_error)}")
+                    process_w2_section(input_json_data, key, writer)
                 else:
-                    # Handle other sections
-                    try:
-                        if not isinstance(input_json_data[key], dict):
-                            error_msg = f"Section '{key}' is not a dictionary"
-                            logging.error(error_msg)
-                            raise TypeError(error_msg)
-                            
-                        # Handle value/tag pairs
-                        if 'tag' in input_json_data[key] and 'value' in input_json_data[key]:
-                            try:
-                                write_field_pdf(writer, input_json_data[key]['tag'], input_json_data[key]['value'])
-                            except Exception as e:
-                                logging.error(f"Error writing field with tag '{input_json_data[key]['tag']}': {str(e)}")
-                                raise
-                        
-                        # Process sub-keys
-                        for sub_key, sub_value in input_json_data[key].items():
-                            try:
-                                # Skip specific keys
-                                if sub_key in ['value', '_comment']:
-                                    continue
-                                    
-                                # Handle sum calculations
-                                elif "sum" in sub_key:
-                                    tag_key = f"{sub_key}_tag"
-                                    if tag_key in input_json_data[key] and input_json_data[key][tag_key]:
-                                        try:
-                                            sum_fields_list = input_json_data[key][sub_key]
-                                            if not isinstance(sum_fields_list, list):
-                                                error_msg = f"Sum field list for '{sub_key}' is not a list"
-                                                logging.error(error_msg)
-                                                raise TypeError(error_msg)
-                                                
-                                            sum_calculation = 0
-                                            for index in range(0, len(sum_fields_list)):
-                                                field_key = sum_fields_list[index]
-                                                if field_key not in input_json_data[key]:
-                                                    error_msg = f"Field '{field_key}' referenced in sum '{sub_key}' not found"
-                                                    logging.error(error_msg)
-                                                    raise KeyError(error_msg)
-                                                    
-                                                value = input_json_data[key][field_key]
-                                                if is_number(value):
-                                                    sum_calculation += value
-                                                else:
-                                                    error_msg = f"Non-numeric value for field '{field_key}' in sum '{sub_key}': {value}"
-                                                    logging.error(error_msg)
-                                                    raise TypeError(error_msg)
-                                                    
-                                            write_field_pdf(writer, input_json_data[key][tag_key], sum_calculation)
-                                            input_json_data[key][sub_key] = sum_calculation
-                                        except Exception as sum_error:
-                                            logging.error(f"Error calculating sum for '{sub_key}': {str(sum_error)}")
-                                            raise
-                                            
-                                # Handle subtraction calculations
-                                elif "subtract" in sub_key:
-                                    tag_key = f"{sub_key}_tag"
-                                    if tag_key in input_json_data[key] and input_json_data[key][tag_key]:
-                                        try:
-                                            sub_fields_list = input_json_data[key][sub_key]
-                                            if not isinstance(sub_fields_list, list):
-                                                error_msg = f"Subtract field list for '{sub_key}' is not a list"
-                                                logging.error(error_msg)
-                                                raise TypeError(error_msg)
-                                                
-                                            if len(sub_fields_list) < 2:
-                                                error_msg = f"Subtract field list for '{sub_key}' needs at least 2 fields, got {len(sub_fields_list)}"
-                                                logging.error(error_msg)
-                                                raise ValueError(error_msg)
-                                                
-                                            # Get first value (minuend)
-                                            if sub_fields_list[0] not in input_json_data[key]:
-                                                error_msg = f"Field '{sub_fields_list[0]}' referenced in subtract '{sub_key}' not found"
-                                                logging.error(error_msg)
-                                                raise KeyError(error_msg)
-                                                
-                                            sub_calculation = input_json_data[key][sub_fields_list[0]]
-                                            if not is_number(sub_calculation):
-                                                error_msg = f"Non-numeric first value for subtract '{sub_key}': {sub_calculation}"
-                                                logging.error(error_msg)
-                                                raise TypeError(error_msg)
-                                                
-                                            # Subtract remaining values (subtrahends)
-                                            for index in range(1, len(sub_fields_list)):
-                                                field_key = sub_fields_list[index]
-                                                if field_key not in input_json_data[key]:
-                                                    error_msg = f"Field '{field_key}' referenced in subtract '{sub_key}' not found"
-                                                    logging.error(error_msg)
-                                                    raise KeyError(error_msg)
-                                                    
-                                                value = input_json_data[key][field_key]
-                                                if is_number(value):
-                                                    sub_calculation = sub_calculation - value
-                                                else:
-                                                    error_msg = f"Non-numeric value for field '{field_key}' in subtract '{sub_key}': {value}"
-                                                    logging.error(error_msg)
-                                                    raise TypeError(error_msg)
-                                                    
-                                            # Format negative values as "-0-" per IRS convention
-                                            if sub_calculation < 0:
-                                                display_value = "-0-"
-                                            else:
-                                                display_value = sub_calculation
-                                                
-                                            write_field_pdf(writer, input_json_data[key][tag_key], display_value)
-                                            input_json_data[key][sub_key] = 0  # Reset to 0 after calculation
-                                        except Exception as sub_error:
-                                            logging.error(f"Error calculating subtraction for '{sub_key}': {str(sub_error)}")
-                                            raise
-                                else:
-                                    # Handle regular field/tag pairs
-                                    tag_key = f"{sub_key}_tag"
-                                    if tag_key in input_json_data[key] and input_json_data[key][tag_key]:
-                                        try:
-                                            write_field_pdf(writer, input_json_data[key][tag_key], sub_value)
-                                        except Exception as field_error:
-                                            logging.error(f"Error writing field '{sub_key}' with tag '{input_json_data[key][tag_key]}': {str(field_error)}")
-                                            raise
-                            except Exception as sub_key_error:
-                                logging.error(f"Error processing sub-key '{sub_key}' in section '{key}': {str(sub_key_error)}")
-                                raise
-                    except Exception as section_error:
-                        logging.error(f"Error processing section '{key}': {str(section_error)}")
-                        raise
+                    process_generic_section(input_json_data, key, writer)
             except Exception as key_error:
                 logging.error(f"Error processing key '{key}': {str(key_error)}")
                 raise
     except Exception as e:
         logging.error(f"Global error in process_input_json: {str(e)}")
         raise
+
+
+def process_w2_section(input_json_data: Dict[str, Any], key: str, writer: PdfWriter):
+    """Process the W-2 section of the input JSON data."""
+    try:
+        w2_data = input_json_data[key]
+        if not isinstance(w2_data, list):
+            error_msg = f"W-2 data should be a list, got {type(w2_data).__name__}"
+            logging.error(error_msg)
+            raise TypeError(error_msg)
+            
+        total_box_1, total_box_2 = calculate_w2_totals(w2_data)
+        update_income_and_payments(input_json_data, total_box_1, total_box_2)
+        write_w2_totals_to_pdf(w2_data, total_box_1, total_box_2, writer)
+    except Exception as w2_error:
+        logging.error(f"Error processing W-2 section: {str(w2_error)}")
+        raise
+
+
+def calculate_w2_totals(w2_data: List[Dict[str, Any]]) -> Tuple[float, float]:
+    """Calculate the total box_1 and box_2 values from W-2 data."""
+    total_box_1 = 0
+    total_box_2 = 0
+    
+    # Process each W-2 entry, excluding the last two entries which contain tag information
+    for index in range(0, len(w2_data)-2):
+        try:
+            if "_comment" in w2_data[index].keys():
+                continue
+            elif "tag" in w2_data[index].keys():
+                continue
+            
+            # Validate box_1 and box_2 exist and are numeric
+            if 'box_1' not in w2_data[index]:
+                error_msg = f"Missing 'box_1' in W-2 entry {index}"
+                logging.error(error_msg)
+                raise KeyError(error_msg)
+                
+            if not is_number(w2_data[index]['box_1']):
+                error_msg = f"Non-numeric 'box_1' value in W-2 entry {index}: {w2_data[index]['box_1']}"
+                logging.error(error_msg)
+                raise TypeError(error_msg)
+                
+            total_box_1 += w2_data[index]['box_1']
+            
+            # Box 2 is optional but must be numeric if present
+            if 'box_2' in w2_data[index]:
+                if not is_number(w2_data[index]['box_2']):
+                    error_msg = f"Non-numeric 'box_2' value in W-2 entry {index}: {w2_data[index]['box_2']}"
+                    logging.error(error_msg)
+                    raise TypeError(error_msg)
+                total_box_2 += w2_data[index]['box_2']
+        except Exception as e:
+            logging.error(f"Error processing W-2 entry {index}: {str(e)}")
+            raise
+    
+    return total_box_1, total_box_2
+
+
+def update_income_and_payments(input_json_data: Dict[str, Any], total_box_1: float, total_box_2: float):
+    """Update the income and payments sections with W-2 totals."""
+    try:
+        # Check if we have Income section to update L1a
+        if "income" in input_json_data:
+            input_json_data["income"]["L1a"] = total_box_1
+        else:
+            error_msg = "Cannot update L1a: 'income' section missing"
+            logging.error(error_msg)
+            raise KeyError(error_msg)
+            
+        # Check if we have Payments section to update L25a
+        if "payments" in input_json_data:
+            input_json_data["payments"]["L25a"] = total_box_2
+        else:
+            error_msg = "Cannot update L25a: 'payments' section missing"
+            logging.error(error_msg)
+            raise KeyError(error_msg)
+    except Exception as e:
+        logging.error(f"Error updating income and payments with W-2 totals: {str(e)}")
+        raise
+
+
+def write_w2_totals_to_pdf(w2_data: List[Dict[str, Any]], total_box_1: float, total_box_2: float, writer: PdfWriter):
+    """Write W-2 totals to the appropriate fields in the PDF."""
+    try:
+        if len(w2_data) < 2:
+            error_msg = "W-2 data list is too short to contain tag references"
+            logging.error(error_msg)
+            raise ValueError(error_msg)
+            
+        if 'box_1_tag' not in w2_data[-2]:
+            error_msg = "Cannot write total_box_1: 'box_1_tag' missing in W-2 data"
+            logging.error(error_msg)
+            raise KeyError(error_msg)
+        write_field_pdf(writer, w2_data[-2]['box_1_tag'], total_box_1)
+            
+        if 'box_2_tag' not in w2_data[-1]:
+            error_msg = "Cannot write total_box_2: 'box_2_tag' missing in W-2 data"
+            logging.error(error_msg)
+            raise KeyError(error_msg)
+        write_field_pdf(writer, w2_data[-1]['box_2_tag'], total_box_2)
+    except Exception as e:
+        logging.error(f"Error writing W-2 totals to PDF: {str(e)}")
+        raise
+
+
+def process_generic_section(input_json_data: Dict[str, Any], key: str, writer: PdfWriter):
+    """Process a generic section of the input JSON data."""
+    try:
+        section_data = input_json_data[key]
+        if not isinstance(section_data, dict):
+            error_msg = f"Section '{key}' is not a dictionary"
+            logging.error(error_msg)
+            raise TypeError(error_msg)
+            
+        # Handle value/tag pairs
+        if 'tag' in section_data and 'value' in section_data:
+            try:
+                write_field_pdf(writer, section_data['tag'], section_data['value'])
+            except Exception as e:
+                logging.error(f"Error writing field with tag '{section_data['tag']}': {str(e)}")
+                raise
+        
+        # Process sub-keys
+        for sub_key, sub_value in section_data.items():
+            try:
+                # Skip specific keys
+                if sub_key in ['value', '_comment']:
+                    continue
+                    
+                # Handle sum calculations
+                elif "sum" in sub_key:
+                    process_sum_calculation(input_json_data, key, sub_key, writer)
+                    
+                # Handle subtraction calculations
+                elif "subtract" in sub_key:
+                    process_subtraction_calculation(input_json_data, key, sub_key, writer)
+                    
+                else:
+                    # Handle regular field/tag pairs
+                    process_regular_field(input_json_data, key, sub_key, sub_value, writer)
+            except Exception as sub_key_error:
+                logging.error(f"Error processing sub-key '{sub_key}' in section '{key}': {str(sub_key_error)}")
+                raise
+    except Exception as section_error:
+        logging.error(f"Error processing section '{key}': {str(section_error)}")
+        raise
+
+
+def process_sum_calculation(input_json_data: Dict[str, Any], key: str, sub_key: str, writer: PdfWriter):
+    """Process a sum calculation within a section."""
+    tag_key = f"{sub_key}_tag"
+    if tag_key in input_json_data[key] and input_json_data[key][tag_key]:
+        try:
+            sum_fields_list = input_json_data[key][sub_key]
+            if not isinstance(sum_fields_list, list):
+                error_msg = f"Sum field list for '{sub_key}' is not a list"
+                logging.error(error_msg)
+                raise TypeError(error_msg)
+                
+            sum_calculation = 0
+            for index in range(0, len(sum_fields_list)):
+                field_key = sum_fields_list[index]
+                if field_key not in input_json_data[key]:
+                    error_msg = f"Field '{field_key}' referenced in sum '{sub_key}' not found"
+                    logging.error(error_msg)
+                    raise KeyError(error_msg)
+                    
+                value = input_json_data[key][field_key]
+                if is_number(value):
+                    sum_calculation += value
+                else:
+                    error_msg = f"Non-numeric value for field '{field_key}' in sum '{sub_key}': {value}"
+                    logging.error(error_msg)
+                    raise TypeError(error_msg)
+                    
+            write_field_pdf(writer, input_json_data[key][tag_key], sum_calculation)
+            input_json_data[key][sub_key] = sum_calculation
+        except Exception as sum_error:
+            logging.error(f"Error calculating sum for '{sub_key}': {str(sum_error)}")
+            raise
+
+
+def process_subtraction_calculation(input_json_data: Dict[str, Any], key: str, sub_key: str, writer: PdfWriter):
+    """Process a subtraction calculation within a section."""
+    tag_key = f"{sub_key}_tag"
+    if tag_key in input_json_data[key] and input_json_data[key][tag_key]:
+        try:
+            sub_fields_list = input_json_data[key][sub_key]
+            if not isinstance(sub_fields_list, list):
+                error_msg = f"Subtract field list for '{sub_key}' is not a list"
+                logging.error(error_msg)
+                raise TypeError(error_msg)
+                
+            if len(sub_fields_list) < 2:
+                error_msg = f"Subtract field list for '{sub_key}' needs at least 2 fields, got {len(sub_fields_list)}"
+                logging.error(error_msg)
+                raise ValueError(error_msg)
+                
+            # Get first value (minuend)
+            if sub_fields_list[0] not in input_json_data[key]:
+                error_msg = f"Field '{sub_fields_list[0]}' referenced in subtract '{sub_key}' not found"
+                logging.error(error_msg)
+                raise KeyError(error_msg)
+                
+            sub_calculation = input_json_data[key][sub_fields_list[0]]
+            if not is_number(sub_calculation):
+                error_msg = f"Non-numeric first value for subtract '{sub_key}': {sub_calculation}"
+                logging.error(error_msg)
+                raise TypeError(error_msg)
+                
+            # Subtract remaining values (subtrahends)
+            for index in range(1, len(sub_fields_list)):
+                field_key = sub_fields_list[index]
+                if field_key not in input_json_data[key]:
+                    error_msg = f"Field '{field_key}' referenced in subtract '{sub_key}' not found"
+                    logging.error(error_msg)
+                    raise KeyError(error_msg)
+                    
+                value = input_json_data[key][field_key]
+                if is_number(value):
+                    sub_calculation = sub_calculation - value
+                else:
+                    error_msg = f"Non-numeric value for field '{field_key}' in subtract '{sub_key}': {value}"
+                    logging.error(error_msg)
+                    raise TypeError(error_msg)
+                    
+            # Format negative values as "-0-" per IRS convention
+            if sub_calculation < 0:
+                display_value = "-0-"
+            else:
+                display_value = sub_calculation
+                
+            write_field_pdf(writer, input_json_data[key][tag_key], display_value)
+            input_json_data[key][sub_key] = 0  # Reset to 0 after calculation
+        except Exception as sub_error:
+            logging.error(f"Error calculating subtraction for '{sub_key}': {str(sub_error)}")
+            raise
+
+
+def process_regular_field(input_json_data: Dict[str, Any], key: str, sub_key: str, sub_value: Any, writer: PdfWriter):
+    """Process a regular field within a section."""
+    tag_key = f"{sub_key}_tag"
+    if tag_key in input_json_data[key] and input_json_data[key][tag_key]:
+        try:
+            write_field_pdf(writer, input_json_data[key][tag_key], sub_value)
+        except Exception as field_error:
+            logging.error(f"Error writing field '{sub_key}' with tag '{input_json_data[key][tag_key]}': {str(field_error)}")
+            raise
 
 def parse_and_validate_input_json(input_json_file_name: str, 
         pdf_template_file_name: str, job_dir: str) -> Dict[str, Any]:
