@@ -276,9 +276,11 @@
 	"L33_sum_tag": "f2_22[0]"
   },
   "refund": {
-	"_comment": "lines 34 - 36 that make up refund and only if you overpaid, meaning line 33 is greater than line 24",             
+	"_comment": "lines 34 - 36 that make up refund and only if you overpaid, meaning line 33 is greater than line 24",
+	"L34_subtract": ["L33_sum", "L24_sum"],
+	"L34_subtract_tag": "f2_23[0]"
   },
   "amount_you_owe": {
-	"_comment": "lines 37 - 38 that make up amount you owe only if you underpaid, meaning line 33 is less than line 24",             
+	"_comment": "lines 37 - 38 that make up amount you owe only if you underpaid, meaning line 33 is less than line 24"
   }
 }
