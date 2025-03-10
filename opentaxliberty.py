@@ -424,10 +424,9 @@ def process_sum_calculation(input_json_data: Dict[str, Any], key: str, sub_key: 
                     logging.error(error_msg)
                     reported_errors['key_error'].add(error_id)
                     
-                    # Mark as critical error if all fields are missing
-                    if len(missing_fields) == len(sum_fields_list):
-                        has_critical_errors = True
-                        raise KeyError(error_msg)
+                    # if any fields are missing this is a critical error
+                    has_critical_errors = True
+                    raise KeyError(error_msg)
             
             # Write the field with calculated value
             write_field_pdf(writer, input_json_data[key][tag_key], sum_calculation)
@@ -497,15 +496,9 @@ def process_subtraction_calculation(input_json_data: Dict[str, Any], key: str, s
                     logging.error(error_msg)
                     reported_errors['key_error'].add(error_id)
                     
-                    # If all fields are missing, this is a critical error
-                    if len(missing_fields) == len(sub_fields_list):
-                        has_critical_errors = True
-                        raise KeyError(error_msg)
-                    
-                    # If the first field (minuend) is missing, we can't proceed
-                    if sub_fields_list[0] in missing_fields:
-                        has_critical_errors = True
-                        raise KeyError(f"Missing required field '{sub_fields_list[0]}' for subtraction in '{sub_key}'")
+                    # If any fields are missing, this is a critical error
+                    has_critical_errors = True
+                    raise KeyError(error_msg)
             
             # Get first value (minuend)
             minuend_section = field_sections.get(sub_fields_list[0], key)
