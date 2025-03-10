@@ -361,7 +361,7 @@ def process_generic_section(input_json_data: Dict[str, Any], key: str, writer: P
         raise
 
 def process_sum_calculation(input_json_data: Dict[str, Any], key: str, sub_key: str, writer: PdfWriter):
-    """Process a sum calculation within a section."""
+    """Process a sum calculation, allowing references to fields in other sections."""
     global has_critical_errors
     tag_key = f"{sub_key}_tag"
     if tag_key in input_json_data[key] and input_json_data[key][tag_key]:
@@ -375,21 +375,37 @@ def process_sum_calculation(input_json_data: Dict[str, Any], key: str, sub_key: 
                 
             sum_calculation = 0
             missing_fields = []
+            field_sections = {}  # Track which section each field belongs to
             
-            for index in range(0, len(sum_fields_list)):
-                field_key = sum_fields_list[index]
+            # Search for each field across all sections
+            for field_key in sum_fields_list:
+                found = False
                 
-                # Check if field exists in the section
-                if field_key not in input_json_data[key]:
-                    # Only record missing fields, don't raise error yet
+                # First check the current section
+                if field_key in input_json_data[key]:
+                    found = True
+                    field_sections[field_key] = key
+                else:
+                    # If not in current section, search all other sections
+                    for section_key in input_json_data:
+                        if section_key != key and isinstance(input_json_data[section_key], dict):
+                            if field_key in input_json_data[section_key]:
+                                found = True
+                                field_sections[field_key] = section_key
+                                break
+                
+                if not found:
                     missing_fields.append(field_key)
                     continue
-                    
-                value = input_json_data[key][field_key]
+                
+                # Get the section where this field was found
+                field_section = field_sections.get(field_key)
+                value = input_json_data[field_section][field_key]
+                
                 if is_number(value):
                     sum_calculation += value
                 else:
-                    error_id = f"non_numeric_{key}_{field_key}"
+                    error_id = f"non_numeric_{field_section}_{field_key}"
                     if error_id not in reported_errors['type_error']:
                         error_msg = f"Non-numeric value for field '{field_key}' in sum '{sub_key}': {value}"
                         logging.error(error_msg)
@@ -404,7 +420,7 @@ def process_sum_calculation(input_json_data: Dict[str, Any], key: str, sub_key: 
                 
                 # Only log this error if we haven't seen it before
                 if error_id not in reported_errors['key_error']:
-                    error_msg = f"Fields {missing_fields} referenced in sum '{sub_key}' not found"
+                    error_msg = f"Fields {missing_fields} referenced in sum '{sub_key}' not found in any section"
                     logging.error(error_msg)
                     reported_errors['key_error'].add(error_id)
                     
@@ -413,7 +429,7 @@ def process_sum_calculation(input_json_data: Dict[str, Any], key: str, sub_key: 
                         has_critical_errors = True
                         raise KeyError(error_msg)
             
-            # Write the field with whatever value we calculated
+            # Write the field with calculated value
             write_field_pdf(writer, input_json_data[key][tag_key], sum_calculation)
             input_json_data[key][sub_key] = sum_calculation
             
@@ -429,7 +445,7 @@ def process_sum_calculation(input_json_data: Dict[str, Any], key: str, sub_key: 
             raise  # Re-raise to ensure processing fails
 
 def process_subtraction_calculation(input_json_data: Dict[str, Any], key: str, sub_key: str, writer: PdfWriter):
-    """Process a subtraction calculation within a section."""
+    """Process a subtraction calculation within a section, allowing references to fields in other sections."""
     global has_critical_errors
     tag_key = f"{sub_key}_tag"
     if tag_key in input_json_data[key] and input_json_data[key][tag_key]:
@@ -449,8 +465,26 @@ def process_subtraction_calculation(input_json_data: Dict[str, Any], key: str, s
             
             # Check for missing fields before processing
             missing_fields = []
+            field_sections = {}  # Track which section each field belongs to
+            
+            # Search for each field across all sections
             for field_key in sub_fields_list:
-                if field_key not in input_json_data[key]:
+                found = False
+                
+                # First check the current section
+                if field_key in input_json_data[key]:
+                    found = True
+                    field_sections[field_key] = key
+                else:
+                    # If not in current section, search all other sections
+                    for section_key in input_json_data:
+                        if section_key != key and isinstance(input_json_data[section_key], dict):
+                            if field_key in input_json_data[section_key]:
+                                found = True
+                                field_sections[field_key] = section_key
+                                break
+                
+                if not found:
                     missing_fields.append(field_key)
             
             if missing_fields:
@@ -459,7 +493,7 @@ def process_subtraction_calculation(input_json_data: Dict[str, Any], key: str, s
                 
                 # Only log this error if we haven't seen it before
                 if error_id not in reported_errors['key_error']:
-                    error_msg = f"Fields {missing_fields} referenced in subtract '{sub_key}' not found"
+                    error_msg = f"Fields {missing_fields} referenced in subtract '{sub_key}' not found in any section"
                     logging.error(error_msg)
                     reported_errors['key_error'].add(error_id)
                     
@@ -474,9 +508,11 @@ def process_subtraction_calculation(input_json_data: Dict[str, Any], key: str, s
                         raise KeyError(f"Missing required field '{sub_fields_list[0]}' for subtraction in '{sub_key}'")
             
             # Get first value (minuend)
-            sub_calculation = input_json_data[key][sub_fields_list[0]]
+            minuend_section = field_sections.get(sub_fields_list[0], key)
+            sub_calculation = input_json_data[minuend_section][sub_fields_list[0]]
+            
             if not is_number(sub_calculation):
-                error_id = f"non_numeric_{key}_{sub_fields_list[0]}"
+                error_id = f"non_numeric_{minuend_section}_{sub_fields_list[0]}"
                 if error_id not in reported_errors['type_error']:
                     error_msg = f"Non-numeric first value for subtract '{sub_key}': {sub_calculation}"
                     logging.error(error_msg)
@@ -487,15 +523,21 @@ def process_subtraction_calculation(input_json_data: Dict[str, Any], key: str, s
             # Subtract remaining values (subtrahends)
             for index in range(1, len(sub_fields_list)):
                 field_key = sub_fields_list[index]
-                if field_key not in input_json_data[key]:
-                    # We already logged this above, so just skip
+                
+                # Skip missing fields
+                if field_key in missing_fields:
+                    continue
+                
+                # Get the section where this field was found
+                field_section = field_sections.get(field_key)
+                if field_section is None:
                     continue
                     
-                value = input_json_data[key][field_key]
+                value = input_json_data[field_section][field_key]
                 if is_number(value):
                     sub_calculation = sub_calculation - value
                 else:
-                    error_id = f"non_numeric_{key}_{field_key}"
+                    error_id = f"non_numeric_{field_section}_{field_key}"
                     if error_id not in reported_errors['type_error']:
                         error_msg = f"Non-numeric value for field '{field_key}' in subtract '{sub_key}': {value}"
                         logging.error(error_msg)
