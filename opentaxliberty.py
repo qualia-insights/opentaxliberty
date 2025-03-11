@@ -162,6 +162,44 @@ def read_field_pdf(reader: PdfReader, field_name: str) -> str:
     # Return empty string if field doesn't exist or has no value
     return ""
 
+def find_key_in_json(input_json_data: Dict[str, Any], target_key: str) -> Any:
+    """
+    Search recursively through a nested JSON structure to find the first occurrence of a specific key.
+    
+    Args:
+        input_json_data (Dict[str, Any]): The JSON data to search through
+        target_key (str): The key to search for
+        
+    Returns:
+        Any: The value associated with the first occurrence of the key, or None if not found
+    """
+    # Define a recursive helper function to search through the structure
+    def search_recursive(data, key):
+        # Base case: if data is a dictionary
+        if isinstance(data, dict):
+            # First check if the key exists directly in this dictionary
+            if key in data:
+                return data[key]
+            
+            # If not, recursively search through all values in the dictionary
+            for k, v in data.items():
+                result = search_recursive(v, key)
+                if result is not None:  # Found the key in this branch
+                    return result
+                    
+        # If data is a list, search through each element
+        elif isinstance(data, list):
+            for item in data:
+                result = search_recursive(item, key)
+                if result is not None:  # Found the key in this branch
+                    return result
+                    
+        # If we get here, the key wasn't found in this branch
+        return None
+    
+    # Start the recursive search
+    return search_recursive(input_json_data, target_key)
+
 def process_input_json(input_json_data: Dict[str, Any], writer: PdfWriter):
     for key in input_json_data:
         if key == "configuration":
@@ -197,7 +235,8 @@ def process_input_json(input_json_data: Dict[str, Any], writer: PdfWriter):
                         sum_fields_list = input_json_data[key][sub_key]
                         sum_calculation = 0
                         for index in range(0, len(sum_fields_list)):
-                            value = input_json_data[key][sum_fields_list[index]]
+                            #value = input_json_data[key][sum_fields_list[index]]
+                            value = find_key_in_json(input_json_data, sum_fields_list[index])
                             if is_number(value):
                                 sum_calculation += value
                         write_field_pdf(writer, input_json_data[key][tag_key], sum_calculation)
@@ -206,9 +245,11 @@ def process_input_json(input_json_data: Dict[str, Any], writer: PdfWriter):
                     tag_key = f"{sub_key}_tag"
                     if tag_key in input_json_data[key] and input_json_data[key][tag_key]:
                         sub_fields_list = input_json_data[key][sub_key]
-                        sub_calculation = input_json_data[key][sub_fields_list[0]]
+                        #sub_calculation = input_json_data[key][sub_fields_list[0]]
+                        sub_calculation = find_key_in_json(input_json_data, sub_fields_list[0])
                         for index in range(1, len(sub_fields_list)):
-                            value = input_json_data[key][sub_fields_list[index]]
+                            #value = input_json_data[key][sub_fields_list[index]]
+                            value = find_key_in_json(input_json_data, sum_fields_list[index])
                             if is_number(value):
                                 sub_calculation = sub_calculation - value
                         if sub_calculation < 0:
