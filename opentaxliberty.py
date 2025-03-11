@@ -241,7 +241,6 @@ def process_input_json(input_json_data: Dict[str, Any], writer: PdfWriter):
                         sum_fields_list = input_json_data[key][sub_key]
                         sum_calculation = 0
                         for index in range(0, len(sum_fields_list)):
-                            #value = input_json_data[key][sum_fields_list[index]]
                             value = find_key_in_json(input_json_data, sum_fields_list[index])
                             if is_number(value):
                                 sum_calculation += value
@@ -251,10 +250,8 @@ def process_input_json(input_json_data: Dict[str, Any], writer: PdfWriter):
                     tag_key = f"{sub_key}_tag"
                     if tag_key in input_json_data[key] and input_json_data[key][tag_key]:
                         sub_fields_list = input_json_data[key][sub_key]
-                        #sub_calculation = input_json_data[key][sub_fields_list[0]]
                         sub_calculation = find_key_in_json(input_json_data, sub_fields_list[0])
                         for index in range(1, len(sub_fields_list)):
-                            #value = input_json_data[key][sub_fields_list[index]]
                             value = find_key_in_json(input_json_data, sum_fields_list[index])
                             if is_number(value):
                                 sub_calculation = sub_calculation - value
