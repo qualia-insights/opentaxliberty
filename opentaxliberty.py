@@ -257,9 +257,12 @@ def process_input_json(input_json_data: Dict[str, Any], writer: PdfWriter):
                                 sub_calculation = sub_calculation - value
                         if sub_calculation < 0:
                             sub_calculation = "-0-"
+                            input_json_data[key][sub_key] = 0
+                        else:
+                            input_json_data[key][sub_key] = sub_calculation
+                            
                         write_field_pdf(writer, input_json_data[key][tag_key], sub_calculation)
                         sub_calculation = 0
-                        input_json_data[key][sub_key] = sub_calculation
                 else:
                     # Check if there's a corresponding tag field
                     tag_key = f"{sub_key}_tag"
