@@ -196,9 +196,15 @@ def find_key_in_json(input_json_data: Dict[str, Any], target_key: str) -> Any:
                     
         # If we get here, the key wasn't found in this branch
         return None
-    
+
     # Start the recursive search
-    return search_recursive(input_json_data, target_key)
+    result = search_recursive(input_json_data, target_key)
+    
+    # If the key wasn't found, raise an exception
+    if result is None:
+        raise KeyError(f"Key '{target_key}' not found in the JSON structure")
+    
+    return result    
 
 def process_input_json(input_json_data: Dict[str, Any], writer: PdfWriter):
     for key in input_json_data:
