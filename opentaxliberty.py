@@ -301,7 +301,7 @@ def parse_and_validate_input_json(input_json_file_name: str,
 def save_debug_json(json_dict : Dict[str, Any]):
     if "debug_json_output" in json_dict["configuration"]:
         with open(json_dict["configuration"]["debug_json_output"], 'w') as file:
-            json.dump(json_dict, file)
+            json.dump(json_dict, file, indent=4)
 
 class processing_response(BaseModel):
     """Response model for successful processing"""
