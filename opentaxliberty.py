@@ -298,6 +298,11 @@ def parse_and_validate_input_json(input_json_file_name: str,
         raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, 
                             detail=error_str)
 
+def save_debug_json(json_dict : Dict[str, Any]):
+    if "debug_json_output" in json_dict["configuration"]:
+        with open(json_dict["configuration"]["debug_json_output"]) as file:
+            json.dump(json_dict, file)
+
 class processing_response(BaseModel):
     """Response model for successful processing"""
     message: str
@@ -355,6 +360,8 @@ async def process_tax_form(
         # Add the cleanup task to run after the response is sent
         background_tasks.add_task(remove_job_directory, job_dir)
 
+        save_debug_json(json_dict)
+
         # send the file back to the requestor
         return FileResponse(
             path=output_file,
@@ -364,12 +371,14 @@ async def process_tax_form(
     except HTTPException as http_ex:
         # Cleanup before re-raising the HTTPException
         remove_job_directory(job_dir)
+        save_debug_json(json_dict)
         # Re-raise the original HTTPException with its specific status code
         raise http_ex
     except Exception as e:
         logger.error(f"Error processing form: {str(e)}")
         # cleanup before rasing a generic exception
         remove_job_directory(job_dir)
+        save_debug_json(json_dict)
         raise HTTPException(status_code=500, detail=f"Error processing form: {str(e)}")
 
 @app.get("/")
