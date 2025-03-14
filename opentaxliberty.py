@@ -299,7 +299,7 @@ def parse_and_validate_input_json(input_json_file_name: str,
                             detail=error_str)
 
 def save_debug_json(json_dict : Dict[str, Any]):
-    if "debug_json_output" in json_dict["configuration"]:
+    if json_dict is not None and "debug_json_output" in json_dict["configuration"]:
         with open(json_dict["configuration"]["debug_json_output"], 'w') as file:
             json.dump(json_dict, file, indent=4)
 
@@ -333,6 +333,7 @@ async def process_tax_form(
     job_dir = os.path.join(UPLOAD_DIR, form_id)
     os.makedirs(job_dir, exist_ok=True)
     
+    json_dict = None
     try:
         # Save json configuration file
         config_path = os.path.join(job_dir, f"config_{config_file.filename}")
