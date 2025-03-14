@@ -279,7 +279,18 @@
   "refund": {
 	"_comment": "lines 34 - 36 that make up refund and only if you overpaid, meaning line 33 is greater than line 24",
 	"L34_subtract": ["L33_sum", "L24_sum"],
-	"L34_subtract_tag": "f2_23[0]"
+	"L34_subtract_tag": "f2_23[0]",
+	"L35a_check": "/Off",
+	"L35a_check_tag": "c2_4[]0]",
+	"L35a_sum": ["L34_subtract"],
+	"L35a_sum_tag": "f2_24[0]",
+	"_comment": "getting the spacing right is a pain, it might take some trial and error",
+	"L35a_b": " 1     2    3    4    5     6     7     8    9",
+	"L35a_b_tag": "f2_25[0]",
+	"L35c_checking": "/1",
+	"L35c_checking_tag": "c2_5[0]",
+	"L35c_savings": "/2",
+	"L35c_savings_tag": "c2_5[1]"
   },
   "amount_you_owe": {
 	"_comment": "lines 37 - 38 that make up amount you owe only if you underpaid, meaning line 33 is less than line 24"
