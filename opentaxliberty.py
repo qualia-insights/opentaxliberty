@@ -153,6 +153,8 @@ def write_field_pdf(writer: PdfWriter, field_name: str, field_value: str):
     """
     if field_value == "":
         return
+    elif field_value == 0:
+        return
         
     # Try to update the field on each page
     field_found = False

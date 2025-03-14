@@ -292,7 +292,9 @@
 	"L35c_savings": "/2",
 	"L35c_savings_tag": "c2_5[1]",
 	"L35a_d": " 1     2    3    4    5     6     7     8    9",
-	"L35a_d_tag": "f2_26[0]"
+	"L35a_d_tag": "f2_26[0]",
+	"L36": "",
+	"L36_tag": "f2_27[0]"
   },
   "amount_you_owe": {
 	"_comment": "lines 37 - 38 that make up amount you owe only if you underpaid, meaning line 33 is less than line 24"
