@@ -89,7 +89,6 @@ os.makedirs(UPLOAD_DIR, exist_ok=True)
 
 # FastAPI Program =============================================================  
 
-
 def is_number(value):
     """
     Check if a value is a number or can be converted to a number.
@@ -98,30 +97,39 @@ def is_number(value):
         value: The value to check
         
     Returns:
-        bool: True if the value is a number or can be converted to a number, False otherwise
+        tuple: (is_number, converted_value)
+            - is_number (bool): True if the value is a number or can be converted to a number
+            - converted_value: The numeric value if conversion was successful, None otherwise
     """
-    # Return False for None values
+    # Handle None values
     if value is None:
-        return False
+        return False, None
         
-    # Check for numeric types directly
+    # Handle native numeric types
     if isinstance(value, (int, float, Decimal)):
-        return True
+        return True, value
         
     # Try to convert strings to numbers
     if isinstance(value, str):
         # Remove any thousands separators and spaces
         cleaned_value = value.replace(',', '').replace(' ', '')
         
+        # Skip empty strings
+        if not cleaned_value:
+            return False, None
+            
         # Try to convert to float
         try:
-            float(cleaned_value)
-            return True
+            converted_value = float(cleaned_value)
+            # If it's a whole number, convert to int for cleaner representation
+            if converted_value.is_integer():
+                converted_value = int(converted_value)
+            return True, converted_value
         except ValueError:
             pass
             
     # Not a number
-    return False
+    return False, None
 
 # Define a function to delete the file and its directory
 def remove_job_directory(directory_path_str: str):
@@ -273,9 +281,9 @@ def process_input_json(input_json_data: Dict[str, Any], writer: PdfWriter):
                         sum_fields_list = input_json_data[key][sub_key]
                         sum_calculation = 0
                         for index in range(0, len(sum_fields_list)):
-                            value = find_key_in_json(input_json_data, sum_fields_list[index])
-                            if is_number(value):
-                                sum_calculation += value
+                            is_numeric, numeric_value = is_number(find_key_in_json(input_json_data, sum_fields_list[index]))
+                            if is_numeric:
+                                sum_calculation += numeric_value
                         write_field_pdf(writer, input_json_data[key][tag_key], sum_calculation)
                         input_json_data[key][sub_key] = sum_calculation
                 elif "subtract" in sub_key:
@@ -285,8 +293,9 @@ def process_input_json(input_json_data: Dict[str, Any], writer: PdfWriter):
                         sub_calculation = find_key_in_json(input_json_data, sub_fields_list[0])
                         for index in range(1, len(sub_fields_list)):
                             value = find_key_in_json(input_json_data, sub_fields_list[index])
-                            if is_number(value):
-                                sub_calculation = sub_calculation - value
+                            is_numeric, numeric_value = is_number(find_key_in_json(input_json_data, sub_fields_list[index]))
+                            if is_numeric:
+                                sub_calculation = sub_calculation - numeric_value
                         if sub_calculation < 0:
                             sub_calculation = "-0-"
                             input_json_data[key][sub_key] = 0
