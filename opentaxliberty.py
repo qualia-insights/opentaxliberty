@@ -31,6 +31,7 @@ from pathlib import Path
 import logging
 import uuid
 from datetime import datetime
+from decimal import Decimal
 import shutil
 
 # pypdf dependencies
@@ -88,8 +89,39 @@ os.makedirs(UPLOAD_DIR, exist_ok=True)
 
 # FastAPI Program =============================================================  
 
+
 def is_number(value):
-    return isinstance(value, (int, float))
+    """
+    Check if a value is a number or can be converted to a number.
+    
+    Args:
+        value: The value to check
+        
+    Returns:
+        bool: True if the value is a number or can be converted to a number, False otherwise
+    """
+    # Return False for None values
+    if value is None:
+        return False
+        
+    # Check for numeric types directly
+    if isinstance(value, (int, float, Decimal)):
+        return True
+        
+    # Try to convert strings to numbers
+    if isinstance(value, str):
+        # Remove any thousands separators and spaces
+        cleaned_value = value.replace(',', '').replace(' ', '')
+        
+        # Try to convert to float
+        try:
+            float(cleaned_value)
+            return True
+        except ValueError:
+            pass
+            
+    # Not a number
+    return False
 
 # Define a function to delete the file and its directory
 def remove_job_directory(directory_path_str: str):
