@@ -1,9 +1,9 @@
 import pytest
 import subprocess
 import os
+import json
 from pathlib import Path
 import time
-import logging
 import contextlib
 from io import StringIO
 
@@ -14,6 +14,7 @@ def test_process_tax_form_with_curl():
     1. The API responds with a 200 OK status
     2. The output PDF file is created
     3. The temporary job directory is cleaned up after processing
+    4. If debug_json_output is specified in the config, the debug JSON file exists
     
     Detailed debug information is only printed if the test fails.
     The output PDF file is kept after the test for inspection.
@@ -52,6 +53,21 @@ def test_process_tax_form_with_curl():
         log_debug(f"Config file exists: {config_file.exists()} at {config_file_path}")
         assert config_file.exists(), f"Config file does not exist at {config_file_path}"
         
+        # Parse the JSON configuration to check for debug_json_output
+        with open(config_file_path, 'r') as f:
+            config_data = json.load(f)
+        
+        debug_json_path = None
+        if 'configuration' in config_data and 'debug_json_output' in config_data['configuration']:
+            debug_json_path = config_data['configuration']['debug_json_output']
+            log_debug(f"Debug JSON output is configured at: {debug_json_path}")
+            
+            # Delete the debug JSON file if it already exists
+            debug_json_file = Path(debug_json_path)
+            if debug_json_file.exists():
+                debug_json_file.unlink()
+                log_debug(f"Deleted existing debug JSON file: {debug_json_path}")
+        
         # Log the current working directory
         cwd = os.getcwd()
         log_debug(f"Current working directory: {cwd}")
@@ -68,10 +84,7 @@ def test_process_tax_form_with_curl():
         
         log_debug(f"Executing command: {' '.join(command)}")
         
-        # Capture curl output to string
-        curl_output = StringIO()
-        with contextlib.redirect_stderr(curl_output), contextlib.redirect_stdout(curl_output):
-            result = subprocess.run(command, capture_output=True, text=True)
+        result = subprocess.run(command, capture_output=True, text=True)
         
         # Store command results
         log_debug(f"Command exit code: {result.returncode}")
@@ -103,6 +116,30 @@ def test_process_tax_form_with_curl():
         # Check the file size to ensure it's not empty
         assert output_file.stat().st_size > 0, f"Output file {output_path} exists but is empty"
         
+        # Check for debug JSON file if it was configured
+        if debug_json_path:
+            debug_json_file = Path(debug_json_path)
+            log_debug(f"Checking for debug JSON file at: {debug_json_path}")
+            if debug_json_file.exists():
+                log_debug(f"Debug JSON file found with size: {debug_json_file.stat().st_size} bytes")
+            else:
+                log_debug(f"Debug JSON file NOT found at: {debug_json_path}")
+            
+            # Assert that the debug JSON file exists
+            assert debug_json_file.exists(), f"Debug JSON file was not created at {debug_json_path}"
+            
+            # Assert that the debug JSON file is not empty
+            assert debug_json_file.stat().st_size > 0, f"Debug JSON file exists but is empty at {debug_json_path}"
+            
+            # Verify the JSON file is valid
+            try:
+                with open(debug_json_path, 'r') as f:
+                    debug_json_content = json.load(f)
+                log_debug("Debug JSON file contains valid JSON")
+            except json.JSONDecodeError as e:
+                log_debug(f"Debug JSON file contains invalid JSON: {str(e)}")
+                assert False, f"Debug JSON file contains invalid JSON: {str(e)}"
+        
         # Wait for background task to complete (file cleanup)
         time.sleep(2)
         
@@ -126,6 +163,8 @@ def test_process_tax_form_with_curl():
         # Just print a simple success message
         print("OpenTaxLiberty API test successful")
         print(f"Output PDF saved at: {output_path}")
+        if debug_json_path and Path(debug_json_path).exists():
+            print(f"Debug JSON saved at: {debug_json_path}")
         
     except Exception as e:
         # Print all debug logs if the test fails
@@ -135,4 +174,4 @@ def test_process_tax_form_with_curl():
         print("\n--- END DEBUG INFORMATION ---")
         
         raise
-    # No finally block to clean up the output file - keeping it for inspection
+    # No cleanup to allow inspection of output files
