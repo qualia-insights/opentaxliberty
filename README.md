@@ -28,9 +28,11 @@ convenience to the government sites.
 ## Todo
 
 - Lets bring the heat....we have Friday 3/14, Saturday 3/15, Sunday 3/16, and Monday 3/17 to work on OTL
-- [ ] math error on line 34
+- [X] math error on line 34
 - [ ] finish 1040 form 
 - [ ] pytests for form 1040
+    - making alot of progress on pytests but could likely use some more
+- [ ] consider making w2 a seperate json because it will be used on state forms as well
 - [ ] complete the json config file for 1040
 - [ ] complete the json config file for schedule A
 - [ ] complete the json config file for schedule B
