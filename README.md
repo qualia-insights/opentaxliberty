@@ -27,6 +27,10 @@ convenience to the government sites.
 
 ## Todo
 
+- Lets bring the heat....we have Friday, Saturday, Sunday, and Monday
+- [ ] math error on line 34
+- [ ] finish 1040 form 
+- [ ] pytests for form 1040
 - [ ] complete the json config file for 1040
 - [ ] complete the json config file for schedule A
 - [ ] complete the json config file for schedule B
