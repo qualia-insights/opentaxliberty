@@ -32,7 +32,7 @@ def test_process_tax_form_with_curl():
     output_filename = "processed_form.pdf"
     output_path = f"{output_dir}/{output_filename}"
     pdf_form_path = f"{workspace_dir}/code/taxes/2024/f1040_blank.pdf"
-    config_file_path = "../bob_student_example.json"
+    config_file_path = "../bob_student_F1040.json"
     
     try:
         # Create output directory if it doesn't exist
