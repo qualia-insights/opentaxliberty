@@ -1,12 +1,12 @@
 {
   "configuration": {
      "tax_year": 2024,
-     "output_file_name": "bob_student_f1040.pdf",
+     "output_file_name": "bob_student_F1040.pdf",
      "form": "1040",
-     "debug_json_output": "/workspace/temp/bob_student_f1040.json"
+     "debug_json_output": "/workspace/temp/bob_student_F1040.json"
   },
   "name_address_ssn": {
-	"_comment": "this is the header block of the top of the 1040, it is ok to leave a field blank",
+	"_comment": "this is the header block of the top of the Form 1040, it is ok to leave a field blank",
         "first_name_middle_initial": "Bob S",
 	"first_name_middle_initial_tag": "f1_04[0]",
   	"last_name": "Example",
@@ -146,16 +146,16 @@
 	"dependent_4_credit_for_other_dependents": "/1",
 	"dependent_4_credit_for_other_dependents_tag": "c1_20[0]"
   },
-  "w-2": [
-	{"_comment": "box_1 are summed to compute L1a"},
-	{"_comment": "box_2 are summed to compute L25a"},
-	{"_comment": "w-2 section should be above the income section"},
-	{"organization": "Data Entry Inc", "box_1": 550, "box_2": 0},
-	{"organization": "Fast Food", "box_1": 3907.57, "box_2": 54.31},
-	{"organization": "Mexican Buffet", "box_1": 1576.59, "box_2": 15.00},
-	{"box_1_tag": "f1_32[0]"},
-	{"box_2_tag": "f2_11[0]"}
-  ],
+  "W-2": {
+	"_comment": "box_1 are summed to compute L1a",
+	"_comment": "box_2 are summed to compute L25a",
+	"_comment": "W-2 section should be above the income section",
+	"_comment": "the W-2 information is including in a separate json file",
+	"_comment": "because the W-2 information is used by multiple tax forms",
+	"_comment": "for example both federal and state use the W-2 information",
+	"box_1_tag": "f1_32[0]",
+	"box_2_tag": "f2_11[0]"
+  },
   "income": {
 	"_comment": "this is for lines 1 - 15 that make up income",
 	"_comment": "always leave L1a blank, it is filled in by w2 from above",
