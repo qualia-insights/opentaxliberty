@@ -10,9 +10,9 @@
      "_comment": "the previous tax year, and you'll need it to file your",
      "_comment": "income tax return.",
      "tax_year": 2024,
-     "form": "w-2"
+     "form": "W-2"
   },
-  "w-2": [
+  "W-2": [
 	{"organization": "Data Entry Inc", "box_1": 550, "box_2": 0},
 	{"organization": "Fast Food", "box_1": 3907.57, "box_2": 54.31},
 	{"organization": "Mexican Buffet", "box_1": 1576.59, "box_2": 15.00}
