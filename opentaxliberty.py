@@ -248,7 +248,7 @@ def find_key_in_json(input_json_data: Dict[str, Any], target_key: str) -> Any:
     
     return result    
 
-def process_input_json(input_json_data: Dict[str, Any], writer: PdfWriter):
+def process_input_config(input_json_data: Dict[str, Any], W_2_data: Dict[str, Any], writer: PdfWriter):
     for key in input_json_data:
         if key == "configuration":
             continue
@@ -482,7 +482,7 @@ async def process_tax_form(
         # fields = reader.get_fields()
         writer.append(reader)
         process_input_W_2(W_2_dict)
-        process_input_json(json_dict, writer)
+        process_input_config(config_dict, W_2_dict, writer)
 
         output_file = os.path.join(job_dir, json_dict["configuration"]["output_file_name"])
         with open(output_file, "wb") as output_stream:

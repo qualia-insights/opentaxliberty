@@ -146,20 +146,10 @@
 	"dependent_4_credit_for_other_dependents": "/1",
 	"dependent_4_credit_for_other_dependents_tag": "c1_20[0]"
   },
-  "W-2": {
-	"_comment": "box_1 are summed to compute L1a",
-	"_comment": "box_2 are summed to compute L25a",
-	"_comment": "W-2 section should be above the income section",
-	"_comment": "the W-2 information is including in a separate json file",
-	"_comment": "because the W-2 information is used by multiple tax forms",
-	"_comment": "for example both federal and state use the W-2 information",
-	"box_1_tag": "f1_32[0]",
-	"box_2_tag": "f2_11[0]"
-  },
   "income": {
 	"_comment": "this is for lines 1 - 15 that make up income",
-	"_comment": "always leave L1a blank, it is filled in by w2 from above",
-	"L1a": "",
+	"_comment": "get_W-2_box_1_sum() is a special function that retrieves the sum of box_1 from the W-2 data",
+	"L1a": "get_W-2_box_1_sum()",
 	"L1a_tag": "f1_32[0]",
 	"L1b": 100,
 	"L1b_tag": "f1_33[0]",
@@ -252,8 +242,8 @@
   },
   "payments": {
 	"_comment": "this is for lines 25 - 33 that make up payments",             
-        "_comment": "always leave L25a blank, it is filled in by w2 from above", 
-        "L25a": "",                                                              
+	"_comment": "get_W-2_box_2_sum() is a special function that retrieves the sum of box_2 from the W-2 data",
+        "L25a": "get_W-2_box_2_sum()",                                                              
         "L25a_tag": "f2_11[0]",
 	"L25b": 1,
         "L25b_tag": "f2_12[0]",
