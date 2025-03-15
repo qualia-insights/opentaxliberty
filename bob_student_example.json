@@ -307,6 +307,26 @@
 	"do_you_want_to_designate_yes": "/1",
 	"do_you_want_to_designate_yes_tag": "c2_6[0]",
 	"do_you_want_to_designate_no": "/2",
-	"do_you_want_to_designate_no_tag": "c2_6[1]"
+	"do_you_want_to_designate_no_tag": "c2_6[1]",
+	"desginee_name": "Tom Smith",
+	"desginee_name_tag": "f2_30[0]",
+	"desginee_phone": "(111)222-3333",
+	"desginee_phone_tag": "f2_31[0]",
+	"desginee_pin": "1   2   3   4  5  6",
+	"desginee_pin_tag": "f2_32[0]"
+  },
+  "sign_here": {
+	"your_occupation": "Computer Scientist",
+	"your_occupation_tag": "f2_33[0]",
+	"your_pin": "1  2   3   4  5  6",
+	"your_pin_tag": "f2_34[0]",
+	"spouse_occupation": "Teacher",
+	"spouse_occupation_tag": "f2_35[0]",
+	"spouse_pin": "1  2   3   4  5  6",
+	"spouse_pin_tag": "f2_36[0]",
+	"phone_no": "(111)222-3333",
+	"phone_no_tag": "f2_37[0]",
+	"email": "bob_student@univ.edu",
+	"email_tag": "f2_38[0]"
   }
 }
