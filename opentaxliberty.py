@@ -357,6 +357,29 @@ def process_input_W_2(W_2_dict: Dict[str, Any]):
 
 def parse_and_validate_input_files(config_file_name: str, W_2_config_file_name: str, 
         pdf_template_file_name: str, job_dir: str) -> tuple[Dict[str, Any], Dict[str, Any]]:
+    """
+    Parse and validate the input configuration files and PDF template.
+    
+    This function verifies that the PDF template exists and attempts to parse the JSON
+    configuration files for tax form and W-2 data. It performs basic validation and
+    raises appropriate exceptions if any validation fails.
+    
+    Args:
+        config_file_name (str): Path to the main tax form configuration JSON file
+        W_2_config_file_name (str): Path to the W-2 configuration JSON file
+        pdf_template_file_name (str): Path to the PDF template file
+        job_dir (str): Directory path for the current processing job
+        
+    Returns:
+        tuple[Dict[str, Any], Dict[str, Any]]: A tuple containing:
+            - config_data: The parsed main tax form configuration data
+            - W_2_config_data: The parsed W-2 configuration data
+            
+    Raises:
+        HTTPException(404): If the PDF template file does not exist
+        HTTPException(400): If the JSON files have invalid format
+        HTTPException(500): For other unexpected errors during processing
+    """
     try:
         # check template
         template_file_path = Path(pdf_template_file_name)
@@ -372,7 +395,7 @@ def parse_and_validate_input_files(config_file_name: str, W_2_config_file_name: 
         with open(W_2_config_file_name, 'r') as f:
                 W_2_config_data = json.load(f)  # Load the JSON data from the W-2 config file
 
-        return W_2_config_data, config_data
+        return config_data, W_2_config_data  # Changed the return order to match parameters
     except json.JSONDecodeError as e:
         error_str = f"Error: Invalid JSON format in uploaded configuration file: {str(e)}"
         logging.error(error_str)
@@ -451,7 +474,7 @@ async def process_tax_form(
         with open(config_path, "wb") as f:
             f.write(await config_file.read())
 
-        W_2_dict, config_dict = parse_and_validate_input_files(config_path, W_2_config_path, pdf_path, job_dir)
+        config_dict, W_2_dict = parse_and_validate_input_files(config_path, W_2_config_path, pdf_path, job_dir)
         reader = PdfReader(pdf_path)
         writer = PdfWriter()
 
