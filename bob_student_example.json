@@ -297,6 +297,10 @@
 	"L36_tag": "f2_27[0]"
   },
   "amount_you_owe": {
-	"_comment": "lines 37 - 38 that make up amount you owe only if you underpaid, meaning line 33 is less than line 24"
+	"_comment": "lines 37 - 38 that make up amount you owe only if you underpaid, meaning line 33 is less than line 24",
+	"L37": 0,
+	"L37_tag": "f2_28[0]",
+	"L38": 0,
+	"L38_tag": "f2_29[0]"
   }
 }
