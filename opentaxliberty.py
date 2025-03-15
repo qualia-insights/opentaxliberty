@@ -33,6 +33,7 @@ import uuid
 from datetime import datetime
 from decimal import Decimal
 import shutil
+import traceback
 
 # pypdf dependencies
 from pypdf import PdfReader, PdfWriter
@@ -291,9 +292,9 @@ def process_input_config(input_json_data: Dict[str, Any], W_2_data: Dict[str, An
                             
                         write_field_pdf(writer, input_json_data[key][tag_key], sub_calculation)
                         sub_calculation = 0
-                elif "get_W-2_box_1_sum()" in sub_value:
+                elif isinstance(sub_value, str) and "get_W-2_box_1_sum()" in sub_value:
                     write_field_pdf(writer, input_json_data[key][sub_key], W_2_data["totals"]["total_box_1"])
-                elif "get_W-2_box_2_sum()" in sub_value:
+                elif isinstance(sub_value, str) and "get_W-2_box_2_sum()" in sub_value:
                     write_field_pdf(writer, input_json_data[key][sub_key], W_2_data["totals"]["total_box_2"])
                 else:
                     # Check if there's a corresponding tag field
@@ -491,20 +492,20 @@ async def process_tax_form(
         process_input_W_2(W_2_dict)
         process_input_config(config_dict, W_2_dict, writer)
 
-        output_file = os.path.join(job_dir, json_dict["configuration"]["output_file_name"])
+        output_file = os.path.join(job_dir, config_dict["configuration"]["output_file_name"])
         with open(output_file, "wb") as output_stream:
             writer.write(output_stream)
 
         # Add the cleanup task to run after the response is sent
         background_tasks.add_task(remove_job_directory, job_dir)
 
-        save_debug_json(json_dict)
+        save_debug_json(config_dict)
 
         # send the file back to the requestor
         return FileResponse(
             path=output_file,
             media_type="application/pdf",
-            filename=json_dict["configuration"]["output_file_name"])
+            filename=config_dict["configuration"]["output_file_name"])
 
     except HTTPException as http_ex:
         # Cleanup before re-raising the HTTPException
@@ -513,11 +514,20 @@ async def process_tax_form(
         # Re-raise the original HTTPException with its specific status code
         raise http_ex
     except Exception as e:
+        # Get the full stack trace as a string
+        stack_trace = traceback.format_exc()
+    
+        # Log both the error message and the stack trace
         logger.error(f"Error processing form: {str(e)}")
-        # cleanup before rasing a generic exception
+        logger.error(f"Stack trace: \n{stack_trace}")
+    
+        # cleanup before raising a generic exception
         remove_job_directory(job_dir)
         save_debug_json(config_dict)
-        raise HTTPException(status_code=500, detail=f"Error processing form: {str(e)}")
+    
+        # Include line number information in the error detail
+        error_info = f"Error processing form: {str(e)} at line {traceback.extract_tb(e.__traceback__)[-1].lineno}"
+        raise HTTPException(status_code=500, detail=error_info)
 
 @app.get("/")
 async def root():
