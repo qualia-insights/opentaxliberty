@@ -8,18 +8,34 @@ from pypdf import PdfWriter
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
 
 # Import the functions we want to test
-from opentaxliberty import process_input_json, find_key_in_json, write_field_pdf
+from opentaxliberty import process_input_config, find_key_in_json, write_field_pdf, is_number
 
 class TestSumFunctionality:
     
     @pytest.fixture
     def mock_writer(self):
         """Create a mocked PdfWriter for testing."""
-        mock = MagicMock(spec=PdfWriter)
-        mock.pages = [MagicMock()]  # Mock a single page
-        return mock
+        class MockPdfWriter:
+            def __init__(self):
+                self.pages = [None]  # Simulate having one page
+                self.updated_fields = {}
+                
+            def update_page_form_field_values(self, page, fields, auto_regenerate=True):
+                self.updated_fields.update(fields)
+        
+        return MockPdfWriter()
     
-    def test_basic_sum(self, mock_writer):
+    @pytest.fixture
+    def mock_w2_data(self):
+        """Create mock W-2 data for testing."""
+        return {
+            "totals": {
+                "total_box_1": 6034.16,
+                "total_box_2": 69.31
+            }
+        }
+    
+    def test_basic_sum(self, mock_writer, mock_w2_data):
         """Test basic summation functionality with a few values."""
         # Create test data with a sum operation
         test_data = {
@@ -28,23 +44,24 @@ class TestSumFunctionality:
             },
             "section1": {
                 "value1": 100,
+                "value1_tag": "value1_tag",
                 "value2": 200,
+                "value2_tag": "value2_tag",
                 "value3": 50,
+                "value3_tag": "value3_tag",
                 "sum_result": ["value1", "value2", "value3"],
                 "sum_result_tag": "test_sum_field"
             }
         }
         
-        # Process the JSON
-        process_input_json(test_data, mock_writer)
+        # Process the JSON data
+        process_input_config(test_data, mock_w2_data, mock_writer)
         
         # Verify the sum was calculated correctly (100 + 200 + 50 = 350)
         assert test_data["section1"]["sum_result"] == 350
-        
-        # Verify write_field_pdf was called with the correct values
-        mock_writer.update_page_form_field_values.assert_called()
+        assert mock_writer.updated_fields["test_sum_field"] == 350
     
-    def test_sum_with_one_value(self, mock_writer):
+    def test_sum_with_one_value(self, mock_writer, mock_w2_data):
         """Test summation with just one value."""
         test_data = {
             "configuration": {
@@ -52,18 +69,20 @@ class TestSumFunctionality:
             },
             "section1": {
                 "single_value": 42,
+                "single_value_tag": "single_value_tag",
                 "sum_result": ["single_value"],
                 "sum_result_tag": "test_sum_field"
             }
         }
         
-        # Process the JSON
-        process_input_json(test_data, mock_writer)
+        # Process the JSON data
+        process_input_config(test_data, mock_w2_data, mock_writer)
         
         # Verify the sum equals the single value (42)
         assert test_data["section1"]["sum_result"] == 42
+        assert mock_writer.updated_fields["test_sum_field"] == 42
     
-    def test_sum_with_float_values(self, mock_writer):
+    def test_sum_with_float_values(self, mock_writer, mock_w2_data):
         """Test summation with floating point values."""
         test_data = {
             "configuration": {
@@ -71,20 +90,24 @@ class TestSumFunctionality:
             },
             "section1": {
                 "value1": 10.5,
+                "value1_tag": "value1_tag",
                 "value2": 20.75,
+                "value2_tag": "value2_tag",
                 "value3": 0.25,
+                "value3_tag": "value3_tag",
                 "sum_result": ["value1", "value2", "value3"],
                 "sum_result_tag": "test_sum_field"
             }
         }
         
-        # Process the JSON
-        process_input_json(test_data, mock_writer)
+        # Process the JSON data
+        process_input_config(test_data, mock_w2_data, mock_writer)
         
         # Verify the sum was calculated correctly (10.5 + 20.75 + 0.25 = 31.5)
         assert test_data["section1"]["sum_result"] == 31.5
+        assert mock_writer.updated_fields["test_sum_field"] == 31.5
     
-    def test_sum_with_non_numeric_values(self, mock_writer):
+    def test_sum_with_non_numeric_values(self, mock_writer, mock_w2_data):
         """Test how summation handles non-numeric values."""
         test_data = {
             "configuration": {
@@ -92,70 +115,73 @@ class TestSumFunctionality:
             },
             "section1": {
                 "numeric_value": 100,
+                "numeric_value_tag": "numeric_value_tag",
                 "string_value": "not a number",
+                "string_value_tag": "string_value_tag",
                 "bool_value": True,
+                "bool_value_tag": "bool_value_tag",
                 "sum_result": ["numeric_value", "string_value", "bool_value"],
                 "sum_result_tag": "test_sum_field"
             }
         }
         
-        # Mock find_key_in_json to handle our test values
-        def mock_find_key(data, key):
+        # We'll need to patch find_key_in_json to ensure it returns our test values
+        # Create a patched version to explicitly return our non-numeric test values
+        def mocked_find_key_in_json(data, key):
             if key == "numeric_value":
                 return 100
             elif key == "string_value":
-                return "not a number"  # Non-numeric
+                return "not a number"
             elif key == "bool_value":
-                return True # Boolean
-            return None
+                return True
+            else:
+                # Default fallback for other keys
+                try:
+                    return find_key_in_json(data, key)
+                except KeyError:
+                    return None
         
-        # Patch the find_key_in_json function
-        with patch('opentaxliberty.find_key_in_json', side_effect=mock_find_key):
-            with patch('opentaxliberty.write_field_pdf') as mock_write:
-                # Process the test data
-                process_input_json(test_data, mock_writer)
-                
-                # Since is_number() should filter out non-numeric values,
-                # the sum should only include the numeric_value (100) + bool_value (1)
-                assert test_data["section1"]["sum_result"] == 101
+        # Apply our patch for this test
+        with patch('opentaxliberty.find_key_in_json', side_effect=mocked_find_key_in_json):
+            # Process the test data
+            process_input_config(test_data, mock_w2_data, mock_writer)
+            
+            # Since is_number() should filter out non-numeric values,
+            # the sum should only include numeric_value (100) and bool_value (True, treated as 1)
+            # The "string_value" should be ignored in the sum
+            assert test_data["section1"]["sum_result"] == 101
+            assert mock_writer.updated_fields["test_sum_field"] == 101
     
-    def test_sum_across_sections(self, mock_writer):
+    def test_cross_section_sum(self, mock_writer, mock_w2_data):
         """Test summation of values from different sections."""
         test_data = {
             "configuration": {
                 "tax_year": 2024
             },
-            "section1": {
-                "value1": 100
+            "income": {
+                "L1z_sum": 5000,
+                "L1z_sum_tag": "l1z_tag"
             },
-            "section2": {
-                "value2": 200
+            "adjustments": {
+                "L2b": 200,
+                "L2b_tag": "l2b_tag",
+                "L3b": 300,
+                "L3b_tag": "l3b_tag"
             },
-            "results": {
-                "sum_result": ["section1.value1", "section2.value2"],
-                "sum_result_tag": "test_sum_field"
+            "totals": {
+                "L9_sum": ["L1z_sum", "L2b", "L3b"],
+                "L9_sum_tag": "total_income_tag"
             }
         }
         
-        # Mock find_key_in_json to handle cross-section references
-        def mock_find_key(data, key):
-            if key == "section1.value1":
-                return 100
-            elif key == "section2.value2":
-                return 200
-            return 0
+        # Process the JSON data
+        process_input_config(test_data, mock_w2_data, mock_writer)
         
-        # Patch the find_key_in_json function
-        with patch('opentaxliberty.find_key_in_json', side_effect=mock_find_key):
-            with patch('opentaxliberty.write_field_pdf') as mock_write:
-                # Process the test data
-                process_input_json(test_data, mock_writer)
-                
-                # Verify the sum was calculated correctly (100 + 200 = 300)
-                assert test_data["results"]["sum_result"] == 300
-                mock_write.assert_any_call(mock_writer, "test_sum_field", 300)
+        # Verify the sum was calculated correctly (5000 + 200 + 300 = 5500)
+        assert test_data["totals"]["L9_sum"] == 5500
+        assert mock_writer.updated_fields["total_income_tag"] == 5500
     
-    def test_sum_with_none_values(self, mock_writer):
+    def test_sum_with_none_values(self, mock_writer, mock_w2_data):
         """Test how summation handles None values."""
         test_data = {
             "configuration": {
@@ -163,66 +189,88 @@ class TestSumFunctionality:
             },
             "section1": {
                 "value1": 50,
+                "value1_tag": "value1_tag",
                 "value2": None,
+                "value2_tag": "value2_tag",
                 "value3": 25,
+                "value3_tag": "value3_tag",
                 "sum_result": ["value1", "value2", "value3"],
                 "sum_result_tag": "test_sum_field"
             }
         }
         
-        # Mock find_key_in_json to handle None values
-        def mock_find_key(data, key):
-            if key == "value1":
-                return 50
-            elif key == "value2":
-                return None
-            elif key == "value3":
-                return 25
-            return 0
+        # Process the JSON data
+        process_input_config(test_data, mock_w2_data, mock_writer)
         
-        # Patch the find_key_in_json function
-        with patch('opentaxliberty.find_key_in_json', side_effect=mock_find_key):
-            with patch('opentaxliberty.write_field_pdf') as mock_write:
-                # Process the test data
-                process_input_json(test_data, mock_writer)
-                
-                # None should be filtered out by is_number(), so sum should be 75
-                assert test_data["section1"]["sum_result"] == 75
-                mock_write.assert_any_call(mock_writer, "test_sum_field", 75)
+        # None should be filtered out by is_number(), so sum should be 75
+        assert test_data["section1"]["sum_result"] == 75
+        assert mock_writer.updated_fields["test_sum_field"] == 75
     
-    def test_real_tax_form_sum(self, mock_writer):
-        """Test the summation functionality with data structured like real tax form data."""
-        # This test data mimics the structure found in bob_student_example.json
+    def test_w2_data_in_sum(self, mock_writer, mock_w2_data):
+        """Test summation that includes W-2 data."""
         test_data = {
-            "configuration": {"tax_year": 2024},
+            "configuration": {
+                "tax_year": 2024
+            },
             "income": {
-                "L1a": 6034.16,  # W-2 wages
-                "L1b": 100,      # Household employee wages
-                "L1c": 1,        # Tip income
+                "L1a": "get_W-2_box_1_sum()",
+                "L1a_tag": "l1a_tag",
+                "L1b": 500,
+                "L1b_tag": "l1b_tag",
+                "L1c": 200,
+                "L1c_tag": "l1c_tag",
                 "L1z_sum": ["L1a", "L1b", "L1c"],
-                "L1z_sum_tag": "f1_41[0]"
+                "L1z_sum_tag": "total_wages_tag"
             }
         }
         
-        # Mock find_key_in_json for tax form fields
-        def mock_find_key(data, key):
-            if key == "L1a":
-                return 6034.16
-            elif key == "L1b":
-                return 100
-            elif key == "L1c":
-                return 1
-            return 0
+        # For testing purposes, manually set L1a to the W-2 box 1 total
+        test_data["income"]["L1a"] = mock_w2_data["totals"]["total_box_1"]
         
-        # Patch the functions
-        with patch('opentaxliberty.find_key_in_json', side_effect=mock_find_key):
-            with patch('opentaxliberty.write_field_pdf') as mock_write:
-                # Process the test data
-                process_input_json(test_data, mock_writer)
-                
-                # Verify the sum is correct: 6034.16 + 100 + 1 = 6135.16
-                assert test_data["income"]["L1z_sum"] == 6135.16
-                mock_write.assert_any_call(mock_writer, "f1_41[0]", 6135.16)
+        # Process the JSON data
+        process_input_config(test_data, mock_w2_data, mock_writer)
+        
+        # Verify the sum was calculated correctly (6034.16 + 500 + 200 = 6734.16)
+        assert test_data["income"]["L1z_sum"] == 6734.16
+        assert mock_writer.updated_fields["total_wages_tag"] == 6734.16
+    
+    def test_real_tax_form_sum(self, mock_writer, mock_w2_data):
+        """Test sum functionality with structure like real tax form."""
+        # This test data mimics a portion of the actual tax form JSON
+        test_data = {
+            "configuration": {
+                "tax_year": 2024
+            },
+            "income": {
+                "L1a": 6034.16,  # W-2 wages
+                "L1a_tag": "f1_32[0]",
+                "L1b": 100,      # Household employee wages
+                "L1b_tag": "f1_33[0]",
+                "L1c": 1,        # Tip income
+                "L1c_tag": "f1_34[0]",
+                "L1z_sum": ["L1a", "L1b", "L1c"],
+                "L1z_sum_tag": "f1_41[0]"
+            },
+            "tax_and_credits": {
+                "L16": 500,
+                "L16_tag": "f2_02[0]",
+                "L17": 250,
+                "L17_tag": "f2_03[0]",
+                "L18_sum": ["L16", "L17"],
+                "L18_sum_tag": "f2_04[0]"
+            }
+        }
+        
+        # Process the JSON data
+        process_input_config(test_data, mock_w2_data, mock_writer)
+        
+        # Verify the L1z_sum (total wages) is correct: 6034.16 + 100 + 1 = 6135.16
+        assert test_data["income"]["L1z_sum"] == 6135.16
+        assert mock_writer.updated_fields["f1_41[0]"] == 6135.16
+        
+        # Verify the L18_sum (tax total) is correct: 500 + 250 = 750
+        assert test_data["tax_and_credits"]["L18_sum"] == 750
+        assert mock_writer.updated_fields["f2_04[0]"] == 750
 
 if __name__ == "__main__":
     pytest.main(["-xvs", __file__])

@@ -292,9 +292,9 @@ def process_input_config(input_json_data: Dict[str, Any], W_2_data: Dict[str, An
                         write_field_pdf(writer, input_json_data[key][tag_key], sub_calculation)
                         sub_calculation = 0
                 elif "get_W-2_box_1_sum()" in sub_value:
-                    write_field_df(writer, input_json_data[key][sub_key], W_2_data["totals"]["total_box_1"])
+                    write_field_pdf(writer, input_json_data[key][sub_key], W_2_data["totals"]["total_box_1"])
                 elif "get_W-2_box_2_sum()" in sub_value:
-                    write_field_df(writer, input_json_data[key][sub_key], W_2_data["totals"]["total_box_2"])
+                    write_field_pdf(writer, input_json_data[key][sub_key], W_2_data["totals"]["total_box_2"])
                 else:
                     # Check if there's a corresponding tag field
                     tag_key = f"{sub_key}_tag"
@@ -369,6 +369,9 @@ def parse_and_validate_input_files(config_file_name: str, W_2_config_file_name: 
         HTTPException(400): If the JSON files have invalid format
         HTTPException(500): For other unexpected errors during processing
     """
+    config_data = None
+    W_2_config_data = None
+    
     try:
         # check template
         template_file_path = Path(pdf_template_file_name)
@@ -378,18 +381,33 @@ def parse_and_validate_input_files(config_file_name: str, W_2_config_file_name: 
             raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, 
                                 detail=error_str)
     
-        with open(config_file_name, 'r') as f:
+        # Parse main config file
+        try:
+            with open(config_file_name, 'r') as f:
                 config_data = json.load(f)  # Load the JSON data from the config file
+        except json.JSONDecodeError as e:
+            error_str = f"Error: Invalid JSON format in main configuration file ({config_file_name}): {str(e)}"
+            logging.error(error_str)
+            raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, 
+                detail=error_str)
         
-        with open(W_2_config_file_name, 'r') as f:
+        # Parse W-2 config file
+        try:
+            with open(W_2_config_file_name, 'r') as f:
                 W_2_config_data = json.load(f)  # Load the JSON data from the W-2 config file
+                
+                # Initialize totals field if it doesn't exist
+                if "totals" not in W_2_config_data:
+                    W_2_config_data["totals"] = {}
+                
+        except json.JSONDecodeError as e:
+            error_str = f"Error: Invalid JSON format in W-2 configuration file ({W_2_config_file_name}): {str(e)}"
+            logging.error(error_str)
+            raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, 
+                detail=error_str)
 
         return config_data, W_2_config_data  # Changed the return order to match parameters
-    except json.JSONDecodeError as e:
-        error_str = f"Error: Invalid JSON format in uploaded configuration file: {str(e)}"
-        logging.error(error_str)
-        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, 
-            detail=error_str)
+        
     except HTTPException:
         # re-raise HTTP exceptions to be handled by FastAPI
         raise
@@ -413,7 +431,7 @@ class processing_response(BaseModel):
 async def process_tax_form(
     background_tasks: BackgroundTasks,
     config_file: UploadFile = File(...),
-    W_2_config_fle: UploadFile = File(...),
+    W_2_config_file: UploadFile = File(...),
     pdf_form: UploadFile = File(...),
 ):
     """
@@ -460,8 +478,8 @@ async def process_tax_form(
 
         # Save the W-2 json configuration file
         W_2_config_path = os.path.join(job_dir, f"W-2_config_{W_2_config_file.filename}")
-        with open(config_path, "wb") as f:
-            f.write(await config_file.read())
+        with open(W_2_config_path, "wb") as f:
+            f.write(await W_2_config_file.read())
 
         config_dict, W_2_dict = parse_and_validate_input_files(config_path, W_2_config_path, pdf_path, job_dir)
         reader = PdfReader(pdf_path)
@@ -491,14 +509,14 @@ async def process_tax_form(
     except HTTPException as http_ex:
         # Cleanup before re-raising the HTTPException
         remove_job_directory(job_dir)
-        save_debug_json(json_dict)
+        save_debug_json(config_dict)
         # Re-raise the original HTTPException with its specific status code
         raise http_ex
     except Exception as e:
         logger.error(f"Error processing form: {str(e)}")
         # cleanup before rasing a generic exception
         remove_job_directory(job_dir)
-        save_debug_json(json_dict)
+        save_debug_json(config_dict)
         raise HTTPException(status_code=500, detail=f"Error processing form: {str(e)}")
 
 @app.get("/")
