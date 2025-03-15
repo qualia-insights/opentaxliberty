@@ -313,6 +313,33 @@ def process_input_json(input_json_data: Dict[str, Any], writer: PdfWriter):
                         write_field_pdf(writer, input_json_data[key][tag_key], sub_value) 
 
 def process_input_W_2(W_2_dict: Dict[str, Any]):
+    """
+    Process W-2 data from input dictionary and calculate totals.
+
+    This function iterates through the W-2 entries in the input dictionary,
+    calculates the sum of box_1 (wages) and box_2 (federal income tax withheld)
+    values across all W-2 forms, and stores these totals in the dictionary.
+
+    Args:
+        W_2_dict (Dict[str, Any]): A dictionary containing W-2 data with the following structure:
+            {
+                "configuration": {...},
+                "W-2": [
+                    {"organization": str, "box_1": float, "box_2": float},
+                    ...
+                ],
+                "totals": {...}  # Will be populated with calculated values
+            }
+
+    Returns:
+        None: The function modifies the input dictionary in place, adding:
+            - W_2_dict["totals"]["total_box_1"]: Total of all box_1 values
+            - W_2_dict["totals"]["total_box_2"]: Total of all box_2 values
+
+    Note:
+        The function skips entries that contain a "_comment" key.
+        The dictionary is expected to have a "totals" section to store the calculated values.
+    """
     for key in W_2_dict:
         if key == "configuration":
             continue
