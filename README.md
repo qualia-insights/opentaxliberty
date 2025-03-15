@@ -30,11 +30,12 @@ convenience to the government sites.
 - Lets bring the heat....we have Friday 3/14, Saturday 3/15, Sunday 3/16, and Monday 3/17 to work on OTL
 - [X] math error on line 34
 - [X] finish 1040 form 
+- [X] complete the json config file for 1040
+- [ ] seperate the w2 in its own json file because it will be used on state forms as well
+- [ ] pytests for the w2 json and use pydantic to validate w2 by itself
 - [ ] pytests for form 1040
     - making alot of progress on pytests but could likely use some more
-- [ ] seperate the w2 in its own json file because it will be used on state forms as well
 - [ ] use pydantic to validate IRS form 1040
-- [ ] complete the json config file for 1040
 - [ ] complete the json config file for schedule A
 - [ ] complete the json config file for schedule B
 - [ ] complete the json config file for schedule C
