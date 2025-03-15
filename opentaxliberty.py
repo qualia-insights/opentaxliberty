@@ -312,8 +312,24 @@ def process_input_json(input_json_data: Dict[str, Any], writer: PdfWriter):
                     if tag_key in input_json_data[key] and input_json_data[key][tag_key]:
                         write_field_pdf(writer, input_json_data[key][tag_key], sub_value) 
 
-def parse_and_validate_input_json(input_json_file_name: str, 
-        pdf_template_file_name: str, job_dir: str) -> Dict[str, Any]:
+def process_input_W_2(W_2_dict: Dict[str, Any]):
+    for key in W_2_dict:
+        if key == "configuration":
+            continue
+        elif key == "W-2":
+            W_2_data = W_2_dict[key] # this is getting the list of W-2 data
+            total_box_1 = 0
+            total_box_2 = 0
+            for index in range(0, len(W_2_data)):
+                if "_comment" in W_2_data[index].keys():
+                    continue
+                total_box_1 += W_2_data[index]['box_1']
+                total_box_2 += W_2_data[index]['box_2']
+            W_2_dict["totals"]["total_box_1"] = total_box_1  
+            W_2_dict["totals"]["total_box_2"] = total_box_2
+
+def parse_and_validate_input_files(config_file_name: str, W_2_config_file_name: str, 
+        pdf_template_file_name: str, job_dir: str) -> tuple[Dict[str, Any], Dict[str, Any]]:
     try:
         # check template
         template_file_path = Path(pdf_template_file_name)
@@ -323,10 +339,13 @@ def parse_and_validate_input_json(input_json_file_name: str,
             raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, 
                                 detail=error_str)
     
-        with open(input_json_file_name, 'r') as f:
-                data = json.load(f)  # Load the JSON data from the file
-                # validation of the file would occur here
-                return data
+        with open(config_file_name, 'r') as f:
+                config_data = json.load(f)  # Load the JSON data from the config file
+        
+        with open(W_2_config_file_name, 'r') as f:
+                W_2_config_data = json.load(f)  # Load the JSON data from the W-2 config file
+
+        return W_2_config_data, config_data
     except json.JSONDecodeError as e:
         error_str = f"Error: Invalid JSON format in uploaded configuration file: {str(e)}"
         logging.error(error_str)
@@ -355,6 +374,7 @@ class processing_response(BaseModel):
 async def process_tax_form(
     background_tasks: BackgroundTasks,
     config_file: UploadFile = File(...),
+    W_2_config_fle: UploadFile = File(...),
     pdf_form: UploadFile = File(...),
 ):
     """
@@ -363,10 +383,20 @@ async def process_tax_form(
     Args:
         background_tasks: Background tasks to run after returning response
         config_file (UploadFile): JSON configuration file that defines how to process the form
-        pdf_form (UploadFile): The PDF tax form to process
+        W-2_config_file: a JSON configuration file that contains one or more W-2 forms
+        pdf_form (UploadFile): The blank PDF tax form to process
     
     Returns:
         ProcessingResult: Results of the form processing
+
+    Note on W-2 and using it as a variable name in Python.  The proper name is W-2.
+    In Python, variable names can't start with a number or contain hyphens. 
+
+    It contains a hyphen (-), which Python interprets as the subtraction operator
+    When Python sees W-2, it tries to interpret it as "W minus 2" (a mathematical expression)
+
+    This makes Python think you're trying to do a calculation with a decimal number, hence the "invalid decimal literal" error message.
+    To fix this, OTL replaces the hypen with an underscore
     """
     # Generate unique ID for this processing request
     form_id = str(uuid.uuid4())
@@ -376,7 +406,8 @@ async def process_tax_form(
     job_dir = os.path.join(UPLOAD_DIR, form_id)
     os.makedirs(job_dir, exist_ok=True)
     
-    json_dict = None
+    W_2_dict = None
+    config_dict = None
     try:
         # Save json configuration file
         config_path = os.path.join(job_dir, f"config_{config_file.filename}")
@@ -388,13 +419,19 @@ async def process_tax_form(
         with open(pdf_path, "wb") as f:
             f.write(await pdf_form.read())
 
-        json_dict = parse_and_validate_input_json(config_path, pdf_path, job_dir)
+        # Save the W-2 json configuration file
+        W_2_config_path = os.path.join(job_dir, f"W-2_config_{W_2_config_file.filename}")
+        with open(config_path, "wb") as f:
+            f.write(await config_file.read())
+
+        W_2_dict, config_dict = parse_and_validate_input_files(config_path, W_2_config_path, pdf_path, job_dir)
         reader = PdfReader(pdf_path)
         writer = PdfWriter()
 
         # page = reader.pages[0]
         # fields = reader.get_fields()
         writer.append(reader)
+        process_input_W_2(W_2_dict)
         process_input_json(json_dict, writer)
 
         output_file = os.path.join(job_dir, json_dict["configuration"]["output_file_name"])
