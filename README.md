@@ -35,7 +35,7 @@ convenience to the government sites.
 - [X] setup multiple git remotes....one remote at home and one remote at GitLab
     - I think this is working now....we have to update the git howto
 - [X] refactor W2_validator.py to work with 0 or more W2(s)
-- [ ] integrate W2_validator.py into opentaxliberty.py
+- [X] integrate W2_validator.py into opentaxliberty.py
 - [ ] why is test_04_sum_function.py failing when adding values that are None?
     - check out the function test_sum_with_none_values I removed the None value2 from sum to make it work
 - [X] pytests for the W2 json and use pydantic to validate W2 by itself
