@@ -21,7 +21,7 @@ def test_bad_json():
         print(f"Error: error creating file: {e}") 
     
     try:
-        command_string = 'curl -v "http://mse-8:8000/api/process-tax-form" -H "accept: application/json" -H "Content-Type: multipart/form-data" -F "config_file=@bad_json.json" -F "W_2_config_file=@../bob_student_W-2.json" -F "pdf_form=@/workspace/code/taxes/2024/f1040_blank.pdf" --output /workspace/temp/processed_form.pdf'
+        command_string = 'curl -v "http://mse-8:8000/api/process-tax-form" -H "accept: application/json" -H "Content-Type: multipart/form-data" -F "config_file=@bad_json.json" -F "W_2_config_file=@../bob_student_W2.json" -F "pdf_form=@/workspace/code/taxes/2024/f1040_blank.pdf" --output /workspace/temp/processed_form.pdf'
         command_list = shlex.split(command_string)                              
         result = subprocess.run(command_list,                                   
                 capture_output=True, text=True, check=True)
@@ -44,12 +44,12 @@ def test_bad_json():
         assert e.returncode == 4
 
 def test_bad_w2_json():
-    # Create a bad W-2 JSON file
+    # Create a bad W2 JSON file
     bad_w2_json_block = """
     {
         "configuration": {
             "tax_year": 2024,
-            "form": "W-2
+            "form": "W2
         }
     }
     """

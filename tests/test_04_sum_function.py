@@ -27,7 +27,7 @@ class TestSumFunctionality:
     
     @pytest.fixture
     def mock_w2_data(self):
-        """Create mock W-2 data for testing."""
+        """Create mock W2 data for testing."""
         return {
             "totals": {
                 "total_box_1": 6034.16,
@@ -207,13 +207,13 @@ class TestSumFunctionality:
         assert mock_writer.updated_fields["test_sum_field"] == 75
     
     def test_w2_data_in_sum(self, mock_writer, mock_w2_data):
-        """Test summation that includes W-2 data."""
+        """Test summation that includes W2 data."""
         test_data = {
             "configuration": {
                 "tax_year": 2024
             },
             "income": {
-                "L1a": "get_W-2_box_1_sum()",
+                "L1a": "get_W2_box_1_sum()",
                 "L1a_tag": "l1a_tag",
                 "L1b": 500,
                 "L1b_tag": "l1b_tag",
@@ -224,7 +224,7 @@ class TestSumFunctionality:
             }
         }
         
-        # For testing purposes, manually set L1a to the W-2 box 1 total
+        # For testing purposes, manually set L1a to the W2 box 1 total
         test_data["income"]["L1a"] = mock_w2_data["totals"]["total_box_1"]
         
         # Process the JSON data
@@ -242,7 +242,7 @@ class TestSumFunctionality:
                 "tax_year": 2024
             },
             "income": {
-                "L1a": 6034.16,  # W-2 wages
+                "L1a": 6034.16,  # W2 wages
                 "L1a_tag": "f1_32[0]",
                 "L1b": 100,      # Household employee wages
                 "L1b_tag": "f1_33[0]",

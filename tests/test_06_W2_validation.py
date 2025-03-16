@@ -1,4 +1,4 @@
-# Test for W-2 Validation
+# Test for W2 Validation
 # Copyright (C) 2025 Todd & Linda Rovito/Qualia Insights LLC
 #
 # This program is free software: you can redistribute it and/or modify
@@ -21,17 +21,17 @@ sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..')
 from W2_validator import validate_W2_file, W2Document, W2Entry, W2Configuration
 
 class TestW2Validation:
-    """Test cases for W-2 configuration validation."""
+    """Test cases for W2 configuration validation."""
     
     @pytest.fixture
     def valid_w2_data(self):
-        """Return a dictionary with valid W-2 data for testing."""
+        """Return a dictionary with valid W2 data for testing."""
         return {
             "configuration": {
                 "tax_year": 2024,
-                "form": "W-2"
+                "form": "W2"
             },
-            "W-2": [
+            "W2": [
                 {
                     "organization": "Data Entry Inc",
                     "box_1": 550,
@@ -47,7 +47,7 @@ class TestW2Validation:
     
     @pytest.fixture
     def temp_w2_file(self, valid_w2_data):
-        """Create a temporary W-2 JSON file with valid data."""
+        """Create a temporary W2 JSON file with valid data."""
         with tempfile.NamedTemporaryFile(suffix='.json', delete=False) as tmp:
             # Debug: Print the JSON being written to the file
             json_str = json.dumps(valid_w2_data)
@@ -70,13 +70,13 @@ class TestW2Validation:
         #os.unlink(tmp_path)
     
     def test_valid_w2_file(self, temp_w2_file):
-        """Test validation of a valid W-2 file."""
+        """Test validation of a valid W2 file."""
         try:
             validated = validate_W2_file(temp_w2_file)
             
             # Check that the document was parsed correctly
             assert validated.configuration.tax_year == 2024
-            assert validated.configuration.form == "W-2"
+            assert validated.configuration.form == "W2"
             assert len(validated.W_2) == 2
             assert validated.W_2[0].organization == "Data Entry Inc"
             assert validated.W_2[0].box_1 == Decimal('550')
@@ -116,11 +116,11 @@ class TestW2Validation:
             validate_W2_file(tmp_path)
         
         os.unlink(tmp_path)
-        assert "Form type must be 'W-2'" in str(excinfo.value)
+        assert "Form type must be 'W2'" in str(excinfo.value)
     
     def test_missing_required_field(self, valid_w2_data):
         """Test validation fails when a required field is missing."""
-        # Remove the box_1 field from the first W-2 entry
+        # Remove the box_1 field from the first W2 entry
         del valid_w2_data["W_2"][0]["box_1"]
         
         with tempfile.NamedTemporaryFile(suffix='.json', delete=False) as tmp:
@@ -149,7 +149,7 @@ class TestW2Validation:
     
     def test_with_optional_fields(self, valid_w2_data):
         """Test validation succeeds with optional fields included."""
-        # Add optional fields to the first W-2 entry
+        # Add optional fields to the first W2 entry
         valid_w2_data["W_2"][0].update({
             "box_3": 550,
             "box_4": 34.10,
@@ -211,11 +211,11 @@ class TestW2Validation:
         os.unlink(tmp_path)
         
     def test_empty_w2_list(self):
-        """Test validation fails when no W-2 entries are provided."""
+        """Test validation fails when no W2 entries are provided."""
         data = {
             "configuration": {
                 "tax_year": 2024,
-                "form": "W-2"
+                "form": "W2"
             },
             "W_2": []  # Empty list - should fail validation
         }

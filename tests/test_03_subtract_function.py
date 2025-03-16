@@ -44,7 +44,7 @@ class TestSubtractFunctionality:
     
     @pytest.fixture
     def mock_w2_data(self):
-        """Create mock W-2 data for testing."""
+        """Create mock W2 data for testing."""
         return {
             "totals": {
                 "total_box_1": 6034.16,
@@ -153,14 +153,14 @@ class TestSubtractFunctionality:
         assert mock_writer.updated_fields["result_tag"] == 2000
     
     def test_using_w2_data(self, mock_writer, mock_w2_data):
-        """Test integration with W-2 data in subtraction calculations."""
-        # Create test data that references W-2 data
+        """Test integration with W2 data in subtraction calculations."""
+        # Create test data that references W2 data
         test_data = {
             "configuration": {
                 "tax_year": 2024
             },
             "income": {
-                "L1a": "get_W-2_box_1_sum()",
+                "L1a": "get_W2_box_1_sum()",
                 "L1a_tag": "l1a_tag",
                 "deduction": 1000,
                 "deduction_tag": "deduction_tag",
@@ -169,11 +169,11 @@ class TestSubtractFunctionality:
             }
         }
         
-        # This test will require special handling since W-2 data is processed differently
+        # This test will require special handling since W2 data is processed differently
         # And the function call would be "mocked" or handled differently in actual execution
-        # For now, we're testing the subtraction logic, not the W-2 data retrieval
+        # For now, we're testing the subtraction logic, not the W2 data retrieval
         
-        # Manually set the L1a value to match what would be pulled from W-2
+        # Manually set the L1a value to match what would be pulled from W2
         test_data["income"]["L1a"] = mock_w2_data["totals"]["total_box_1"]
         
         # Process the JSON
