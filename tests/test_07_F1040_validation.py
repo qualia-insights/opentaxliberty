@@ -188,7 +188,7 @@ class TestF1040Validation:
             "third_party_designee": {
                 "do_you_want_to_designate_yes": "/1",
                 "do_you_want_to_designate_yes_tag": "c2_6[0]",
-                "do_you_want_to_designate_no": "/2",
+                "do_you_want_to_designate_no": "/Off",
                 "do_you_want_to_designate_no_tag": "c2_6[1]",
                 "desginee_name": "Tax Preparer",
                 "desginee_name_tag": "f2_30[0]",

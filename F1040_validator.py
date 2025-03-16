@@ -501,8 +501,8 @@ class ThirdPartyDesignee(BaseModel):
     @field_validator('do_you_want_to_designate_yes', 'do_you_want_to_designate_no')
     @classmethod
     def validate_checkbox(cls, v):
-        if v is not None and v not in ["/1", "/2"]:
-            raise ValueError(f"Designee checkbox value must be '/1' or '/2', got '{v}'")
+        if v is not None and v not in ["/1", "/2", "/Off"]:
+            raise ValueError(f"Designee checkbox value must be '/1' or '/2' or '/Off', got '{v}'")
         return v
 
     @model_validator(mode='after')
