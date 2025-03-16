@@ -77,7 +77,7 @@ class W2Entry(BaseModel):
 class W2Document(BaseModel):
     """Complete W2 document structure."""
     configuration: W2Configuration
-    W2: List[W2Entry] = Field(..., min_items=1, description="List of W2 entries (at least one required)")
+    W2: List[W2Entry] = Field(default_factory=list, description="List of W2 entries (can be empty)")
     totals: Optional[Dict[str, Any]] = Field(None, description="Calculated totals")
 
     @model_validator(mode='before')
@@ -92,8 +92,14 @@ class W2Document(BaseModel):
         """Calculate and populate the totals field."""
         w2_entries = self.W2
         
-        total_box_1 = sum(entry.box_1 for entry in w2_entries)
-        total_box_2 = sum(entry.box_2 for entry in w2_entries)
+        # Initialize totals with zero values in case there are no entries
+        total_box_1 = Decimal('0')
+        total_box_2 = Decimal('0')
+        
+        # Only calculate totals if there are entries
+        if w2_entries:
+            total_box_1 = sum(entry.box_1 for entry in w2_entries)
+            total_box_2 = sum(entry.box_2 for entry in w2_entries)
         
         if not self.totals:
             self.totals = {}
@@ -108,6 +114,9 @@ class W2Document(BaseModel):
             box_values = [getattr(entry, box_key) for entry in w2_entries if getattr(entry, box_key) is not None]
             if box_values:
                 self.totals[f"total_{box_key}"] = sum(box_values)
+            else:
+                # Initialize with zero for consistent structure even if no values are present
+                self.totals[f"total_{box_key}"] = Decimal('0')
         
         return self
 

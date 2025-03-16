@@ -46,6 +46,17 @@ class TestW2Validation:
         }
     
     @pytest.fixture
+    def valid_empty_w2_data(self):
+        """Return a dictionary with valid W2 data but no entries."""
+        return {
+            "configuration": {
+                "tax_year": 2024,
+                "form": "W2"
+            },
+            "W2": []
+        }
+    
+    @pytest.fixture
     def temp_w2_file(self, valid_w2_data):
         """Create a temporary W2 JSON file with valid data."""
         with tempfile.NamedTemporaryFile(suffix='.json', delete=False) as tmp:
@@ -67,7 +78,23 @@ class TestW2Validation:
         yield tmp_path
         
         # Clean up the file after the test
-        #os.unlink(tmp_path)
+        os.unlink(tmp_path)
+    
+    @pytest.fixture
+    def temp_empty_w2_file(self, valid_empty_w2_data):
+        """Create a temporary W2 JSON file with no entries."""
+        with tempfile.NamedTemporaryFile(suffix='.json', delete=False) as tmp:
+            # Write the JSON with empty W2 array
+            json_str = json.dumps(valid_empty_w2_data)
+            print(f"Debug - Empty W2 JSON being written to temp file: {json_str}")
+            
+            tmp.write(json_str.encode())
+            tmp_path = tmp.name
+        
+        yield tmp_path
+        
+        # Clean up the file after the test
+        os.unlink(tmp_path)
     
     def test_valid_w2_file(self, temp_w2_file):
         """Test validation of a valid W2 file."""
@@ -89,6 +116,61 @@ class TestW2Validation:
         except Exception as e:
             print(f"Full validation error: {str(e)}")
             raise
+    
+    def test_empty_w2_list(self, temp_empty_w2_file):
+        """Test validation succeeds with an empty W2 list."""
+        try:
+            validated = validate_W2_file(temp_empty_w2_file)
+            
+            # Check that the document was parsed correctly
+            assert validated.configuration.tax_year == 2024
+            assert validated.configuration.form == "W2"
+            assert len(validated.W2) == 0
+            
+            # Check that totals were calculated as zeros
+            assert validated.totals["total_box_1"] == Decimal('0')
+            assert validated.totals["total_box_2"] == Decimal('0')
+            
+            # Check that optional totals are also zero
+            assert validated.totals["total_box_3"] == Decimal('0')
+            assert validated.totals["total_box_4"] == Decimal('0')
+            
+            print("✅ Empty W2 list validation passed successfully")
+        except Exception as e:
+            print(f"Empty W2 list validation error: {str(e)}")
+            raise
+    
+    def test_w2_data_without_w2_key(self):
+        """Test validation handles missing W2 key by creating an empty list."""
+        # Create data without the W2 key
+        data = {
+            "configuration": {
+                "tax_year": 2024,
+                "form": "W2"
+            }
+            # No W2 key
+        }
+        
+        with tempfile.NamedTemporaryFile(suffix='.json', delete=False) as tmp:
+            tmp.write(json.dumps(data).encode())
+            tmp_path = tmp.name
+        
+        try:
+            validated = validate_W2_file(tmp_path)
+            
+            # Check that an empty W2 list was created
+            assert len(validated.W2) == 0
+            
+            # Check that totals were calculated as zeros
+            assert validated.totals["total_box_1"] == Decimal('0')
+            assert validated.totals["total_box_2"] == Decimal('0')
+            
+            print("✅ Missing W2 key validation passed successfully")
+        except Exception as e:
+            print(f"Missing W2 key validation error: {str(e)}")
+            raise
+        finally:
+            os.unlink(tmp_path)
     
     def test_invalid_tax_year(self, valid_w2_data):
         """Test validation fails with an invalid tax year."""
@@ -209,26 +291,6 @@ class TestW2Validation:
             validate_W2_file(tmp_path)
         
         os.unlink(tmp_path)
-        
-    def test_empty_w2_list(self):
-        """Test validation fails when no W2 entries are provided."""
-        data = {
-            "configuration": {
-                "tax_year": 2024,
-                "form": "W2"
-            },
-            "W2": []  # Empty list - should fail validation
-        }
-        
-        with tempfile.NamedTemporaryFile(suffix='.json', delete=False) as tmp:
-            tmp.write(json.dumps(data).encode())
-            tmp_path = tmp.name
-        
-        with pytest.raises(Exception) as excinfo:
-            validate_W2_file(tmp_path)
-        
-        os.unlink(tmp_path)
-        assert "List should have at least 1 item after validation, not 0" in str(excinfo.value) 
 
 if __name__ == "__main__":
     pytest.main(["-xvs", __file__])
