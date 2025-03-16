@@ -138,7 +138,7 @@ def remove_job_directory(directory_path_str: str):
         # Recursively Delete the directory
         directory_path = Path(directory_path_str)
         if directory_path.exists():
-            #shutil.rmtree(directory_path)
+            shutil.rmtree(directory_path)
             logger.info(f"Deleted directory: {directory_path}")
     except Exception as e:
         logger.error(f"Error deleting file or directory: {str(e)}")

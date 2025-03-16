@@ -26,7 +26,7 @@ def test_bad_json():
         result = subprocess.run(command_list,                                   
                 capture_output=True, text=True, check=True)
         os.remove("bad_json.json")
-        assert "HTTP/1.1 400 Bad Request" in result.stderr, "result code of 400 was not found in curl output"
+        assert "HTTP/1.1 422 Unprocessable Entity" in result.stderr, "result code of 422 was not found in curl output"
                                                                     
         # check to make sure the background tasks removed the job_dir           
         time.sleep(2)                                                           
@@ -66,7 +66,7 @@ def test_bad_w2_json():
         result = subprocess.run(command_list,
                 capture_output=True, text=True, check=True)
         os.remove("bad_w2_json.json")
-        assert "HTTP/1.1 400 Bad Request" in result.stderr, "result code of 400 was not found in curl output"
+        assert "HTTP/1.1 422 Unprocessable Entity" in result.stderr, "result code of 422 was not found in curl output"
         
         # check to make sure the background tasks removed the job_dir
         time.sleep(2)

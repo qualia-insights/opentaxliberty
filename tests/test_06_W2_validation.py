@@ -77,11 +77,11 @@ class TestW2Validation:
             # Check that the document was parsed correctly
             assert validated.configuration.tax_year == 2024
             assert validated.configuration.form == "W2"
-            assert len(validated.W_2) == 2
-            assert validated.W_2[0].organization == "Data Entry Inc"
-            assert validated.W_2[0].box_1 == Decimal('550')
-            assert validated.W_2[1].organization == "Fast Food"
-            assert validated.W_2[1].box_2 == Decimal('54.31')
+            assert len(validated.W2) == 2
+            assert validated.W2[0].organization == "Data Entry Inc"
+            assert validated.W2[0].box_1 == Decimal('550')
+            assert validated.W2[1].organization == "Fast Food"
+            assert validated.W2[1].box_2 == Decimal('54.31')
             
             # Check that totals were calculated correctly
             assert validated.totals["total_box_1"] == Decimal('4457.57')
@@ -106,7 +106,7 @@ class TestW2Validation:
     
     def test_invalid_form_type(self, valid_w2_data):
         """Test validation fails with an incorrect form type."""
-        valid_w2_data["configuration"]["form"] = "W2"  # Missing hyphen
+        valid_w2_data["configuration"]["form"] = "W-2"  # Added hyphen
         
         with tempfile.NamedTemporaryFile(suffix='.json', delete=False) as tmp:
             tmp.write(json.dumps(valid_w2_data).encode())
@@ -121,7 +121,7 @@ class TestW2Validation:
     def test_missing_required_field(self, valid_w2_data):
         """Test validation fails when a required field is missing."""
         # Remove the box_1 field from the first W2 entry
-        del valid_w2_data["W_2"][0]["box_1"]
+        del valid_w2_data["W2"][0]["box_1"]
         
         with tempfile.NamedTemporaryFile(suffix='.json', delete=False) as tmp:
             tmp.write(json.dumps(valid_w2_data).encode())
@@ -135,7 +135,7 @@ class TestW2Validation:
     
     def test_negative_values(self, valid_w2_data):
         """Test validation fails when box values are negative."""
-        valid_w2_data["W_2"][0]["box_2"] = -10  # Negative value not allowed
+        valid_w2_data["W2"][0]["box_2"] = -10  # Negative value not allowed
         
         with tempfile.NamedTemporaryFile(suffix='.json', delete=False) as tmp:
             tmp.write(json.dumps(valid_w2_data).encode())
@@ -150,7 +150,7 @@ class TestW2Validation:
     def test_with_optional_fields(self, valid_w2_data):
         """Test validation succeeds with optional fields included."""
         # Add optional fields to the first W2 entry
-        valid_w2_data["W_2"][0].update({
+        valid_w2_data["W2"][0].update({
             "box_3": 550,
             "box_4": 34.10,
             "box_12a_code": "D",
@@ -167,11 +167,11 @@ class TestW2Validation:
         os.unlink(tmp_path)
         
         # Check that optional fields were parsed correctly
-        assert validated.W_2[0].box_3 == Decimal('550')
-        assert validated.W_2[0].box_4 == Decimal('34.10')
-        assert validated.W_2[0].box_12a_code == "D"
-        assert validated.W_2[0].box_12a_amount == Decimal('100')
-        assert validated.W_2[0].box_13_retirement_plan is True
+        assert validated.W2[0].box_3 == Decimal('550')
+        assert validated.W2[0].box_4 == Decimal('34.10')
+        assert validated.W2[0].box_12a_code == "D"
+        assert validated.W2[0].box_12a_amount == Decimal('100')
+        assert validated.W2[0].box_13_retirement_plan is True
         
         # Check that optional field totals were calculated
         assert validated.totals["total_box_3"] == Decimal('550')
@@ -179,8 +179,8 @@ class TestW2Validation:
     
     def test_invalid_box_12_code(self, valid_w2_data):
         """Test validation fails with an invalid box 12 code."""
-        valid_w2_data["W_2"][0]["box_12a_code"] = "X"  # Invalid code
-        valid_w2_data["W_2"][0]["box_12a_amount"] = 100
+        valid_w2_data["W2"][0]["box_12a_code"] = "X"  # Invalid code
+        valid_w2_data["W2"][0]["box_12a_amount"] = 100
         
         with tempfile.NamedTemporaryFile(suffix='.json', delete=False) as tmp:
             tmp.write(json.dumps(valid_w2_data).encode())
@@ -217,7 +217,7 @@ class TestW2Validation:
                 "tax_year": 2024,
                 "form": "W2"
             },
-            "W_2": []  # Empty list - should fail validation
+            "W2": []  # Empty list - should fail validation
         }
         
         with tempfile.NamedTemporaryFile(suffix='.json', delete=False) as tmp:
@@ -228,7 +228,7 @@ class TestW2Validation:
             validate_W2_file(tmp_path)
         
         os.unlink(tmp_path)
-        assert "min_items" in str(excinfo.value) or "at least one" in str(excinfo.value)
+        assert "List should have at least 1 item after validation, not 0" in str(excinfo.value) 
 
 if __name__ == "__main__":
     pytest.main(["-xvs", __file__])

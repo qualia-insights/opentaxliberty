@@ -1,4 +1,4 @@
-# W-2 Validation module for Open Tax Liberty
+# W2 Validation module for Open Tax Liberty
 # Copyright (C) 2025 Todd & Linda Rovito/Qualia Insights LLC
 #
 # This program is free software: you can redistribute it and/or modify
@@ -15,14 +15,14 @@ from pydantic import BaseModel, Field, validator, model_validator
 
 
 class W2Configuration(BaseModel):
-    """Configuration section for the W-2 form."""
-    tax_year: int = Field(..., description="Tax year for the W-2 form")
-    form: str = Field(..., description="Form type, must be 'W-2'")
+    """Configuration section for the W2 form."""
+    tax_year: int = Field(..., description="Tax year for the W2 form")
+    form: str = Field(..., description="Form type, must be 'W2'")
 
     @validator('form')
     def validate_form_type(cls, v):
-        if v != "W-2":
-            raise ValueError(f"Form type must be 'W-2', got '{v}'")
+        if v != "W2":
+            raise ValueError(f"Form type must be 'W2', got '{v}'")
         return v
 
     @validator('tax_year')
@@ -34,7 +34,7 @@ class W2Configuration(BaseModel):
 
 
 class W2Entry(BaseModel):
-    """A single W-2 form entry."""
+    """A single W2 form entry."""
     organization: str = Field(..., description="Employer organization name")
     box_1: Decimal = Field(..., description="Wages, tips, other compensation", ge=0)
     box_2: Decimal = Field(..., description="Federal income tax withheld", ge=0)
@@ -75,9 +75,9 @@ class W2Entry(BaseModel):
 
 
 class W2Document(BaseModel):
-    """Complete W-2 document structure."""
+    """Complete W2 document structure."""
     configuration: W2Configuration
-    W_2: List[W2Entry] = Field(..., min_items=1, description="List of W-2 entries (at least one required)")
+    W2: List[W2Entry] = Field(..., min_items=1, description="List of W2 entries (at least one required)")
     totals: Optional[Dict[str, Any]] = Field(None, description="Calculated totals")
 
     @model_validator(mode='before')
@@ -90,7 +90,7 @@ class W2Document(BaseModel):
     @model_validator(mode='after')
     def calculate_totals(self):
         """Calculate and populate the totals field."""
-        w2_entries = self.W_2
+        w2_entries = self.W2
         
         total_box_1 = sum(entry.box_1 for entry in w2_entries)
         total_box_2 = sum(entry.box_2 for entry in w2_entries)
@@ -114,13 +114,13 @@ class W2Document(BaseModel):
 
 def validate_W2_file(file_path: str) -> W2Document:
     """
-    Validate a W-2 configuration file and return a validated W2Document.
+    Validate a W2 configuration file and return a validated W2Document.
     
     Args:
-        file_path (str): Path to the W-2 JSON configuration file
+        file_path (str): Path to the W2 JSON configuration file
         
     Returns:
-        W2Document: Validated W-2 document
+        W2Document: Validated W2 document
         
     Raises:
         ValueError: If the file doesn't exist
@@ -128,7 +128,7 @@ def validate_W2_file(file_path: str) -> W2Document:
         ValidationError: If the JSON doesn't conform to the W2Document schema
     """
     if not os.path.exists(file_path):
-        raise ValueError(f"W-2 configuration file does not exist: {file_path}")
+        raise ValueError(f"W2 configuration file does not exist: {file_path}")
     
     with open(file_path, 'r') as f:
         data = json.load(f)
@@ -146,8 +146,8 @@ if __name__ == "__main__":
     try:
         file_path = sys.argv[1]
         validated_data = validate_W2_file(file_path)
-        print(f"✅ W-2 file validated successfully: {file_path}")
-        print(f"Found {len(validated_data.W_2)} W-2 entries")
+        print(f"✅ W2 file validated successfully: {file_path}")
+        print(f"Found {len(validated_data.W2)} W2 entries")
         print(f"Total Box 1 (Wages): {validated_data.totals['total_box_1']}")
         print(f"Total Box 2 (Federal Tax Withheld): {validated_data.totals['total_box_2']}")
     except Exception as e:
