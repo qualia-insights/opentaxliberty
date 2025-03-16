@@ -5,6 +5,8 @@ import os
 from pathlib import Path
 import time
 
+'''
+# this test has been removed because it is a repeat of test_06
 def test_perfect_arguments():
     try:
         # Update the command to use the correct JSON file (bob_student_F1040.json instead of bob_student_example.json)
@@ -33,6 +35,7 @@ def test_perfect_arguments():
         print(f"Stdout: {e.stdout}")  # If capture_output was True
         print(f"Stderr: {e.stderr}")  # If capture_output was True
         assert False, "Command execution failed"
+'''
 
 def test_missing_arguments():
     try:
