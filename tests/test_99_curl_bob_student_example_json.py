@@ -216,14 +216,27 @@ def test_process_tax_form_with_curl():
                 log_debug(f"  Field: {field_name}, Value: {field_value}")
             
             # Function to extract field value from the PDF
-            def get_field_value(field_name):
-                if field_name in fields:
-                    field = fields[field_name]
-                    if isinstance(field, dict) and "/V" in field:
-                        return field["/V"]
-                    elif not isinstance(field, dict):
-                        return field
-                return None
+            def get_pdf_field_values(pdf_path):
+                """Extract form field values from a PDF file more thoroughly."""
+                values = {}
+                reader = PdfReader(pdf_path)
+                
+                for page_num, page in enumerate(reader.pages):
+                    try:
+                        annotations = page.get('/Annots')
+                        if annotations:
+                            for annotation in annotations:
+                                if annotation.get('/Subtype') == '/Widget':
+                                    field_name = annotation.get('/T')
+                                    if field_name:
+                                        field_name = field_name.replace('\x00', '')  # Remove null bytes
+                                        field_value = annotation.get('/V')
+                                        if field_value:
+                                            values[field_name] = field_value
+                    except Exception as e:
+                        print(f"Error reading annotations on page {page_num}: {e}")
+                        
+                return values
             
             # Read the config file to determine the actual field names used
             with open(config_file_path, 'r') as f:
@@ -239,9 +252,15 @@ def test_process_tax_form_with_curl():
             log_debug(f"Looking for Line 34 using field name: {L34_field_name}")
             
             # Get the values from the PDF
-            L1a_value = None if not L1a_field_name else get_field_value(L1a_field_name)
-            L25a_value = None if not L25a_field_name else get_field_value(L25a_field_name)
-            L34_value = None if not L34_field_name else get_field_value(L34_field_name)
+            pdf_values = get_pdf_field_values(output_path)
+            log_debug("Fields extracted directly from PDF:")
+            for field_name, value in pdf_values.items():
+                log_debug(f"  {field_name}: {value}")
+
+            # Then try to find your specific fields
+            L1a_value = pdf_values.get(L1a_field_name)
+            L25a_value = pdf_values.get(L25a_field_name)
+            L34_value = pdf_values.get(L34_field_name)
             
             log_debug(f"Found value for Line 1a (field {L1a_field_name}): {L1a_value}")
             log_debug(f"Found value for Line 25a (field {L25a_field_name}): {L25a_value}")
