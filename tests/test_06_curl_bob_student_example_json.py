@@ -33,6 +33,7 @@ def test_process_tax_form_with_curl():
     output_path = f"{output_dir}/{output_filename}"
     pdf_form_path = f"{workspace_dir}/code/taxes/2024/f1040_blank.pdf"
     config_file_path = "../bob_student_F1040.json"
+    w2_config_file_path = "../bob_student_W-2.json"
     
     try:
         # Create output directory if it doesn't exist
@@ -52,6 +53,10 @@ def test_process_tax_form_with_curl():
         config_file = Path(config_file_path)
         log_debug(f"Config file exists: {config_file.exists()} at {config_file_path}")
         assert config_file.exists(), f"Config file does not exist at {config_file_path}"
+        
+        w2_config_file = Path(w2_config_file_path)
+        log_debug(f"W-2 config file exists: {w2_config_file.exists()} at {w2_config_file_path}")
+        assert w2_config_file.exists(), f"W-2 config file does not exist at {w2_config_file_path}"
         
         # Parse the JSON configuration to check for debug_json_output
         with open(config_file_path, 'r') as f:
@@ -78,6 +83,7 @@ def test_process_tax_form_with_curl():
             '-H', 'accept: application/json',
             '-H', 'Content-Type: multipart/form-data',
             '-F', f'config_file=@{config_file_path}',
+            '-F', f'W_2_config_file=@{w2_config_file_path}',
             '-F', f'pdf_form=@{pdf_form_path}',
             '--output', output_path
         ]

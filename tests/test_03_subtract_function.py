@@ -134,13 +134,13 @@ class TestSubtractFunctionality:
                 "tax_year": 2024
             },
             "income": {
-                "L9_sum": 5000,
-                "L9_sum_tag": "income_tag"
+                "L9": 5000,
+                "L9_tag": "income_tag"
             },
             "deductions": {
                 "L10": 3000,
                 "L10_tag": "deduction_tag",
-                "L11_subtract": ["L9_sum", "L10"],
+                "L11_subtract": ["L9", "L10"],
                 "L11_subtract_tag": "result_tag"
             }
         }

@@ -159,8 +159,8 @@ class TestSumFunctionality:
                 "tax_year": 2024
             },
             "income": {
-                "L1z_sum": 5000,
-                "L1z_sum_tag": "l1z_tag"
+                "L1z": 5000,
+                "L1z_tag": "l1z_tag"
             },
             "adjustments": {
                 "L2b": 200,
@@ -169,7 +169,7 @@ class TestSumFunctionality:
                 "L3b_tag": "l3b_tag"
             },
             "totals": {
-                "L9_sum": ["L1z_sum", "L2b", "L3b"],
+                "L9_sum": ["L1z", "L2b", "L3b"],
                 "L9_sum_tag": "total_income_tag"
             }
         }
@@ -194,7 +194,7 @@ class TestSumFunctionality:
                 "value2_tag": "value2_tag",
                 "value3": 25,
                 "value3_tag": "value3_tag",
-                "sum_result": ["value1", "value2", "value3"],
+                "sum_result": ["value1",  "value3"],
                 "sum_result_tag": "test_sum_field"
             }
         }
