@@ -41,7 +41,8 @@ convenience to the government sites.
 - [X] pytests for the W2 json and use pydantic to validate W2 by itself
 - [ ] pytests for form 1040
     - making alot of progress on pytests but could likely use some more
-    - [ ] especially test_99 we should check to make sure we have the right answers on the form
+    - [X] especially test_99 we should check to make sure we have the right answers on the form
+    - [ ] a test to check that Line 34 is equal to 102.31 which I think is the correct answer for Bob Student
 - [ ] use pydantic to validate IRS form 1040
 - [ ] complete the json config file for schedule C
 - [ ] complete the json config file for State of Ohio
@@ -51,8 +52,7 @@ convenience to the government sites.
 - [ ] make a backup cron script that retrieves code from GitLab the pushes to code.rovitotv.org
     - this should work automatically so I don't have to worry about it
 - [ ] Integrate some sort of jsonscheme
-    - [pydantic](https://docs.pydantic.dev/latest/), this is used by FastAPI
-    - [jsonscheme](https://python-jsonschema.readthedocs.io/en/stable/)
+    - [pydantic](https://docs.pydantic.dev/latest/), this is used by FastAPI, we are using pydantic
 
 ## How to use curl to execute Open Tax Liberty
 
@@ -66,7 +66,8 @@ curl -v "http://mse-8:8000/api/process-tax-form"   -H "accept: application/json"
 
 The official IRS form is called W-2 but Python doesn't apperciate the hypen.
 Python considers the hypen a minus sign, To keep things simple we will use W2
-_EVERYWHERE_.
+_EVERYWHERE_. The name of this form has caused alot of pain for this effort
+so we are going to simplify to W2.  
 
 ## License
 

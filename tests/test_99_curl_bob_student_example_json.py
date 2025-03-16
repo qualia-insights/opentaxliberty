@@ -16,8 +16,9 @@ def test_process_tax_form_with_curl():
     1. The API responds with a 200 OK status
     2. The output PDF file is created
     3. The temporary job directory is cleaned up after processing
-    4. If debug_json_output is specified in the config, the debug JSON file exists
-    5. The values in the PDF match the W2 data (Line 1a matches W2 box 1 sum, Line 25a matches W2 box 2 sum)
+    4. Line 34 (1z sum) equals 102.31 for bob_student_F1040.json and bob_student_W2.json
+    5. Line 1a matches W2 box 1 sum
+    6. Line 25a matches W2 box 2 sum
     
     Detailed debug information is only printed if the test fails.
     The output PDF file is kept after the test for inspection.
@@ -169,12 +170,23 @@ def test_process_tax_form_with_curl():
         files_in_directory = list(job_directory.glob("**/*"))
         assert len(files_in_directory) == 0, f"Expected empty uploads directory, found: {files_in_directory}"
         
-        # Verify the values in the PDF match expected values from W2 data
-        # First, read the W2 data to get expected values
+        # Verify the values in the PDF match expected values
+        # Variables to track if verifications were successful and their source
+        L1a_verified = False
+        L25a_verified = False
+        L34_verified = False
+        L1a_source = None
+        L25a_source = None
+        L34_source = None
+        
+        # Explicitly verify that Line 34 equals 102.31 for bob_student_F1040.json
+        expected_L34_value = Decimal('102.31')
+        log_debug(f"Verifying Line 34 equals 102.31 for bob_student_F1040.json and bob_student_W2.json")
+        
+        # Calculate expected W2 box sums from W2 data
         with open(W2_config_file_path, 'r') as f:
             w2_data = json.load(f)
-        
-        # Calculate expected values
+            
         expected_box_1_sum = sum(Decimal(str(entry['box_1'])) for entry in w2_data.get('W2', []))
         expected_box_2_sum = sum(Decimal(str(entry['box_2'])) for entry in w2_data.get('W2', []))
         
@@ -220,16 +232,20 @@ def test_process_tax_form_with_curl():
             # Look up the field names from the configuration
             L1a_field_name = form_config.get("income", {}).get("L1a_tag")
             L25a_field_name = form_config.get("payments", {}).get("L25a_tag")
+            L34_field_name = form_config.get("income", {}).get("L1z_sum_tag")  # Line 34 is the 1z sum field
             
             log_debug(f"Looking for Line 1a using field name: {L1a_field_name}")
             log_debug(f"Looking for Line 25a using field name: {L25a_field_name}")
+            log_debug(f"Looking for Line 34 using field name: {L34_field_name}")
             
             # Get the values from the PDF
             L1a_value = None if not L1a_field_name else get_field_value(L1a_field_name)
             L25a_value = None if not L25a_field_name else get_field_value(L25a_field_name)
+            L34_value = None if not L34_field_name else get_field_value(L34_field_name)
             
             log_debug(f"Found value for Line 1a (field {L1a_field_name}): {L1a_value}")
             log_debug(f"Found value for Line 25a (field {L25a_field_name}): {L25a_value}")
+            log_debug(f"Found value for Line 34 (field {L34_field_name}): {L34_value}")
             
             # If the field names from config didn't work, try the hardcoded ones as fallback
             if L1a_value is None:
@@ -250,8 +266,17 @@ def test_process_tax_form_with_curl():
                         log_debug(f"Found value using fallback field name: {field_name}")
                         break
             
+            if L34_value is None:
+                fallback_L34_field_names = ["f1_41[0]", "f1_41", "Line1z", "L1z", "1z"]
+                log_debug(f"Field {L34_field_name} not found, trying fallback names: {fallback_L34_field_names}")
+                for field_name in fallback_L34_field_names:
+                    L34_value = get_field_value(field_name)
+                    if L34_value is not None:
+                        log_debug(f"Found value using fallback field name: {field_name}")
+                        break
+            
             # If we still couldn't find the fields, look for values in debug JSON instead
-            if (L1a_value is None or L25a_value is None) and debug_json_path and Path(debug_json_path).exists():
+            if (L1a_value is None or L25a_value is None or L34_value is None) and debug_json_path and Path(debug_json_path).exists():
                 log_debug("Attempting to find values in debug JSON file instead")
                 try:
                     with open(debug_json_path, 'r') as f:
@@ -267,16 +292,41 @@ def test_process_tax_form_with_curl():
                         L25a_value = debug_json["payments"]["L25a"]
                         log_debug(f"Found Line 25a value in debug JSON: {L25a_value}")
                         L25a_source = "Debug JSON"
+                        
+                    if L34_value is None and "income" in debug_json and "L1z_sum" in debug_json["income"]:
+                        L34_value = debug_json["income"]["L1z_sum"]
+                        log_debug(f"Found Line 34 value in debug JSON: {L34_value}")
+                        L34_source = "Debug JSON"
                 except Exception as e:
                     log_debug(f"Error reading debug JSON: {str(e)}")
             
-            # Variables to track if verifications were successful and their source
-            L1a_verified = False
-            L25a_verified = False
-            L1a_source = None
-            L25a_source = None
+            # VERIFICATION 1: Line 34 equals 102.31
+            # This is the primary test requirement
+            if L34_value is not None:
+                # Convert string representations to Decimal
+                if isinstance(L34_value, str):
+                    L34_value = L34_value.replace(',', '')
+                try:
+                    pdf_L34_value = Decimal(str(L34_value))
+                    
+                    # Assert that Line 34 equals 102.31
+                    assert abs(pdf_L34_value - Decimal('102.31')) < Decimal('0.01'), \
+                        f"Line 34 value ({pdf_L34_value}) does not equal 102.31 for bob_student_F1040.json"
+                    log_debug(f"✓ Line 34 value equals 102.31 as required")
+                    L34_verified = True
+                    L34_source = L34_source or "PDF"
+                except (ValueError, TypeError) as e:
+                    log_debug(f"Error converting Line 34 value ({L34_value}) to Decimal: {str(e)}")
+                    log_debug("❌ Line 34 value could not be verified")
+                    # This is important to verify, so fail the test
+                    assert False, f"Line 34 value ({L34_value}) could not be verified as 102.31"
+            else:
+                log_debug("❌ Line 34 value not found in PDF or debug JSON")
+                # This is important to verify, so fail the test
+                assert False, "Line 34 value not found in PDF or debug JSON - cannot verify it equals 102.31"
             
-            # Verify Line 1a (W2 box 1 sum)
+            # VERIFICATION 2: Line 1a matches W2 box 1 sum
+            # This is an additional check
             if L1a_value is not None:
                 # Convert string representations to Decimal
                 if isinstance(L1a_value, str):
@@ -289,18 +339,17 @@ def test_process_tax_form_with_curl():
                         f"Line 1a value ({pdf_L1a_value}) does not match expected W2 box 1 sum ({expected_box_1_sum})"
                     log_debug(f"✓ Line 1a value matches expected W2 box 1 sum")
                     L1a_verified = True
-                    L1a_source = "PDF"
+                    L1a_source = L1a_source or "PDF"
                 except (ValueError, TypeError) as e:
                     log_debug(f"Error converting Line 1a value ({L1a_value}) to Decimal: {str(e)}")
                     log_debug("❌ Line 1a value could not be verified")
-                    # Don't fail the test completely, just note the issue
                     print(f"Warning: Line 1a value ({L1a_value}) could not be verified")
             else:
                 log_debug("❌ Line 1a value not found in PDF or debug JSON")
                 print("Warning: Line 1a value not found in PDF or debug JSON. Test will continue.")
-                # Don't fail the test for this issue as we're just adding verification
                 
-            # Verify Line 25a (W2 box 2 sum)
+            # VERIFICATION 3: Line 25a matches W2 box 2 sum
+            # This is an additional check
             if L25a_value is not None:
                 # Convert string representations to Decimal
                 if isinstance(L25a_value, str):
@@ -313,11 +362,10 @@ def test_process_tax_form_with_curl():
                         f"Line 25a value ({pdf_L25a_value}) does not match expected W2 box 2 sum ({expected_box_2_sum})"
                     log_debug(f"✓ Line 25a value matches expected W2 box 2 sum")
                     L25a_verified = True
-                    L25a_source = "PDF"
+                    L25a_source = L25a_source or "PDF"
                 except (ValueError, TypeError) as e:
                     log_debug(f"Error converting Line 25a value ({L25a_value}) to Decimal: {str(e)}")
                     log_debug("❌ Line 25a value could not be verified")
-                    # Don't fail the test completely, just note the issue
                     print(f"Warning: Line 25a value ({L25a_value}) could not be verified")
             else:
                 log_debug("❌ Line 25a value not found in PDF or debug JSON")
@@ -327,9 +375,14 @@ def test_process_tax_form_with_curl():
             log_debug(f"Error validating PDF values: {str(e)}")
             raise
             
-        # Just print a simple success message
+        # Print success messages
         print("OpenTaxLiberty API test successful")
         print(f"Output PDF saved at: {output_path}")
+        
+        # Always print the Line 34 verification result as it's the primary test requirement
+        print(f"✅ Verified Line 34 equals 102.31 for bob_student_F1040.json (Source: {L34_source})")
+        
+        # Print additional verification results
         if L1a_verified:
             print(f"Verified Line 1a matches W2 box 1 sum: {expected_box_1_sum} (Source: {L1a_source})")
         else:
