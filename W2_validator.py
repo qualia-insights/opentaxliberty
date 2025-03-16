@@ -11,7 +11,7 @@ import sys
 import json
 from typing import List, Dict, Any, Optional, Union
 from decimal import Decimal
-from pydantic import BaseModel, Field, validator, model_validator
+from pydantic import BaseModel, Field, field_validator, model_validator
 
 
 class W2Configuration(BaseModel):
@@ -19,13 +19,15 @@ class W2Configuration(BaseModel):
     tax_year: int = Field(..., description="Tax year for the W2 form")
     form: str = Field(..., description="Form type, must be 'W2'")
 
-    @validator('form')
+    @field_validator('form')
+    @classmethod
     def validate_form_type(cls, v):
         if v != "W2":
             raise ValueError(f"Form type must be 'W2', got '{v}'")
         return v
 
-    @validator('tax_year')
+    @field_validator('tax_year')
+    @classmethod
     def validate_tax_year(cls, v):
         current_year = 2025  # You might want to fetch this dynamically
         if v < 2020 or v > current_year:
@@ -61,7 +63,8 @@ class W2Entry(BaseModel):
     box_13_statutory_employee: Optional[bool] = Field(None, description="Box 13 Statutory employee")
     box_14: Optional[Dict[str, Union[str, Decimal]]] = Field(None, description="Box 14 Other")
     
-    @validator('box_12a_code', 'box_12b_code', 'box_12c_code', 'box_12d_code')
+    @field_validator('box_12a_code', 'box_12b_code', 'box_12c_code', 'box_12d_code')
+    @classmethod
     def validate_box_12_codes(cls, v):
         if v is not None:
             valid_codes = [
