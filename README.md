@@ -42,7 +42,7 @@ convenience to the government sites.
 - [ ] pytests for form 1040
     - making alot of progress on pytests but could likely use some more
     - [X] especially test_99 we should check to make sure we have the right answers on the form
-    - [ ] a test to check that Line 34 is equal to 102.31 which I think is the correct answer for Bob Student
+    - [X] a test to check that Line 34 is equal to 102.31 which I think is the correct answer for Bob Student
 - [ ] use pydantic to validate IRS form 1040
 - [ ] complete the json config file for schedule C
 - [ ] complete the json config file for State of Ohio
