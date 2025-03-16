@@ -34,6 +34,8 @@ from datetime import datetime
 from decimal import Decimal
 import shutil
 import traceback
+from W2_validator import validate_W2_file, W2Document, W2Entry, W2Configuration
+import tempfile
 
 # pypdf dependencies
 from pypdf import PdfReader, PdfWriter
@@ -343,7 +345,6 @@ def calculate_subtraction(input_json_data, key, subtract_key, writer=None):
     
     return result_value
 
-
 def get_W2_box_1_sum(input_json_data, key, sub_key, W2_data, writer=None):
     """
     Get the sum of box 1 values from W2 data and update the field.
@@ -352,7 +353,7 @@ def get_W2_box_1_sum(input_json_data, key, sub_key, W2_data, writer=None):
         input_json_data (dict): The input JSON data
         key (str): The section key in the JSON data
         sub_key (str): The key to update with the W2 box 1 sum
-        W2_data (dict): The W2 data containing totals
+        W2_data (W2Document): The validated W2 document containing totals
         writer (PdfWriter, optional): PDF writer to update the field
         
     Returns:
@@ -366,19 +367,22 @@ def get_W2_box_1_sum(input_json_data, key, sub_key, W2_data, writer=None):
     if tag_key not in input_json_data[key]:
         raise KeyError(f"Tag key '{tag_key}' not found in '{key}' section")
     
-    if "totals" not in W2_data or "total_box_1" not in W2_data["totals"]:
+    if "totals" not in W2_data.__dict__ or "total_box_1" not in W2_data.totals:
         raise ValueError("W2 data doesn't contain the required box 1 total")
     
-    total_box_1 = W2_data["totals"]["total_box_1"]
+    total_box_1 = W2_data.totals["total_box_1"]
+    
+    # Convert Decimal to float if needed
+    total_box_1_value = float(total_box_1) if isinstance(total_box_1, Decimal) else total_box_1
     
     # Update the field in the PDF if writer is provided
     if writer:
-        write_field_pdf(writer, input_json_data[key][tag_key], total_box_1)
+        write_field_pdf(writer, input_json_data[key][tag_key], total_box_1_value)
     
     # Update the value in the JSON data
-    input_json_data[key][sub_key] = total_box_1
+    input_json_data[key][sub_key] = total_box_1_value
     
-    return total_box_1
+    return total_box_1_value
 
 
 def get_W2_box_2_sum(input_json_data, key, sub_key, W2_data, writer=None):
@@ -389,7 +393,7 @@ def get_W2_box_2_sum(input_json_data, key, sub_key, W2_data, writer=None):
         input_json_data (dict): The input JSON data
         key (str): The section key in the JSON data
         sub_key (str): The key to update with the W2 box 2 sum
-        W2_data (dict): The W2 data containing totals
+        W2_data (W2Document): The validated W2 document containing totals
         writer (PdfWriter, optional): PDF writer to update the field
         
     Returns:
@@ -403,19 +407,22 @@ def get_W2_box_2_sum(input_json_data, key, sub_key, W2_data, writer=None):
     if tag_key not in input_json_data[key]:
         raise KeyError(f"Tag key '{tag_key}' not found in '{key}' section")
     
-    if "totals" not in W2_data or "total_box_2" not in W2_data["totals"]:
+    if "totals" not in W2_data.__dict__ or "total_box_2" not in W2_data.totals:
         raise ValueError("W2 data doesn't contain the required box 2 total")
     
-    total_box_2 = W2_data["totals"]["total_box_2"]
+    total_box_2 = W2_data.totals["total_box_2"]
+    
+    # Convert Decimal to float if needed
+    total_box_2_value = float(total_box_2) if isinstance(total_box_2, Decimal) else total_box_2
     
     # Update the field in the PDF if writer is provided
     if writer:
-        write_field_pdf(writer, input_json_data[key][tag_key], total_box_2)
+        write_field_pdf(writer, input_json_data[key][tag_key], total_box_2_value)
     
     # Update the value in the JSON data
-    input_json_data[key][sub_key] = total_box_2
+    input_json_data[key][sub_key] = total_box_2_value
     
-    return total_box_2
+    return total_box_2_value
 
 
 def process_input_config(input_json_data: Dict[str, Any], W2_data: Dict[str, Any], writer: PdfWriter):
@@ -484,57 +491,15 @@ def process_input_config(input_json_data: Dict[str, Any], W2_data: Dict[str, Any
                 if tag_key in input_json_data[key]:
                     write_field_pdf(writer, input_json_data[key][tag_key], sub_value)
 
-def process_input_W2(W2_dict: Dict[str, Any]):
-    """
-    Process W2 data from input dictionary and calculate totals.
-
-    This function iterates through the W2 entries in the input dictionary,
-    calculates the sum of box_1 (wages) and box_2 (federal income tax withheld)
-    values across all W2 forms, and stores these totals in the dictionary.
-
-    Args:
-        W2_dict (Dict[str, Any]): A dictionary containing W2 data with the following structure:
-            {
-                "configuration": {...},
-                "W2": [
-                    {"organization": str, "box_1": float, "box_2": float},
-                    ...
-                ],
-                "totals": {...}  # Will be populated with calculated values
-            }
-
-    Returns:
-        None: The function modifies the input dictionary in place, adding:
-            - W2_dict["totals"]["total_box_1"]: Total of all box_1 values
-            - W2_dict["totals"]["total_box_2"]: Total of all box_2 values
-
-    Note:
-        The function skips entries that contain a "_comment" key.
-        The dictionary is expected to have a "totals" section to store the calculated values.
-    """
-    for key in W2_dict:
-        if key == "configuration":
-            continue
-        elif key == "W2":
-            W2_data = W2_dict[key] # this is getting the list of W2 data
-            total_box_1 = 0
-            total_box_2 = 0
-            for index in range(0, len(W2_data)):
-                if "_comment" in W2_data[index].keys():
-                    continue
-                total_box_1 += W2_data[index]['box_1']
-                total_box_2 += W2_data[index]['box_2']
-            W2_dict["totals"]["total_box_1"] = total_box_1  
-            W2_dict["totals"]["total_box_2"] = total_box_2
 
 def parse_and_validate_input_files(config_file_name: str, W2_config_file_name: str, 
-        pdf_template_file_name: str, job_dir: str) -> tuple[Dict[str, Any], Dict[str, Any]]:
+        pdf_template_file_name: str, job_dir: str) -> tuple[Dict[str, Any], W2Document]:
     """
     Parse and validate the input configuration files and PDF template.
     
     This function verifies that the PDF template exists and attempts to parse the JSON
-    configuration files for tax form and W2 data. It performs basic validation and
-    raises appropriate exceptions if any validation fails.
+    configuration files for tax form and W2 data. It performs proper validation using
+    the W2_validator module and raises appropriate exceptions if any validation fails.
     
     Args:
         config_file_name (str): Path to the main tax form configuration JSON file
@@ -543,17 +508,17 @@ def parse_and_validate_input_files(config_file_name: str, W2_config_file_name: s
         job_dir (str): Directory path for the current processing job
         
     Returns:
-        tuple[Dict[str, Any], Dict[str, Any]]: A tuple containing:
+        tuple[Dict[str, Any], W2Document]: A tuple containing:
             - config_data: The parsed main tax form configuration data
-            - W2_config_data: The parsed W2 configuration data
+            - W2_data: The validated W2Document object
             
     Raises:
         HTTPException(404): If the PDF template file does not exist
-        HTTPException(400): If the JSON files have invalid format
+        HTTPException(400): If the JSON files have invalid format or validation fails
         HTTPException(500): For other unexpected errors during processing
     """
     config_data = None
-    W2_config_data = None
+    W2_data = None
     
     try:
         # check template
@@ -574,22 +539,29 @@ def parse_and_validate_input_files(config_file_name: str, W2_config_file_name: s
             raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, 
                 detail=error_str)
         
-        # Parse W2 config file
+        # Validate W2 file using the W2_validator
         try:
-            with open(W2_config_file_name, 'r') as f:
-                W2_config_data = json.load(f)  # Load the JSON data from the W2 config file
-                
-                # Initialize totals field if it doesn't exist
-                if "totals" not in W2_config_data:
-                    W2_config_data["totals"] = {}
-                
+            W2_data = validate_W2_file(W2_config_file_name)
+            logging.info(f"W2 file validated successfully with {len(W2_data.W2)} entries")
+            logging.info(f"Total Box 1 (Wages): {W2_data.totals['total_box_1']}")
+            logging.info(f"Total Box 2 (Federal Tax Withheld): {W2_data.totals['total_box_2']}")
         except json.JSONDecodeError as e:
             error_str = f"Error: Invalid JSON format in W2 configuration file ({W2_config_file_name}): {str(e)}"
             logging.error(error_str)
             raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, 
                 detail=error_str)
+        except ValueError as e:
+            error_str = f"Error: Invalid W2 data: {str(e)}"
+            logging.error(error_str)
+            raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, 
+                detail=error_str)
+        except Exception as e:
+            error_str = f"Error validating W2 file: {str(e)}"
+            logging.error(error_str)
+            raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, 
+                detail=error_str)
 
-        return config_data, W2_config_data  # Changed the return order to match parameters
+        return config_data, W2_data
         
     except HTTPException:
         # re-raise HTTP exceptions to be handled by FastAPI
@@ -623,20 +595,11 @@ async def process_tax_form(
     Args:
         background_tasks: Background tasks to run after returning response
         config_file (UploadFile): JSON configuration file that defines how to process the form
-        W2_config_file: a JSON configuration file that contains one or more W2 forms
+        W2_config_file: a JSON configuration file that contains 0 or more W2 forms
         pdf_form (UploadFile): The blank PDF tax form to process
     
     Returns:
-        ProcessingResult: Results of the form processing
-
-    Note on W2 and using it as a variable name in Python.  The proper name is W-2.
-    In Python, variable names can't start with a number or contain hyphens. 
-
-    It contains a hyphen (-), which Python interprets as the subtraction operator
-    When Python sees W2, it tries to interpret it as "W minus 2" (a mathematical expression)
-
-    This makes Python think you're trying to do a calculation with a decimal number, hence the "invalid decimal literal" error message.
-    To fix this, OTL replaces the hypen with an underscore
+        FileResponse: The processed PDF form
     """
     # Generate unique ID for this processing request
     form_id = str(uuid.uuid4())
@@ -646,7 +609,7 @@ async def process_tax_form(
     job_dir = os.path.join(UPLOAD_DIR, form_id)
     os.makedirs(job_dir, exist_ok=True)
     
-    W2_dict = None
+    W2_data = None
     config_dict = None
     try:
         # Save json configuration file
@@ -664,15 +627,15 @@ async def process_tax_form(
         with open(W2_config_path, "wb") as f:
             f.write(await W2_config_file.read())
 
-        config_dict, W2_dict = parse_and_validate_input_files(config_path, W2_config_path, pdf_path, job_dir)
+        config_dict, W2_data = parse_and_validate_input_files(config_path, W2_config_path, pdf_path, job_dir)
         reader = PdfReader(pdf_path)
         writer = PdfWriter()
 
-        # page = reader.pages[0]
-        # fields = reader.get_fields()
         writer.append(reader)
-        process_input_W2(W2_dict)
-        process_input_config(config_dict, W2_dict, writer)
+        
+        # No need to call process_input_W2 since the W2 validation already calculates totals
+        # Now we can directly use W2_data.totals in process_input_config
+        process_input_config(config_dict, W2_data, writer)
 
         output_file = os.path.join(job_dir, config_dict["configuration"]["output_file_name"])
         with open(output_file, "wb") as output_stream:
