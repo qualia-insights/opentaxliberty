@@ -562,7 +562,7 @@ class F1040Document(BaseModel):
     payments: Payments
     refund: Optional[Refund] = None
     amount_you_owe: Optional[AmountYouOwe] = None
-    3rd_party_designee: Optional[ThirdPartyDesignee] = None
+    third_party_designee: Optional[ThirdPartyDesignee] = None
     sign_here: SignHere
 
     @model_validator(mode='after')

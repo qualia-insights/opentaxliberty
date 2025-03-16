@@ -185,7 +185,7 @@ class TestF1040Validation:
                 "L38": 0,
                 "L38_tag": "f2_29[0]"
             },
-            "3rd_party_designee": {
+            "third_party_designee": {
                 "do_you_want_to_designate_yes": "/1",
                 "do_you_want_to_designate_yes_tag": "c2_6[0]",
                 "do_you_want_to_designate_no": "/2",
@@ -379,9 +379,9 @@ class TestF1040Validation:
     def test_designee_incomplete(self, valid_f1040_data):
         """Test validation fails when third-party designee information is incomplete."""
         # Set Yes for designee but remove required fields
-        valid_f1040_data["3rd_party_designee"]["do_you_want_to_designate_yes"] = "/1"
-        valid_f1040_data["3rd_party_designee"]["do_you_want_to_designate_no"] = "/Off"
-        del valid_f1040_data["3rd_party_designee"]["desginee_name"]
+        valid_f1040_data["third_party_designee"]["do_you_want_to_designate_yes"] = "/1"
+        valid_f1040_data["third_party_designee"]["do_you_want_to_designate_no"] = "/Off"
+        del valid_f1040_data["third_party_designee"]["desginee_name"]
         
         with tempfile.NamedTemporaryFile(suffix='.json', delete=False) as tmp:
             tmp.write(json.dumps(valid_f1040_data).encode())
