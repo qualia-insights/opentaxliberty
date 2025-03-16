@@ -46,6 +46,8 @@ convenience to the government sites.
 - [ ] complete the json config file for schedule A
 - [ ] complete the json config file for schedule B
 - [ ] complete the json config file for schedule D
+- [ ] make a backup cron script that retrieves code from GitLab the pushes to code.rovitotv.org
+    - this should work automatically so I don't have to worry about it
 - [ ] Integrate some sort of jsonscheme
     - [pydantic](https://docs.pydantic.dev/latest/), this is used by FastAPI
     - [jsonscheme](https://python-jsonschema.readthedocs.io/en/stable/)
