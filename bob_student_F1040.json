@@ -148,8 +148,8 @@
   },
   "income": {
 	"_comment": "this is for lines 1 - 15 that make up income",
-	"_comment": "get_W-2_box_1_sum() is a special function that retrieves the sum of box_1 from the W-2 data",
-	"L1a": "get_W-2_box_1_sum()",
+	"_comment": "get_W2_box_1_sum() is a special function that retrieves the sum of box_1 from the W2 data",
+	"L1a": "get_W2_box_1_sum()",
 	"L1a_tag": "f1_32[0]",
 	"L1b": 100,
 	"L1b_tag": "f1_33[0]",
@@ -242,8 +242,8 @@
   },
   "payments": {
 	"_comment": "this is for lines 25 - 33 that make up payments",             
-	"_comment": "get_W-2_box_2_sum() is a special function that retrieves the sum of box_2 from the W-2 data",
-        "L25a": "get_W-2_box_2_sum()",                                                              
+	"_comment": "get_W2_box_2_sum() is a special function that retrieves the sum of box_2 from the W2 data",
+        "L25a": "get_W2_box_2_sum()",                                                              
         "L25a_tag": "f2_11[0]",
 	"L25b": 1,
         "L25b_tag": "f2_12[0]",

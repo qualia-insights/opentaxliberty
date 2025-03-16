@@ -1,7 +1,7 @@
 {
   "configuration": {
-     "_comment": "W-2 is wage and tax statement, you should have one of these for each job that you work",
-     "_comment": "The correct form name is W-2 with a hyphen. This is the",
+     "_comment": "W2 is wage and tax statement, you should have one of these for each job that you work",
+     "_comment": "The correct form name is W2 with a hyphen. This is the",
      "_comment": "official IRS form titled 'Wage and Tax Statementr' that",
      "_comment": "employers provide to their employees and to the IRS.",
      "_comment": "The form shows the employee's total wages earned and taxes",
@@ -10,9 +10,9 @@
      "_comment": "the previous tax year, and you'll need it to file your",
      "_comment": "income tax return.",
      "tax_year": 2024,
-     "form": "W-2"
+     "form": "W2"
   },
-  "W-2": [
+  "W2": [
 	{"organization": "Data Entry Inc", "box_1": 550, "box_2": 0},
 	{"organization": "Fast Food", "box_1": 3907.57, "box_2": 54.31},
 	{"organization": "Mexican Buffet", "box_1": 1576.59, "box_2": 15.00}
