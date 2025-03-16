@@ -245,7 +245,7 @@ def test_process_tax_form_with_curl():
             # Look up the field names from the configuration
             L1a_field_name = form_config.get("income", {}).get("L1a_tag")
             L25a_field_name = form_config.get("payments", {}).get("L25a_tag")
-            L34_field_name = form_config.get("income", {}).get("L1z_sum_tag")  # Line 34 is the 1z sum field
+            L34_field_name = form_config.get("refund", {}).get("L34_subtract_tag")  # Line 34 is the 1z sum field
             
             log_debug(f"Looking for Line 1a using field name: {L1a_field_name}")
             log_debug(f"Looking for Line 25a using field name: {L25a_field_name}")
