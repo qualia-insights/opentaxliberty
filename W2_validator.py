@@ -11,7 +11,7 @@ import sys
 import json
 from typing import List, Dict, Any, Optional, Union
 from decimal import Decimal
-from pydantic import BaseModel, Field, validator, root_validator
+from pydantic import BaseModel, Field, validator, model_validator
 
 
 class W2Configuration(BaseModel):
@@ -77,28 +77,29 @@ class W2Entry(BaseModel):
 class W2Document(BaseModel):
     """Complete W-2 document structure."""
     configuration: W2Configuration
-    W2: List[W2Entry] = Field(..., min_items=1, description="List of W-2 entries (at least one required)")
+    W_2: List[W2Entry] = Field(..., min_items=1, description="List of W-2 entries (at least one required)")
     totals: Optional[Dict[str, Any]] = Field(None, description="Calculated totals")
 
-    @root_validator(pre=True)
+    @model_validator(mode='before')
+    @classmethod
     def initialize_totals(cls, values):
-        if "totals" not in values:
+        if isinstance(values, dict) and "totals" not in values:
             values["totals"] = {}
         return values
     
-    @root_validator
-    def calculate_totals(cls, values):
+    @model_validator(mode='after')
+    def calculate_totals(self):
         """Calculate and populate the totals field."""
-        w2_entries = values.get("W2", [])
+        w2_entries = self.W_2
         
         total_box_1 = sum(entry.box_1 for entry in w2_entries)
         total_box_2 = sum(entry.box_2 for entry in w2_entries)
         
-        if "totals" not in values:
-            values["totals"] = {}
+        if not self.totals:
+            self.totals = {}
             
-        values["totals"]["total_box_1"] = total_box_1
-        values["totals"]["total_box_2"] = total_box_2
+        self.totals["total_box_1"] = total_box_1
+        self.totals["total_box_2"] = total_box_2
         
         # If other box fields are provided, calculate those totals as well
         optional_boxes = [3, 4, 5, 6, 7, 8, 10, 11]
@@ -106,9 +107,9 @@ class W2Document(BaseModel):
             box_key = f"box_{box_num}"
             box_values = [getattr(entry, box_key) for entry in w2_entries if getattr(entry, box_key) is not None]
             if box_values:
-                values["totals"][f"total_{box_key}"] = sum(box_values)
+                self.totals[f"total_{box_key}"] = sum(box_values)
         
-        return values
+        return self
 
 
 def validate_W2_file(file_path: str) -> W2Document:
@@ -133,7 +134,7 @@ def validate_W2_file(file_path: str) -> W2Document:
         data = json.load(f)
     
     # Parse and validate against our schema
-    return W2Document.parse_obj(data)
+    return W2Document.model_validate(data)
 
 
 # If the module is run directly, validate a file
@@ -146,7 +147,7 @@ if __name__ == "__main__":
         file_path = sys.argv[1]
         validated_data = validate_W2_file(file_path)
         print(f"✅ W-2 file validated successfully: {file_path}")
-        print(f"Found {len(validated_data.W2)} W-2 entries")
+        print(f"Found {len(validated_data.W_2)} W-2 entries")
         print(f"Total Box 1 (Wages): {validated_data.totals['total_box_1']}")
         print(f"Total Box 2 (Federal Tax Withheld): {validated_data.totals['total_box_2']}")
     except Exception as e:
