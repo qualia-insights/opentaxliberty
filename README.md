@@ -31,10 +31,10 @@ convenience to the government sites.
 - [X] math error on line 34
 - [X] finish 1040 form 
 - [X] complete the json config file for 1040
-- [ ] seperate the w2 in its own json file because it will be used on state forms as well
+- [X] seperate the W2 in its own json file because it will be used on state forms as well
 - [ ] why is test_04_sum_function.py failing when adding values that are None?
     - check out the function test_sum_with_none_values I removed the None value2 from sum to make it work
-- [ ] pytests for the w2 json and use pydantic to validate w2 by itself
+- [X] pytests for the W2 json and use pydantic to validate W2 by itself
 - [ ] pytests for form 1040
     - making alot of progress on pytests but could likely use some more
 - [ ] use pydantic to validate IRS form 1040
@@ -54,6 +54,12 @@ convenience to the government sites.
 ```bash
 curl -v "http://mse-8:8000/api/process-tax-form"   -H "accept: application/json"   -H "Content-Type: multipart/form-data"   -F "config_file=@../bob_student_example.json"   -F "pdf_form=@/$HOME/code/taxes/2024/f1040_blank.pdf" --output /$HOME/temp/processed_form.pdf
 ```
+
+## Is it W-2 or W2 or w2?
+
+The official IRS form is called W-2 but Python doesn't apperciate the hypen.
+Python considers the hypen a minus sign, To keep things simple we will use W2
+_EVERYWHERE_.
 
 ## License
 
