@@ -249,66 +249,240 @@ def find_key_in_json(input_json_data: Dict[str, Any], target_key: str) -> Any:
     
     return result    
 
+def calculate_sum(input_json_data, key, sum_key, writer=None):
+    """
+    Calculate the sum of values specified in a list within the JSON data.
+    
+    Args:
+        input_json_data (dict): The input JSON data containing the values
+        key (str): The section key in the JSON data
+        sum_key (str): The key containing the list of values to sum
+        writer (PdfWriter, optional): PDF writer to update the field
+        
+    Returns:
+        float or int: The calculated sum
+        
+    Raises:
+        KeyError: If the tag key is not found
+        ValueError: If a value in the sum cannot be converted to a number
+    """
+    tag_key = f"{sum_key}_tag"
+    if tag_key not in input_json_data[key]:
+        raise KeyError(f"Tag key '{tag_key}' not found in '{key}' section")
+    
+    sum_fields_list = input_json_data[key][sum_key]
+    sum_calculation = 0
+    
+    for field in sum_fields_list:
+        is_numeric, numeric_value = is_number(find_key_in_json(input_json_data, field))
+        if is_numeric:
+            sum_calculation += numeric_value
+    
+    # Update the field in the PDF if writer is provided
+    if writer:
+        write_field_pdf(writer, input_json_data[key][tag_key], sum_calculation)
+    
+    # Update the value in the JSON data
+    input_json_data[key][sum_key] = sum_calculation
+    
+    return sum_calculation
+
+
+def calculate_subtraction(input_json_data, key, subtract_key, writer=None):
+    """
+    Calculate the result of subtraction between values specified in a list.
+    
+    Args:
+        input_json_data (dict): The input JSON data containing the values
+        key (str): The section key in the JSON data
+        subtract_key (str): The key containing the list of values for subtraction
+        writer (PdfWriter, optional): PDF writer to update the field
+        
+    Returns:
+        float, int, or str: The calculated subtraction result or "-0-" if negative
+        
+    Raises:
+        KeyError: If the tag key is not found
+        ValueError: If a value in the subtraction cannot be converted to a number
+    """
+    tag_key = f"{subtract_key}_tag"
+    if tag_key not in input_json_data[key]:
+        raise KeyError(f"Tag key '{tag_key}' not found in '{key}' section")
+    
+    sub_fields_list = input_json_data[key][subtract_key]
+    
+    # Get the first value
+    field_value = find_key_in_json(input_json_data, sub_fields_list[0])
+    is_numeric, numeric_value = is_number(field_value)
+    if not is_numeric:
+        raise ValueError(f"Value '{field_value}' cannot be converted to a number for subtraction")
+    
+    sub_calculation = numeric_value
+    
+    # Subtract subsequent values
+    for index in range(1, len(sub_fields_list)):
+        field_value = find_key_in_json(input_json_data, sub_fields_list[index])
+        is_numeric, numeric_value = is_number(field_value)
+        if is_numeric:
+            sub_calculation = sub_calculation - numeric_value
+    
+    # Handle negative result
+    result_value = sub_calculation
+    display_value = sub_calculation
+    
+    if sub_calculation < 0:
+        display_value = "-0-"
+        result_value = 0
+    
+    # Update the field in the PDF if writer is provided
+    if writer:
+        write_field_pdf(writer, input_json_data[key][tag_key], display_value)
+    
+    # Update the value in the JSON data
+    input_json_data[key][subtract_key] = result_value
+    
+    return result_value
+
+
+def get_W2_box_1_sum(input_json_data, key, sub_key, W_2_data, writer=None):
+    """
+    Get the sum of box 1 values from W-2 data and update the field.
+    
+    Args:
+        input_json_data (dict): The input JSON data
+        key (str): The section key in the JSON data
+        sub_key (str): The key to update with the W-2 box 1 sum
+        W_2_data (dict): The W-2 data containing totals
+        writer (PdfWriter, optional): PDF writer to update the field
+        
+    Returns:
+        float: The total box 1 value
+        
+    Raises:
+        KeyError: If the tag key is not found
+        ValueError: If W-2 data doesn't contain the required total
+    """
+    tag_key = f"{sub_key}_tag"
+    if tag_key not in input_json_data[key]:
+        raise KeyError(f"Tag key '{tag_key}' not found in '{key}' section")
+    
+    if "totals" not in W_2_data or "total_box_1" not in W_2_data["totals"]:
+        raise ValueError("W-2 data doesn't contain the required box 1 total")
+    
+    total_box_1 = W_2_data["totals"]["total_box_1"]
+    
+    # Update the field in the PDF if writer is provided
+    if writer:
+        write_field_pdf(writer, input_json_data[key][tag_key], total_box_1)
+    
+    # Update the value in the JSON data
+    input_json_data[key][sub_key] = total_box_1
+    
+    return total_box_1
+
+
+def get_W2_box_2_sum(input_json_data, key, sub_key, W_2_data, writer=None):
+    """
+    Get the sum of box 2 values from W-2 data and update the field.
+    
+    Args:
+        input_json_data (dict): The input JSON data
+        key (str): The section key in the JSON data
+        sub_key (str): The key to update with the W-2 box 2 sum
+        W_2_data (dict): The W-2 data containing totals
+        writer (PdfWriter, optional): PDF writer to update the field
+        
+    Returns:
+        float: The total box 2 value
+        
+    Raises:
+        KeyError: If the tag key is not found
+        ValueError: If W-2 data doesn't contain the required total
+    """
+    tag_key = f"{sub_key}_tag"
+    if tag_key not in input_json_data[key]:
+        raise KeyError(f"Tag key '{tag_key}' not found in '{key}' section")
+    
+    if "totals" not in W_2_data or "total_box_2" not in W_2_data["totals"]:
+        raise ValueError("W-2 data doesn't contain the required box 2 total")
+    
+    total_box_2 = W_2_data["totals"]["total_box_2"]
+    
+    # Update the field in the PDF if writer is provided
+    if writer:
+        write_field_pdf(writer, input_json_data[key][tag_key], total_box_2)
+    
+    # Update the value in the JSON data
+    input_json_data[key][sub_key] = total_box_2
+    
+    return total_box_2
+
+
 def process_input_config(input_json_data: Dict[str, Any], W_2_data: Dict[str, Any], writer: PdfWriter):
+    """
+    Process the input configuration data and update the PDF form fields.
+    
+    Args:
+        input_json_data (Dict[str, Any]): The input JSON configuration data
+        W_2_data (Dict[str, Any]): The W-2 data containing totals
+        writer (PdfWriter): The PDF writer to update form fields
+        
+    Raises:
+        KeyError: If a required key is not found
+        ValueError: If a value cannot be processed correctly
+    """
     for key in input_json_data:
         if key == "configuration":
             continue
-        else:
-            if 'tag' in input_json_data[key].keys() and 'value' in input_json_data[key].keys():
-                write_field_pdf(writer, input_json_data[key]['tag'], input_json_data[key]['value'])
-            # Process any additional sub-keys that have corresponding tag fields
-            for sub_key, sub_value in input_json_data[key].items():
-                # Skip the 'value' key as it's already processed
-                if sub_key == 'value':
-                    continue
-                elif sub_key == '_comment':
-                    continue
-                elif "sum" in sub_key:
-                    tag_key = f"{sub_key}_tag"
-                    if tag_key in input_json_data[key] and input_json_data[key][tag_key]:
-                        sum_fields_list = input_json_data[key][sub_key]
-                        sum_calculation = 0
-                        for index in range(0, len(sum_fields_list)):
-                            is_numeric, numeric_value = is_number(find_key_in_json(input_json_data, sum_fields_list[index]))
-                            if is_numeric:
-                                sum_calculation += numeric_value
-                        write_field_pdf(writer, input_json_data[key][tag_key], sum_calculation)
-                        input_json_data[key][sub_key] = sum_calculation
-                elif "subtract" in sub_key:
-                    tag_key = f"{sub_key}_tag"
-                    if tag_key in input_json_data[key] and input_json_data[key][tag_key]:
-                        sub_fields_list = input_json_data[key][sub_key]
-                        sub_calculation = find_key_in_json(input_json_data, sub_fields_list[0])
-                        for index in range(1, len(sub_fields_list)):
-                            value = find_key_in_json(input_json_data, sub_fields_list[index])
-                            is_numeric, numeric_value = is_number(find_key_in_json(input_json_data, sub_fields_list[index]))
-                            if is_numeric:
-                                sub_calculation = sub_calculation - numeric_value
-                        if sub_calculation < 0:
-                            sub_calculation = "-0-"
-                            input_json_data[key][sub_key] = 0
-                        else:
-                            input_json_data[key][sub_key] = sub_calculation
-                            
-                        write_field_pdf(writer, input_json_data[key][tag_key], sub_calculation)
-                        sub_calculation = 0
-                elif isinstance(sub_value, str) and "get_W-2_box_1_sum()" in sub_value:
-                    tag_key = f"{sub_key}_tag"
-                    if tag_key in input_json_data[key] and input_json_data[key][tag_key]:
-                        logger.debug(f"get_w-2_box_1_sum() found! key: {key} sub_key: {sub_key} box_1_sum: {W_2_data["totals"]["total_box_1"]}")
-                        input_json_data[key][sub_key] = W_2_data["totals"]["total_box_1"]
-                        write_field_pdf(writer, input_json_data[key][tag_key], W_2_data["totals"]["total_box_1"])
-                elif isinstance(sub_value, str) and "get_W-2_box_2_sum()" in sub_value:
-                    tag_key = f"{sub_key}_tag"
-                    if tag_key in input_json_data[key] and input_json_data[key][tag_key]:
-                        logger.debug(f"get_w-2_box_2_sum() found! key: {key} sub_key: {sub_key} box_2_sum: {W_2_data["totals"]["total_box_2"]}")
-                        input_json_data[key][sub_key] = W_2_data["totals"]["total_box_2"]
-                        write_field_pdf(writer, input_json_data[key][tag_key], W_2_data["totals"]["total_box_2"])
-                else:
-                    # Check if there's a corresponding tag field
-                    tag_key = f"{sub_key}_tag"
-                    if tag_key in input_json_data[key] and input_json_data[key][tag_key]:
-                        write_field_pdf(writer, input_json_data[key][tag_key], sub_value) 
+            
+        # Check for simple value/tag pairs
+        if 'tag' in input_json_data[key] and 'value' in input_json_data[key]:
+            write_field_pdf(writer, input_json_data[key]['tag'], input_json_data[key]['value'])
+            
+        # Process any additional sub-keys that have corresponding tag fields
+        for sub_key, sub_value in input_json_data[key].items():
+            # Skip special keys
+            # we skip the _tag because we use that information within the operations below
+            if sub_key == 'value' or sub_key == '_comment' or "_tag" in sub_key:
+                continue
+                
+            # Process sum operations
+            elif "sum" in sub_key:
+                try:
+                    calculate_sum(input_json_data, key, sub_key, writer)
+                except (KeyError, ValueError) as e:
+                    logger.error(f"Error calculating sum for {key}.{sub_key}: {str(e)}")
+                    raise
+                    
+            # Process subtraction operations
+            elif "subtract" in sub_key:
+                try:
+                    calculate_subtraction(input_json_data, key, sub_key, writer)
+                except (KeyError, ValueError) as e:
+                    logger.error(f"Error calculating subtraction for {key}.{sub_key}: {str(e)}")
+                    raise
+                    
+            # Process W-2 box 1 sum
+            elif isinstance(sub_value, str) and "get_W-2_box_1_sum()" in sub_value:
+                try:
+                    get_W2_box_1_sum(input_json_data, key, sub_key, W_2_data, writer)
+                except (KeyError, ValueError) as e:
+                    logger.error(f"Error getting W-2 box 1 sum for {key}.{sub_key}: {str(e)}")
+                    raise
+                    
+            # Process W-2 box 2 sum
+            elif isinstance(sub_value, str) and "get_W-2_box_2_sum()" in sub_value:
+                try:
+                    get_W2_box_2_sum(input_json_data, key, sub_key, W_2_data, writer)
+                except (KeyError, ValueError) as e:
+                    logger.error(f"Error getting W-2 box 2 sum for {key}.{sub_key}: {str(e)}")
+                    raise
+                    
+            # Process simple tag fields
+            else:
+                tag_key = f"{sub_key}_tag"
+                if tag_key in input_json_data[key]:
+                    write_field_pdf(writer, input_json_data[key][tag_key], sub_value)
 
 def process_input_W_2(W_2_dict: Dict[str, Any]):
     """
