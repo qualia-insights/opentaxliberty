@@ -32,20 +32,20 @@ convenience to the government sites.
 - [X] finish 1040 form 
 - [X] complete the json config file for 1040
 - [X] seperate the W2 in its own json file because it will be used on state forms as well
-- [ ] setup multiple git remotes....one remote at home and one remote at GitLab
+- [X] setup multiple git remotes....one remote at home and one remote at GitLab
     - I think this is working now....we have to update the git howto
+- [ ] refactor W2_validator.py to work with 0 or more W2(s)
 - [ ] why is test_04_sum_function.py failing when adding values that are None?
     - check out the function test_sum_with_none_values I removed the None value2 from sum to make it work
 - [X] pytests for the W2 json and use pydantic to validate W2 by itself
-- [ ] refactor W2_validator.py to work with 0 or more W2(s)
 - [ ] pytests for form 1040
     - making alot of progress on pytests but could likely use some more
 - [ ] use pydantic to validate IRS form 1040
+- [ ] complete the json config file for schedule C
+- [ ] complete the json config file for State of Ohio
 - [ ] complete the json config file for schedule A
 - [ ] complete the json config file for schedule B
-- [ ] complete the json config file for schedule C
 - [ ] complete the json config file for schedule D
-- [ ] complete the json config file for State of Ohio
 - [ ] Integrate some sort of jsonscheme
     - [pydantic](https://docs.pydantic.dev/latest/), this is used by FastAPI
     - [jsonscheme](https://python-jsonschema.readthedocs.io/en/stable/)
