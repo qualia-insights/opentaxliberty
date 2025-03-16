@@ -266,59 +266,6 @@ def test_process_tax_form_with_curl():
             log_debug(f"Found value for Line 25a (field {L25a_field_name}): {L25a_value}")
             log_debug(f"Found value for Line 34 (field {L34_field_name}): {L34_value}")
             
-            # If the field names from config didn't work, try the hardcoded ones as fallback
-            if L1a_value is None:
-                fallback_L1a_field_names = ["f1_32[0]", "f1_32", "Line1a", "L1a", "1a"]
-                log_debug(f"Field {L1a_field_name} not found, trying fallback names: {fallback_L1a_field_names}")
-                for field_name in fallback_L1a_field_names:
-                    L1a_value = get_field_value(field_name)
-                    if L1a_value is not None:
-                        log_debug(f"Found value using fallback field name: {field_name}")
-                        break
-            
-            if L25a_value is None:
-                fallback_L25a_field_names = ["f2_11[0]", "f2_11", "Line25a", "L25a", "25a"]
-                log_debug(f"Field {L25a_field_name} not found, trying fallback names: {fallback_L25a_field_names}")
-                for field_name in fallback_L25a_field_names:
-                    L25a_value = get_field_value(field_name)
-                    if L25a_value is not None:
-                        log_debug(f"Found value using fallback field name: {field_name}")
-                        break
-            
-            if L34_value is None:
-                fallback_L34_field_names = ["f1_41[0]", "f1_41", "Line1z", "L1z", "1z"]
-                log_debug(f"Field {L34_field_name} not found, trying fallback names: {fallback_L34_field_names}")
-                for field_name in fallback_L34_field_names:
-                    L34_value = get_field_value(field_name)
-                    if L34_value is not None:
-                        log_debug(f"Found value using fallback field name: {field_name}")
-                        break
-            
-            # If we still couldn't find the fields, look for values in debug JSON instead
-            if (L1a_value is None or L25a_value is None or L34_value is None) and debug_json_path and Path(debug_json_path).exists():
-                log_debug("Attempting to find values in debug JSON file instead")
-                try:
-                    with open(debug_json_path, 'r') as f:
-                        debug_json = json.load(f)
-                    
-                    # Try to get the values from the debug JSON
-                    if L1a_value is None and "income" in debug_json and "L1a" in debug_json["income"]:
-                        L1a_value = debug_json["income"]["L1a"]
-                        log_debug(f"Found Line 1a value in debug JSON: {L1a_value}")
-                        L1a_source = "Debug JSON"
-                    
-                    if L25a_value is None and "payments" in debug_json and "L25a" in debug_json["payments"]:
-                        L25a_value = debug_json["payments"]["L25a"]
-                        log_debug(f"Found Line 25a value in debug JSON: {L25a_value}")
-                        L25a_source = "Debug JSON"
-                        
-                    if L34_value is None and "income" in debug_json and "L1z_sum" in debug_json["income"]:
-                        L34_value = debug_json["income"]["L1z_sum"]
-                        log_debug(f"Found Line 34 value in debug JSON: {L34_value}")
-                        L34_source = "Debug JSON"
-                except Exception as e:
-                    log_debug(f"Error reading debug JSON: {str(e)}")
-            
             # VERIFICATION 1: Line 34 equals 102.31
             # This is the primary test requirement
             if L34_value is not None:
@@ -403,12 +350,12 @@ def test_process_tax_form_with_curl():
         
         # Print additional verification results
         if L1a_verified:
-            print(f"Verified Line 1a matches W2 box 1 sum: {expected_box_1_sum} (Source: {L1a_source})")
+            print(f"✅ Verified Line 1a matches W2 box 1 sum: {expected_box_1_sum} (Source: {L1a_source})")
         else:
             print(f"Line 1a verification skipped. Expected W2 box 1 sum: {expected_box_1_sum}")
             
         if L25a_verified:
-            print(f"Verified Line 25a matches W2 box 2 sum: {expected_box_2_sum} (Source: {L25a_source})")
+            print(f"✅ Verified Line 25a matches W2 box 2 sum: {expected_box_2_sum} (Source: {L25a_source})")
         else:
             print(f"Line 25a verification skipped. Expected W2 box 2 sum: {expected_box_2_sum}")
             
