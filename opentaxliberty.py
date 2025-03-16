@@ -629,7 +629,7 @@ async def process_tax_form(
     Returns:
         ProcessingResult: Results of the form processing
 
-    Note on W2 and using it as a variable name in Python.  The proper name is W2.
+    Note on W2 and using it as a variable name in Python.  The proper name is W-2.
     In Python, variable names can't start with a number or contain hyphens. 
 
     It contains a hyphen (-), which Python interprets as the subtraction operator
