@@ -35,6 +35,7 @@ from decimal import Decimal
 import shutil
 import traceback
 from W2_validator import validate_W2_file, W2Document, W2Entry, W2Configuration
+from F1040_validator import validate_F1040_file, F1040Document
 import tempfile
 
 # pypdf dependencies
@@ -491,15 +492,14 @@ def process_input_config(input_json_data: Dict[str, Any], W2_data: Dict[str, Any
                 if tag_key in input_json_data[key]:
                     write_field_pdf(writer, input_json_data[key][tag_key], sub_value)
 
-
 def parse_and_validate_input_files(config_file_name: str, W2_config_file_name: str, 
-        pdf_template_file_name: str, job_dir: str) -> tuple[Dict[str, Any], W2Document]:
+        pdf_template_file_name: str, job_dir: str) -> tuple[Dict[str, Any], W2Document, F1040Document]:
     """
     Parse and validate the input configuration files and PDF template.
     
     This function verifies that the PDF template exists and attempts to parse the JSON
     configuration files for tax form and W2 data. It performs proper validation using
-    the W2_validator module and raises appropriate exceptions if any validation fails.
+    the W2_validator and F1040_validator modules and raises appropriate exceptions if any validation fails.
     
     Args:
         config_file_name (str): Path to the main tax form configuration JSON file
@@ -508,9 +508,10 @@ def parse_and_validate_input_files(config_file_name: str, W2_config_file_name: s
         job_dir (str): Directory path for the current processing job
         
     Returns:
-        tuple[Dict[str, Any], W2Document]: A tuple containing:
+        tuple[Dict[str, Any], W2Document, F1040Document]: A tuple containing:
             - config_data: The parsed main tax form configuration data
             - W2_data: The validated W2Document object
+            - F1040_data: The validated F1040Document object
             
     Raises:
         HTTPException(404): If the PDF template file does not exist
@@ -519,6 +520,7 @@ def parse_and_validate_input_files(config_file_name: str, W2_config_file_name: s
     """
     config_data = None
     W2_data = None
+    F1040_data = None
     
     try:
         # check template
@@ -561,7 +563,37 @@ def parse_and_validate_input_files(config_file_name: str, W2_config_file_name: s
             raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, 
                 detail=error_str)
 
-        return config_data, W2_data
+        # Validate F1040 file using the F1040_validator
+        try:
+            F1040_data = validate_F1040_file(config_file_name)
+            logging.info(f"F1040 file validated successfully")
+            logging.info(f"Tax year: {F1040_data.configuration.tax_year}")
+            logging.info(f"Taxpayer: {F1040_data.name_address_ssn.first_name_middle_initial} {F1040_data.name_address_ssn.last_name}")
+            
+            # Log refund or amount owed
+            if F1040_data.refund and hasattr(F1040_data.refund, 'L34_subtract_tag'):
+                logging.info("Refund expected")
+            elif F1040_data.amount_you_owe and F1040_data.amount_you_owe.L37:
+                logging.info(f"Amount owed: {F1040_data.amount_you_owe.L37}")
+            else:
+                logging.info("Neither refund nor amount owed specified")
+        except json.JSONDecodeError as e:
+            error_str = f"Error: Invalid JSON format in F1040 configuration file ({config_file_name}): {str(e)}"
+            logging.error(error_str)
+            raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, 
+                detail=error_str)
+        except ValueError as e:
+            error_str = f"Error: Invalid F1040 data: {str(e)}"
+            logging.error(error_str)
+            raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, 
+                detail=error_str)
+        except Exception as e:
+            error_str = f"Error validating F1040 file: {str(e)}"
+            logging.error(error_str)
+            raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, 
+                detail=error_str)
+
+        return config_data, W2_data, F1040_data
         
     except HTTPException:
         # re-raise HTTP exceptions to be handled by FastAPI
@@ -571,6 +603,7 @@ def parse_and_validate_input_files(config_file_name: str, W2_config_file_name: s
         logging.error(error_str)
         raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, 
                             detail=error_str)
+
 
 def save_debug_json(json_dict : Dict[str, Any]):
     if json_dict is not None and "debug_json_output" in json_dict["configuration"]:
@@ -611,6 +644,7 @@ async def process_tax_form(
     
     W2_data = None
     config_dict = None
+    F1040_data = None
     try:
         # Save json configuration file
         config_path = os.path.join(job_dir, f"config_{config_file.filename}")
@@ -627,7 +661,7 @@ async def process_tax_form(
         with open(W2_config_path, "wb") as f:
             f.write(await W2_config_file.read())
 
-        config_dict, W2_data = parse_and_validate_input_files(config_path, W2_config_path, pdf_path, job_dir)
+        config_dict, W2_data, F1040_data = parse_and_validate_input_files(config_path, W2_config_path, pdf_path, job_dir)
         reader = PdfReader(pdf_path)
         writer = PdfWriter()
 

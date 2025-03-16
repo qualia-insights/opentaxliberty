@@ -47,19 +47,19 @@
 	"_comment": "only one of these boxes should be turned on, the values are different so read the comments!",
 
 	"_comment": "single: on = /1, head of household: on = /2, off = /Off",
-	"single_or_HOH": "/Off",
+	"single_or_HOH": "/2",
 	"single_or_HOH_tag": "c1_3[0]",
 
 	"_comment": "married filing jointly: on = /3, qualifying surviving spouse: on = /4, off = /Off",
-	"married_filing_jointly_or_QSS": "/3",
+	"married_filing_jointly_or_QSS": "/Off",
 	"married_filing_jointly_or_QSS_tag": "c1_3[1]",
 
 	"_comment": "married filing separately: on = /4, off = /Off",
-	"married_filing_separately": "/4",
+	"married_filing_separately": "/Off",
 	"married_filing_separately_tag": "c1_3[2]",
 
 	"_comment": "treating nonresident alien: on = /1, off = /Off",
-	"treating_nonresident_alien": "/1",
+	"treating_nonresident_alien": "/Off",
 	"treating_nonresident_alien_tag": "c1_4[0]",
 
 	"_comment": "leave the field spouse_or_child_name blank if not needed",
@@ -279,7 +279,7 @@
 	"L35a_b_tag": "f2_25[0]",
 	"L35c_checking": "/1",
 	"L35c_checking_tag": "c2_5[0]",
-	"L35c_savings": "/2",
+	"L35c_savings": "/Off",
 	"L35c_savings_tag": "c2_5[1]",
 	"L35a_d": " 1     2    3    4    5     6     7     8    9",
 	"L35a_d_tag": "f2_26[0]",
@@ -296,7 +296,7 @@
   "third_party_designee": {
 	"do_you_want_to_designate_yes": "/1",
 	"do_you_want_to_designate_yes_tag": "c2_6[0]",
-	"do_you_want_to_designate_no": "/2",
+	"do_you_want_to_designate_no": "/Off",
 	"do_you_want_to_designate_no_tag": "c2_6[1]",
 	"desginee_name": "Tom Smith",
 	"desginee_name_tag": "f2_30[0]",
