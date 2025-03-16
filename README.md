@@ -32,9 +32,11 @@ convenience to the government sites.
 - [X] finish 1040 form 
 - [X] complete the json config file for 1040
 - [X] seperate the W2 in its own json file because it will be used on state forms as well
+- [ ] setup multiple git remotes....one remote at home and one remote at GitLab
 - [ ] why is test_04_sum_function.py failing when adding values that are None?
     - check out the function test_sum_with_none_values I removed the None value2 from sum to make it work
 - [X] pytests for the W2 json and use pydantic to validate W2 by itself
+- [ ] refactor W2_validator.py to work with 0 or more W2(s)
 - [ ] pytests for form 1040
     - making alot of progress on pytests but could likely use some more
 - [ ] use pydantic to validate IRS form 1040
