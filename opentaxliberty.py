@@ -293,9 +293,17 @@ def process_input_config(input_json_data: Dict[str, Any], W_2_data: Dict[str, An
                         write_field_pdf(writer, input_json_data[key][tag_key], sub_calculation)
                         sub_calculation = 0
                 elif isinstance(sub_value, str) and "get_W-2_box_1_sum()" in sub_value:
-                    write_field_pdf(writer, input_json_data[key][sub_key], W_2_data["totals"]["total_box_1"])
+                    tag_key = f"{sub_key}_tag"
+                    if tag_key in input_json_data[key] and input_json_data[key][tag_key]:
+                        logger.debug(f"get_w-2_box_1_sum() found! key: {key} sub_key: {sub_key} box_1_sum: {W_2_data["totals"]["total_box_1"]}")
+                        input_json_data[key][sub_key] = W_2_data["totals"]["total_box_1"]
+                        write_field_pdf(writer, input_json_data[key][tag_key], W_2_data["totals"]["total_box_1"])
                 elif isinstance(sub_value, str) and "get_W-2_box_2_sum()" in sub_value:
-                    write_field_pdf(writer, input_json_data[key][sub_key], W_2_data["totals"]["total_box_2"])
+                    tag_key = f"{sub_key}_tag"
+                    if tag_key in input_json_data[key] and input_json_data[key][tag_key]:
+                        logger.debug(f"get_w-2_box_2_sum() found! key: {key} sub_key: {sub_key} box_2_sum: {W_2_data["totals"]["total_box_2"]}")
+                        input_json_data[key][sub_key] = W_2_data["totals"]["total_box_2"]
+                        write_field_pdf(writer, input_json_data[key][tag_key], W_2_data["totals"]["total_box_2"])
                 else:
                     # Check if there's a corresponding tag field
                     tag_key = f"{sub_key}_tag"
