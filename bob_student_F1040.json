@@ -2,7 +2,7 @@
   "configuration": {
      "tax_year": 2024,
      "output_file_name": "bob_student_F1040.pdf",
-     "form": "1040",
+     "form": "F1040",
      "debug_json_output": "/workspace/temp/bob_student_F1040.json"
   },
   "name_address_ssn": {

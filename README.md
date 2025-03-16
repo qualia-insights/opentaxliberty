@@ -44,6 +44,9 @@ convenience to the government sites.
     - [X] especially test_99 we should check to make sure we have the right answers on the form
     - [X] a test to check that Line 34 is equal to 102.31 which I think is the correct answer for Bob Student
 - [ ] use pydantic to validate IRS form 1040
+    - [ ] create F1040_validator.py 
+    - [ ] create test case
+    - [ ] integrate F1040 validator.py with opentaxliberty.py
 - [ ] complete the json config file for schedule C
 - [ ] complete the json config file for State of Ohio
 - [ ] complete the json config file for schedule A
