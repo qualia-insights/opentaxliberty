@@ -41,6 +41,7 @@ convenience to the government sites.
 - [X] pytests for the W2 json and use pydantic to validate W2 by itself
 - [ ] pytests for form 1040
     - making alot of progress on pytests but could likely use some more
+    - [ ] especially test_99 we should check to make sure we have the right answers on the form
 - [ ] use pydantic to validate IRS form 1040
 - [ ] complete the json config file for schedule C
 - [ ] complete the json config file for State of Ohio
