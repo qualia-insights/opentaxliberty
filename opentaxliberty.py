@@ -690,11 +690,23 @@ async def process_tax_form(
             filename=config_dict["configuration"]["output_file_name"])
 
     except HTTPException as http_ex:
+        # Get the full stack trace as a string
+        stack_trace = traceback.format_exc()
+        
+        # Log both the error message and the stack trace
+        logger.error(f"HTTP Error processing form: {str(http_ex)}")
+        logger.error(f"Stack trace: \n{stack_trace}")
+
         # Cleanup before re-raising the HTTPException
         remove_job_directory(job_dir)
         save_debug_json(config_dict)
-        # Re-raise the original HTTPException with its specific status code
-        raise http_ex
+
+        # Include line number information in the error detail
+        error_info = f"Error processing form: {str(http_ex)} at line {traceback.extract_tb(http_ex.__traceback__)[-1].lineno}"
+
+        # Create a new HTTPException with the enhanced error information
+        raise HTTPException(status_code=http_ex.status_code, detail=error_info)
+
     except Exception as e:
         # Get the full stack trace as a string
         stack_trace = traceback.format_exc()
