@@ -357,26 +357,26 @@ class TaxAndCredits(BaseModel):
     L16_check_4972_tag: Optional[str] = Field(None, description="PDF field tag for Form 4972 checkbox")
     L16_check_3: Optional[str] = Field(None, description="Other checkbox")
     L16_check_3_tag: Optional[str] = Field(None, description="PDF field tag for other checkbox")
-    L16_check_3_field: Optional[Union[int, float, Decimal]] = Field(None, description="Other tax forms amount")
+    L16_check_3_field: Decimal = Field(default=Decimal('0'), description="Other tax forms amount")
     L16_check_3_field_tag: Optional[str] = Field(None, description="PDF field tag for other tax forms amount")
-    L16: Union[int, float, Decimal] = Field(..., description="Tax amount")
+    L16: Decimal = Field(default=Decimal('0'), description="Tax amount")
     L16_tag: str = Field(..., description="PDF field tag for line 16")
-    L17: Optional[Union[int, float, Decimal]] = Field(None, description="Amount from Schedule 2, line 3")
+    L17: Decimal = Field(default=Decimal('0'), description="Amount from Schedule 2, line 3")
     L17_tag: Optional[str] = Field(None, description="PDF field tag for line 17")
-    L18_sum: List[str] = Field(..., description="List of fields to sum for line 18")
-    L18_sum_tag: str = Field(..., description="PDF field tag for line 18")
-    L19: Optional[Union[int, float, Decimal]] = Field(None, description="Child tax credit/credit for other dependents")
+    L18: Decimal = Field(default=Decimal('0'), description="Sum of tax")
+    L18_tag: str = Field(..., description="PDF field tag for line 18")
+    L19: Decimal = Field(default=Decimal('0'), description="Child tax credit/credit for other dependents")
     L19_tag: Optional[str] = Field(None, description="PDF field tag for line 19")
-    L20: Optional[Union[int, float, Decimal]] = Field(None, description="Amount from Schedule 3, line 8")
+    L20: Decimal = Field(default=Decimal('0'), description="Amount from Schedule 3, line 8")
     L20_tag: Optional[str] = Field(None, description="PDF field tag for line 20")
-    L21_sum: List[str] = Field(..., description="List of fields to sum for line 21")
-    L21_sum_tag: str = Field(..., description="PDF field tag for line 21")
-    L22_subtract: List[str] = Field(..., description="List of fields to subtract for line 22")
-    L22_subtract_tag: str = Field(..., description="PDF field tag for line 22")
-    L23: Optional[Union[int, float, Decimal]] = Field(None, description="Other taxes from Schedule 2, line 21")
+    L21: Decimal = Field(default=Decimal('0'), description="Sum of credits")
+    L21_tag: str = Field(..., description="PDF field tag for line 21")
+    L22: Union[str, Decimal] = Field(default=Decimal('0'), description="Subtract lines 21 from 18")
+    L22_tag: str = Field(..., description="PDF field tag for line 22")
+    L23: Decimal = Field(default=Decimal('0'), description="Other taxes from Schedule 2, line 21")
     L23_tag: Optional[str] = Field(None, description="PDF field tag for line 23")
-    L24_sum: List[str] = Field(..., description="List of fields to sum for line 24")
-    L24_sum_tag: str = Field(..., description="PDF field tag for line 24")
+    L24: Union[str, Decimal] = Field(default=Decimal('0'), description="Sum of tax and additional taxes")
+    L24_tag: str = Field(..., description="PDF field tag for line 24")
     
     @field_validator('L16_check_8814', 'L16_check_4972', 'L16_check_3')
     @classmethod
@@ -667,6 +667,35 @@ class F1040Document(BaseModel):
 
 
         return self
+
+    @model_validator(mode='after')
+    def calculate_tax_and_credits(self):
+        """
+        Calculate the Tax and Credits section of the F1040
+        """
+        if hasattr(self, 'tax_and_credits') and hasattr(self.tax_and_credits, 'L18'):
+            self.tax_and_credits.L18 = (self.tax_and_credits.L16 + self.tax_and_credits.L17)
+        
+        if hasattr(self, 'tax_and_credits') and hasattr(self.tax_and_credits, 'L21'):
+            self.tax_and_credits.L21 = (self.tax_and_credits.L19 + self.tax_and_credits.L20)
+
+        if hasattr(self, 'tax_and_credits') and hasattr(self.tax_and_credits, 'L22'):
+            self.tax_and_credits.L22 = self.tax_and_credits.L18 - self.tax_and_credits.L21
+            if self.tax_and_credits.L22 <= 0:
+                self.tax_and_credits.L22 = "-0-"
+
+        if hasattr(self, 'tax_and_credits') and hasattr(self.tax_and_credits, 'L24'):
+            if isinstance(self.tax_and_credits.L22, Decimal):
+                self.tax_and_credits.L24 = self.tax_and_credits.L22 + self.tax_and_credits.L23
+                if self.tax_and_credits.L24 <= 0:
+                    self.tax_and_credits.L24 = "-0-"
+            else:
+                self.tax_and_credits.L24 = self.tax_and_credits.L23
+                if self.tax_and_credits.L24 <= 0:
+                    self.tax_and_credits.L24 = "-0-"
+
+        return self
+
 
     @model_validator(mode='after')
     def validate_refund_amount_you_owe(self):
