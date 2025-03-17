@@ -52,6 +52,9 @@ convenience to the government sites.
     - [X] make sure name is required
     - [X] make sure SSN is required
 - [X] Implement mypy and make it part of the tests
+- [ ] unify json config file and make a single config file....I know we seperated the W2
+    - this will make it easier to process multiple forms
+    - also I think it will make it easier for our users
 - [ ] Refactor code to use Pydantic more
     - This will remove potential errors from user by simplyfying json config file
     - [ ] Put calculations into F1040_validator.py
@@ -60,8 +63,6 @@ convenience to the government sites.
     - [ ] create a function in F1040_validator.py to retreive keys based on field name
     - [ ] remove sum and subtraction code from opentaxliberty.py
     - [ ] test all these changes
-- [ ] unify json config file and make a single config file....I know we seperated the W2
-    - this will make it easier to process multiple forms
 - [ ] put pdf template location in json config file....then we don't have to pass in a bunch of stuff
 - [ ] complete the json config file for schedule C
 - [ ] schedule 1, this is where schedule C profit or loss goes, maybe ? we should look into this more
