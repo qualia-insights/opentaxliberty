@@ -24,7 +24,7 @@
 #	nohup podman image build -f Containerfile -t opentaxliberty:20250316 . > ~/temp/20250316_opentaxliberty.log 2>&1 &
 #
 # run container and produce a shell:
-#   podman run -it --rm -p 8000:8000 --mount type=bind,source=$HOME,target=/workspace opentaxliberty:20250316 
+#   podman run -it --rm --mount type=bind,source=$HOME,target=/workspace opentaxliberty:20250316 
 #
 # run the container with FastAPI development mode
 #   podman run -it --rm -p 8000:8000 --mount type=bind,source=$HOME,target=/workspace opentaxliberty:20250316 sh -c "cd /workspace/code/qualia_insights/opentaxliberty && fastapi dev opentaxliberty.py --host 0.0.0.0"

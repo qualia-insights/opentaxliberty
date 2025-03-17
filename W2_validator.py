@@ -80,7 +80,7 @@ class W2Entry(BaseModel):
 class W2Document(BaseModel):
     """Complete W2 document structure."""
     configuration: W2Configuration
-    W2: List[W2Entry] = Field(default_factory=list, description="List of W2 entries (can be empty)")
+    W2_entries: List[W2Entry] = Field(default_factory=list, description="List of W2 entries (can be empty)")
     totals: Dict[str, Any] = Field(description="Calculated totals")
 
     @model_validator(mode='before')
@@ -93,7 +93,7 @@ class W2Document(BaseModel):
     @model_validator(mode='after')
     def calculate_totals(self):
         """Calculate and populate the totals field."""
-        w2_entries = self.W2
+        w2_entries = self.W2_entries
         
         # Initialize totals with zero values in case there are no entries
         total_box_1 = Decimal('0')
@@ -148,7 +148,9 @@ def validate_W2_file(file_path: str) -> W2Document:
     
     with open(file_path, 'r') as f:
         data = json.load(f)
-    
+
+    data = data["W2"]   # this parses the data down to just the W2 structure 
+    print(json.dumps(data, indent=2))
     # Parse and validate against our schema
     return W2Document.model_validate(data)
 
@@ -163,7 +165,7 @@ if __name__ == "__main__":
         file_path = sys.argv[1]
         validated_data = validate_W2_file(file_path)
         print(f"✅ W2 file validated successfully: {file_path}")
-        print(f"Found {len(validated_data.W2)} W2 entries")
+        print(f"Found {len(validated_data.W2_entries)} W2 entries")
         print(f"Total Box 1 (Wages): {validated_data.totals['total_box_1']}")
         print(f"Total Box 2 (Federal Tax Withheld): {validated_data.totals['total_box_2']}")
     except Exception as e:
