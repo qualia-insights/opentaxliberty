@@ -354,7 +354,7 @@ def get_W2_box_1_sum(input_json_data, key, sub_key, W2_data, writer=None):
         input_json_data (dict): The input JSON data
         key (str): The section key in the JSON data
         sub_key (str): The key to update with the W2 box 1 sum
-        W2_data (W2Document): The validated W2 document containing totals
+        W2_data (dict): The validated W2 document converted to a dict containing totals
         writer (PdfWriter, optional): PDF writer to update the field
         
     Returns:
@@ -368,10 +368,10 @@ def get_W2_box_1_sum(input_json_data, key, sub_key, W2_data, writer=None):
     if tag_key not in input_json_data[key]:
         raise KeyError(f"Tag key '{tag_key}' not found in '{key}' section")
     
-    if "totals" not in W2_data.__dict__ or "total_box_1" not in W2_data.totals:
+    if "totals" not in W2_data or "total_box_1" not in W2_data["totals"]:
         raise ValueError("W2 data doesn't contain the required box 1 total")
     
-    total_box_1 = W2_data.totals["total_box_1"]
+    total_box_1 = W2_data["totals"]["total_box_1"]
     
     # Convert Decimal to float if needed
     total_box_1_value = float(total_box_1) if isinstance(total_box_1, Decimal) else total_box_1
@@ -394,7 +394,7 @@ def get_W2_box_2_sum(input_json_data, key, sub_key, W2_data, writer=None):
         input_json_data (dict): The input JSON data
         key (str): The section key in the JSON data
         sub_key (str): The key to update with the W2 box 2 sum
-        W2_data (W2Document): The validated W2 document containing totals
+        W2_data (W2Document): The validated W2 document converted to a dict containing totals
         writer (PdfWriter, optional): PDF writer to update the field
         
     Returns:
@@ -408,10 +408,10 @@ def get_W2_box_2_sum(input_json_data, key, sub_key, W2_data, writer=None):
     if tag_key not in input_json_data[key]:
         raise KeyError(f"Tag key '{tag_key}' not found in '{key}' section")
     
-    if "totals" not in W2_data.__dict__ or "total_box_2" not in W2_data.totals:
+    if "totals" not in W2_data or "total_box_2" not in W2_data["totals"]:
         raise ValueError("W2 data doesn't contain the required box 2 total")
     
-    total_box_2 = W2_data.totals["total_box_2"]
+    total_box_2 = W2_data["totals"]["total_box_2"]
     
     # Convert Decimal to float if needed
     total_box_2_value = float(total_box_2) if isinstance(total_box_2, Decimal) else total_box_2
@@ -644,8 +644,9 @@ async def process_tax_form(
     job_dir = os.path.join(UPLOAD_DIR, form_id)
     os.makedirs(job_dir, exist_ok=True)
     
-    W2_data = None
     config_dict = None
+    W2_data = None
+    W2_dict = None
     F1040_data = None
     F1040_dict = None
     try:
@@ -666,6 +667,8 @@ async def process_tax_form(
 
         W2_data, F1040_data = parse_and_validate_input_files(config_path, W2_config_path, pdf_path, job_dir)
         F1040_dict = F1040_data.model_dump()  # this converts F1040_data into a dict
+        W2_dict = W2_data.model_dump() # this converts W2_data into a dict
+
         reader = PdfReader(pdf_path)
         writer = PdfWriter()
 
@@ -673,7 +676,7 @@ async def process_tax_form(
         
         # No need to call process_input_W2 since the W2 validation already calculates totals
         # Now we can directly use W2_data.totals in process_input_config
-        process_input_config(F1040_dict, W2_data, writer)
+        process_input_config(F1040_dict, W2_dict, writer)
 
         output_file = os.path.join(job_dir, F1040_dict["configuration"]["output_file_name"])
         with open(output_file, "wb") as output_stream:
