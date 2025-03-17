@@ -150,7 +150,6 @@ def validate_W2_file(file_path: str) -> W2Document:
         data = json.load(f)
 
     data = data["W2"]   # this parses the data down to just the W2 structure 
-    print(json.dumps(data, indent=2))
     # Parse and validate against our schema
     return W2Document.model_validate(data)
 
@@ -164,6 +163,7 @@ if __name__ == "__main__":
     try:
         file_path = sys.argv[1]
         validated_data = validate_W2_file(file_path)
+        print(validated_data.model_dump_json(indent=2))
         print(f"✅ W2 file validated successfully: {file_path}")
         print(f"Found {len(validated_data.W2_entries)} W2 entries")
         print(f"Total Box 1 (Wages): {validated_data.totals['total_box_1']}")
