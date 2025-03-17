@@ -51,7 +51,7 @@ convenience to the government sites.
     - [X] like standard deduction based on filing status
     - [X] make sure name is required
     - [X] make sure SSN is required
-- [ ] Implement mypy and make it part of the tests
+- [X] Implement mypy and make it part of the tests
 - [ ] complete the json config file for schedule C
 - [ ] schedule 1, this is where schedule C profit or loss goes, maybe ? we should look into this more
 - [ ] complete the json config file for State of Ohio
