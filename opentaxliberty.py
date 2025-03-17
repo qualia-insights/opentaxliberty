@@ -17,7 +17,7 @@
 #  OpenTaxLiberty for tax year 2024 
 
 # FASTAPI dependencies
-from typing import Union                                                        
+from typing import Union, Dict, Any, List
 from enum import Enum                                                           
 from fastapi import FastAPI, status, HTTPException, File, UploadFile, BackgroundTasks
 from fastapi.responses import FileResponse
@@ -26,7 +26,6 @@ from pydantic import BaseModel
 import os
 import sys
 import json
-from typing import Dict, Any
 from pathlib import Path
 import logging
 import uuid
@@ -54,7 +53,7 @@ configuration file then produce tax forms filled out for the user.
                                                                                 
 """ 
 
-tags_metadata = [                                                               
+tags_metadata: List[Dict[str, Any]] = [                                                               
     {                                                                           
         "name": "system",                                                       
         "description": "Queries the system and prints specs for  GPUs and versions of libraries",
@@ -196,6 +195,7 @@ def read_field_pdf(reader: PdfReader, field_name: str) -> str:
     fields = reader.get_fields()
     
     # Check if the field exists
+    assert fields is not None, "fields dictionary should not be None at this point this is to help mypy"
     if field_name in fields:
         field = fields[field_name]
         

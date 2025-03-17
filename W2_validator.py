@@ -103,9 +103,10 @@ class W2Document(BaseModel):
         if w2_entries:
             total_box_1 = sum(entry.box_1 for entry in w2_entries)
             total_box_2 = sum(entry.box_2 for entry in w2_entries)
-        
-        if self.totals is None:
+        elif self.totals is None:
             self.totals = {}
+            self.totals["total_box_1"] = 0
+            self.totals["total_box_2"] = 0
 
         # Add an assertion to tell mypy that totals is definitely a dictionary at this point
         assert self.totals is not None
