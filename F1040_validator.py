@@ -579,11 +579,14 @@ class F1040Document(BaseModel):
                 # If W2 box 1 sum is available in the data, use it
                 if "W2_box_1_sum" in data:
                     data["income"]["L1a"] = data["W2_box_1_sum"]
+                    del data["W2_box_1_sum"]
+                    
                 
             if "payments" in data and "L25a" in data["payments"] and data["payments"]["L25a"] == "get_W2_box_2_sum()":
                 # If W2 box 2 sum is available in the data, use it
                 if "W2_box_2_sum" in data:
                     data["payments"]["L25a"] = data["W2_box_2_sum"]
+                    data.pop("W2_box_2_sum", None)
         
         return data
 

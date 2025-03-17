@@ -36,8 +36,7 @@ def test_process_tax_form_with_curl():
     output_filename = "processed_form.pdf"
     output_path = f"{output_dir}/{output_filename}"
     pdf_form_path = f"{workspace_dir}/code/taxes/2024/f1040_blank.pdf"
-    config_file_path = "../bob_student_F1040.json"
-    W2_config_file_path = "../bob_student_W2.json"
+    config_file_path = "../bob_student.json"
     
     try:
         # Create output directory if it doesn't exist
@@ -58,17 +57,14 @@ def test_process_tax_form_with_curl():
         log_debug(f"Config file exists: {config_file.exists()} at {config_file_path}")
         assert config_file.exists(), f"Config file does not exist at {config_file_path}"
         
-        W2_config_file = Path(W2_config_file_path)
-        log_debug(f"W2 config file exists: {W2_config_file.exists()} at {W2_config_file_path}")
-        assert W2_config_file.exists(), f"W2 config file does not exist at {W2_config_file_path}"
         
         # Parse the JSON configuration to check for debug_json_output
         with open(config_file_path, 'r') as f:
             config_data = json.load(f)
         
         debug_json_path = None
-        if 'configuration' in config_data and 'debug_json_output' in config_data['configuration']:
-            debug_json_path = config_data['configuration']['debug_json_output']
+        if 'F1040' in config_data and 'configuration' in config_data['F1040'] and 'debug_json_output' in config_data['F1040']['configuration']:
+            debug_json_path = config_data['F1040']['configuration']['debug_json_output']
             log_debug(f"Debug JSON output is configured at: {debug_json_path}")
             
             # Delete the debug JSON file if it already exists
@@ -87,7 +83,6 @@ def test_process_tax_form_with_curl():
             '-H', 'accept: application/json',
             '-H', 'Content-Type: multipart/form-data',
             '-F', f'config_file=@{config_file_path}',
-            '-F', f'W2_config_file=@{W2_config_file_path}',
             '-F', f'pdf_form=@{pdf_form_path}',
             '--output', output_path
         ]
@@ -408,3 +403,6 @@ def test_process_tax_form_with_curl():
         
         raise
     # No cleanup to allow inspection of output files
+
+if __name__ == "__main__":                                                      
+    pytest.main(["-xvs", __file__]) 

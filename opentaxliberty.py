@@ -469,30 +469,13 @@ def process_input_config(input_json_data: Dict[str, Any], W2_data: Dict[str, Any
                 except (KeyError, ValueError) as e:
                     logger.error(f"Error calculating subtraction for {key}.{sub_key}: {str(e)}")
                     raise
-                    
-            # Process W2 box 1 sum
-            elif isinstance(sub_value, str) and "get_W2_box_1_sum()" in sub_value:
-                try:
-                    get_W2_box_1_sum(input_json_data, key, sub_key, W2_data, writer)
-                except (KeyError, ValueError) as e:
-                    logger.error(f"Error getting W2 box 1 sum for {key}.{sub_key}: {str(e)}")
-                    raise
-                    
-            # Process W2 box 2 sum
-            elif isinstance(sub_value, str) and "get_W2_box_2_sum()" in sub_value:
-                try:
-                    get_W2_box_2_sum(input_json_data, key, sub_key, W2_data, writer)
-                except (KeyError, ValueError) as e:
-                    logger.error(f"Error getting W2 box 2 sum for {key}.{sub_key}: {str(e)}")
-                    raise
-                    
             # Process simple tag fields
             else:
                 tag_key = f"{sub_key}_tag"
                 if tag_key in input_json_data[key]:
                     write_field_pdf(writer, input_json_data[key][tag_key], sub_value)
 
-def parse_and_validate_input_files(config_file_name: str, W2_config_file_name: str, 
+def parse_and_validate_input_files(config_file_name: str, 
         pdf_template_file_name: str, job_dir: str) -> tuple[W2Document, F1040Document]:
     """
     Parse and validate the input configuration files and PDF template.
@@ -503,13 +486,11 @@ def parse_and_validate_input_files(config_file_name: str, W2_config_file_name: s
     
     Args:
         config_file_name (str): Path to the main tax form configuration JSON file
-        W2_config_file_name (str): Path to the W2 configuration JSON file
         pdf_template_file_name (str): Path to the PDF template file
         job_dir (str): Directory path for the current processing job
         
     Returns:
-        tuple[Dict[str, Any], W2Document, F1040Document]: A tuple containing:
-            - config_data: The parsed main tax form configuration data
+        [W2Document, F1040Document]: A tuple containing:
             - W2_data: The validated W2Document object
             - F1040_data: The validated F1040Document object
             
@@ -545,8 +526,8 @@ def parse_and_validate_input_files(config_file_name: str, W2_config_file_name: s
         '''        
         # Validate W2 file using the W2_validator
         try:
-            W2_data = validate_W2_file(W2_config_file_name)
-            logging.info(f"W2 file validated successfully with {len(W2_data.W2)} entries")
+            W2_data = validate_W2_file(config_file_name)
+            logging.info(f"W2 file validated successfully with {len(W2_data.W2_entries)} entries")
             logging.info(f"Total Box 1 (Wages): {W2_data.totals['total_box_1']}")
             logging.info(f"Total Box 2 (Federal Tax Withheld): {W2_data.totals['total_box_2']}")
         except json.JSONDecodeError as e:
@@ -621,7 +602,6 @@ class processing_response(BaseModel):
 async def process_tax_form(
     background_tasks: BackgroundTasks,
     config_file: UploadFile = File(...),
-    W2_config_file: UploadFile = File(...),
     pdf_form: UploadFile = File(...),
 ):
     """
@@ -660,12 +640,7 @@ async def process_tax_form(
         with open(pdf_path, "wb") as f:
             f.write(await pdf_form.read())
 
-        # Save the W2 json configuration file
-        W2_config_path = os.path.join(job_dir, f"W2_config_{W2_config_file.filename}")
-        with open(W2_config_path, "wb") as f:
-            f.write(await W2_config_file.read())
-
-        W2_data, F1040_data = parse_and_validate_input_files(config_path, W2_config_path, pdf_path, job_dir)
+        W2_data, F1040_data = parse_and_validate_input_files(config_path, pdf_path, job_dir)
         F1040_dict = F1040_data.model_dump()  # this converts F1040_data into a dict
         W2_dict = W2_data.model_dump() # this converts W2_data into a dict
 
