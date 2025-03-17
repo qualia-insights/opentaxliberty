@@ -574,24 +574,16 @@ class F1040Document(BaseModel):
     def extract_context(cls, data):
         """Extract W2 sums from validation context."""
         if isinstance(data, dict) and not isinstance(data, BaseModel):
-            # Get the validation context
-            context = model_rebuild_dataclass_instance.context.get()
-            
-            if context and not context.get("disable_context"):
-                # Store W2 sums from context in the model
-                if "W2_box_1_sum" in context:
-                    data["W2_box_1_sum"] = context["W2_box_1_sum"]
-                if "W2_box_2_sum" in context:
-                    data["W2_box_2_sum"] = context["W2_box_2_sum"]
+            # Process W2 function calls in the data
+            if "income" in data and "L1a" in data["income"] and data["income"]["L1a"] == "get_W2_box_1_sum()":
+                # If W2 box 1 sum is available in the data, use it
+                if "W2_box_1_sum" in data:
+                    data["income"]["L1a"] = data["W2_box_1_sum"]
                 
-                # Process W2 function calls in the data
-                if "income" in data and "L1a" in data["income"] and data["income"]["L1a"] == "get_W2_box_1_sum()":
-                    if data.get("W2_box_1_sum") is not None:
-                        data["income"]["L1a"] = data["W2_box_1_sum"]
-                
-                if "payments" in data and "L25a" in data["payments"] and data["payments"]["L25a"] == "get_W2_box_2_sum()":
-                    if data.get("W2_box_2_sum") is not None:
-                        data["payments"]["L25a"] = data["W2_box_2_sum"]
+            if "payments" in data and "L25a" in data["payments"] and data["payments"]["L25a"] == "get_W2_box_2_sum()":
+                # If W2 box 2 sum is available in the data, use it
+                if "W2_box_2_sum" in data:
+                    data["payments"]["L25a"] = data["W2_box_2_sum"]
         
         return data
 
@@ -682,16 +674,16 @@ def validate_F1040_file(file_path: str) -> F1040Document:
         raise ValueError(f"Open Tax Liberty configration file has no W2 section!")
     W2_json_data = data["W2"]
     W2_doc = validate_W2_json(W2_json_data) 
-    context = {
-        "W2_box_1_sum": W2_doc.totals["total_box_1"],
-        "W2_box_2_sum": W2_doc.totals["total_box_2"]
-    } 
-   
+
     if "F1040" not in data:                                                   
         raise ValueError(f"Open Tax Liberty configration file has no F1040 section!")
     F1040_data = data["F1040"] 
+    # Add the W2 box sums directly to the F1040 data
+    F1040_data["W2_box_1_sum"] = W2_doc.totals["total_box_1"]
+    F1040_data["W2_box_2_sum"] = W2_doc.totals["total_box_2"]
+
     # Parse and validate against our schema, passing the context which includes the W2 Boxes Totals
-    return F1040Document.model_validate(F1040_data, context=context)
+    return F1040Document.model_validate(F1040_data)
 
 # If the module is run directly, validate a file
 if __name__ == "__main__":
