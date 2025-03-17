@@ -262,7 +262,6 @@ class Dependents(BaseModel):
 class Income(BaseModel):
     """Income section of the 1040 form."""
     # Lines 1a-1i and 1z
-    # Lines 1a-1i and 1z
     L1a: Union[str, Decimal] = Field(default="get_W2_box_1_sum()", description="Wages, salaries, tips, etc.")
     L1a_tag: str = Field(..., description="PDF field tag for line 1a")
     L1b: Decimal = Field(default=0, description="Household employee wages")
@@ -319,8 +318,8 @@ class Income(BaseModel):
     L9_tag: str = Field(..., description="PDF field tag for line 9")
     L10: Decimal = Field(default=0, description="Adjustments to income")
     L10_tag: Optional[str] = Field(None, description="PDF field tag for line 10")
-    L11_subtract: List[str] = Field(..., description="List of fields to subtract for line 11")
-    L11_subtract_tag: str = Field(..., description="PDF field tag for line 11")
+    L11: Decimal = Field(default=0, description="Adjusted gross income")
+    L11_tag: str = Field(..., description="PDF field tag for line 11")
     L12: Decimal = Field(default=0, description="Standard deduction or itemized deductions")
     L12_tag: Optional[str] = Field(None, description="PDF field tag for line 12")
     L13: Decimal = Field(default=0, description="Qualified business income deduction")
@@ -330,19 +329,6 @@ class Income(BaseModel):
     L15_subtract: List[str] = Field(..., description="List of fields to subtract for line 15")
     L15_subtract_tag: str = Field(..., description="PDF field tag for line 15")
 
-    L10: Optional[Union[int, float, Decimal]] = Field(None, description="Adjustments to income")
-    L10_tag: Optional[str] = Field(None, description="PDF field tag for line 10")
-    L11_subtract: List[str] = Field(..., description="List of fields to subtract for line 11")
-    L11_subtract_tag: str = Field(..., description="PDF field tag for line 11")
-    L12: Optional[Union[int, float, Decimal]] = Field(None, description="Standard deduction or itemized deductions")
-    L12_tag: Optional[str] = Field(None, description="PDF field tag for line 12")
-    L13: Optional[Union[int, float, Decimal]] = Field(None, description="Qualified business income deduction")
-    L13_tag: Optional[str] = Field(None, description="PDF field tag for line 13")
-    L14_sum: List[str] = Field(..., description="List of fields to sum for line 14")
-    L14_sum_tag: str = Field(..., description="PDF field tag for line 14")
-    L15_subtract: List[str] = Field(..., description="List of fields to subtract for line 15")
-    L15_subtract_tag: str = Field(..., description="PDF field tag for line 15")
-    
     @field_validator('L6c', 'L7cb')
     @classmethod
     def validate_checkbox(cls, v):
@@ -667,6 +653,9 @@ class F1040Document(BaseModel):
             self.income.L9 = (self.income.L1z + self.income.L2b + self.income.L3b + 
                 self.income.L4b + self.income.L5b + self.income.L6b + 
                 self.income.L7 + self.income.L8)
+
+        if hasattr(self, 'income') and hasattr(self.income, 'L11'):
+            self.income.L11 = self.income.L9 - self.income.L10
 
         return self
 
