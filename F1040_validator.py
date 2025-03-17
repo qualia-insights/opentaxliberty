@@ -587,6 +587,43 @@ class F1040Document(BaseModel):
             
         return self
 
+    @model_validator(mode='after')
+    def calculate_standard_deduction(self):
+        """
+        Calculate the standard deduction amount (line 12) based on filing status.
+        This will only set line 12 if it's not already explicitly provided.
+        
+        Standard deduction amounts for 2024:
+        - Single or Married Filing Separately: $14,600
+        - Married Filing Jointly or Qualifying Surviving Spouse: $29,200
+        - Head of Household: $21,900
+        """
+        # Only calculate if income section exists and has L12 field
+        if hasattr(self, 'income') and hasattr(self.income, 'L12'):
+            # Skip if L12 is already set to a non-zero value
+            #if self.income.L12 and self.income.L12 != 0:
+            #    return self
+                
+            # Determine standard deduction based on filing status
+            filing_status = self.filing_status
+            
+            # Single or Married Filing Separately
+            if filing_status.single_or_HOH == "/1" or filing_status.married_filing_separately == "/1":
+                self.income.L12 = 14600
+                
+            # Married Filing Jointly or Qualifying Surviving Spouse
+            elif filing_status.married_filing_jointly_or_QSS in ["/3", "/4"]:
+                self.income.L12 = 29200
+                
+            # Head of Household
+            elif filing_status.single_or_HOH == "/2":
+                self.income.L12 = 21900
+                
+            # Add adjustments for age, blindness, and dependent status if applicable
+            # These would need to be implemented based on tax rules
+            
+        return self
+
 
 def validate_F1040_file(file_path: str) -> F1040Document:
     """

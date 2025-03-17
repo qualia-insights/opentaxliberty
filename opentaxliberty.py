@@ -493,7 +493,7 @@ def process_input_config(input_json_data: Dict[str, Any], W2_data: Dict[str, Any
                     write_field_pdf(writer, input_json_data[key][tag_key], sub_value)
 
 def parse_and_validate_input_files(config_file_name: str, W2_config_file_name: str, 
-        pdf_template_file_name: str, job_dir: str) -> tuple[Dict[str, Any], W2Document, F1040Document]:
+        pdf_template_file_name: str, job_dir: str) -> tuple[W2Document, F1040Document]:
     """
     Parse and validate the input configuration files and PDF template.
     
@@ -530,7 +530,9 @@ def parse_and_validate_input_files(config_file_name: str, W2_config_file_name: s
             logging.error(error_str)
             raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, 
                                 detail=error_str)
-    
+   
+        '''
+        # this code is redundant because of the Validate F1040 code below 
         # Parse main config file
         try:
             with open(config_file_name, 'r') as f:
@@ -540,7 +542,7 @@ def parse_and_validate_input_files(config_file_name: str, W2_config_file_name: s
             logging.error(error_str)
             raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, 
                 detail=error_str)
-        
+        '''        
         # Validate W2 file using the W2_validator
         try:
             W2_data = validate_W2_file(W2_config_file_name)
@@ -593,7 +595,7 @@ def parse_and_validate_input_files(config_file_name: str, W2_config_file_name: s
             raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, 
                 detail=error_str)
 
-        return config_data, W2_data, F1040_data
+        return W2_data, F1040_data
         
     except HTTPException:
         # re-raise HTTP exceptions to be handled by FastAPI
@@ -645,6 +647,7 @@ async def process_tax_form(
     W2_data = None
     config_dict = None
     F1040_data = None
+    F1040_dict = None
     try:
         # Save json configuration file
         config_path = os.path.join(job_dir, f"config_{config_file.filename}")
@@ -661,7 +664,8 @@ async def process_tax_form(
         with open(W2_config_path, "wb") as f:
             f.write(await W2_config_file.read())
 
-        config_dict, W2_data, F1040_data = parse_and_validate_input_files(config_path, W2_config_path, pdf_path, job_dir)
+        W2_data, F1040_data = parse_and_validate_input_files(config_path, W2_config_path, pdf_path, job_dir)
+        F1040_dict = F1040_data.model_dump()  # this converts F1040_data into a dict
         reader = PdfReader(pdf_path)
         writer = PdfWriter()
 
@@ -669,22 +673,22 @@ async def process_tax_form(
         
         # No need to call process_input_W2 since the W2 validation already calculates totals
         # Now we can directly use W2_data.totals in process_input_config
-        process_input_config(config_dict, W2_data, writer)
+        process_input_config(F1040_dict, W2_data, writer)
 
-        output_file = os.path.join(job_dir, config_dict["configuration"]["output_file_name"])
+        output_file = os.path.join(job_dir, F1040_dict["configuration"]["output_file_name"])
         with open(output_file, "wb") as output_stream:
             writer.write(output_stream)
 
         # Add the cleanup task to run after the response is sent
         background_tasks.add_task(remove_job_directory, job_dir)
 
-        save_debug_json(config_dict)
+        save_debug_json(F1040_dict)
 
         # send the file back to the requestor
         return FileResponse(
             path=output_file,
             media_type="application/pdf",
-            filename=config_dict["configuration"]["output_file_name"])
+            filename=F1040_dict["configuration"]["output_file_name"])
 
     except HTTPException as http_ex:
         # Get the full stack trace as a string
@@ -696,7 +700,7 @@ async def process_tax_form(
 
         # Cleanup before re-raising the HTTPException
         remove_job_directory(job_dir)
-        save_debug_json(config_dict)
+        save_debug_json(F1040_dict)
 
         # Include line number information in the error detail
         error_info = f"Error processing form: {str(http_ex)} at line {traceback.extract_tb(http_ex.__traceback__)[-1].lineno}"
@@ -714,7 +718,7 @@ async def process_tax_form(
     
         # cleanup before raising a generic exception
         remove_job_directory(job_dir)
-        save_debug_json(config_dict)
+        save_debug_json(F1040_dict)
     
         # Include line number information in the error detail
         error_info = f"Error processing form: {str(e)} at line {traceback.extract_tb(e.__traceback__)[-1].lineno}"
