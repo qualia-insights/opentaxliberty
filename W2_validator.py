@@ -95,7 +95,7 @@ class W2Document(BaseModel):
         """Calculate and populate the totals field."""
         w2_entries = self.W2_entries
         
-        # Initialize totals with zero values in case there are no entries
+        # Initialize totals with zero Decimal values in case there are no entries
         total_box_1 = Decimal('0')
         total_box_2 = Decimal('0')
         
@@ -105,8 +105,8 @@ class W2Document(BaseModel):
             total_box_2 = sum(entry.box_2 for entry in w2_entries)
         elif self.totals is None:
             self.totals = {}
-            self.totals["total_box_1"] = 0
-            self.totals["total_box_2"] = 0
+            self.totals["total_box_1"] = Decimal('0')
+            self.totals["total_box_2"] = Decimal('0')
 
         # Add an assertion to tell mypy that totals is definitely a dictionary at this point
         assert self.totals is not None
@@ -120,9 +120,10 @@ class W2Document(BaseModel):
             box_key = f"box_{box_num}"
             box_values = [getattr(entry, box_key) for entry in w2_entries if getattr(entry, box_key) is not None]
             if box_values:
-                self.totals[f"total_{box_key}"] = sum(box_values)
+                # Convert to Decimal sum
+                self.totals[f"total_{box_key}"] = sum(Decimal(str(value)) for value in box_values)
             else:
-                # Initialize with zero for consistent structure even if no values are present
+                # Initialize with zero Decimal for consistent structure even if no values are present
                 self.totals[f"total_{box_key}"] = Decimal('0')
         
         return self

@@ -571,8 +571,8 @@ class F1040Document(BaseModel):
 
     @model_validator(mode='before')
     @classmethod
-    def extract_context(cls, data):
-        """Extract W2 sums from validation context."""
+    def replace_W2_box_sums(cls, data):
+        """replace W2 box sums with W2 data that is run in the validation functions."""
         if isinstance(data, dict) and not isinstance(data, BaseModel):
             # Process W2 function calls in the data
             if "income" in data and "L1a" in data["income"] and data["income"]["L1a"] == "get_W2_box_1_sum()":
