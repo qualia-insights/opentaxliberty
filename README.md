@@ -48,7 +48,9 @@ convenience to the government sites.
     - [X] create test case
     - [X] integrate F1040 validator.py with opentaxliberty.py
 - [ ] double check F1040_validatory.py logic
-    - [ ] like standard deduction based on filing status
+    - [X] like standard deduction based on filing status
+    - [ ] make sure name is required
+    - [ ] make sure SSN is required
 - [ ] how do we enforce or check type hints in Python?
 - [ ] complete the json config file for schedule C
 - [ ] schedule 1, this is where schedule C profit or loss goes, maybe ? we should look into this more
