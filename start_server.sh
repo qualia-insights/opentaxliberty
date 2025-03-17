@@ -5,5 +5,5 @@
 
 podman run -it --rm -p 8000:8000 \
 	--mount type=bind,source=$HOME,target=/workspace \
-	opentaxliberty:20250301 \
+	opentaxliberty:20250316 \
 	sh -c "export LOG_LEVEL=DEBUG && cd /workspace/code/qualia_insights/opentaxliberty && fastapi dev opentaxliberty.py --host 0.0.0.0"

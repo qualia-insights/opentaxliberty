@@ -38,9 +38,9 @@
 	
 	"_comment": "presendial election campaign box, if you want to have $3 go to this fund",
 	"_comment": "use /1 for check mark or /Off for no check mark",
-	"presidential_you": "/1",
+	"presidential_you": "/Off",
 	"presidential_you_tag": "c1_1[0]",
-	"presidential_spouse": "/1",
+	"presidential_spouse": "/Off",
 	"presidential_spouse_tag": "c1_2[0]"
   },
   "filing_status": {

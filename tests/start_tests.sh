@@ -5,5 +5,5 @@
 
 podman run -it --rm \
 	--mount type=bind,source=$HOME,target=/workspace \
-	opentaxliberty:20250301 \
-	sh -c "cd /workspace/code/qualia_insights/opentaxliberty/tests && pytest-3 -xvs"
+	opentaxliberty:20250316 \
+	sh -c "cd /workspace/code/qualia_insights/opentaxliberty/tests && mypy .. && pytest-3 -xvs"

@@ -607,7 +607,7 @@ def parse_and_validate_input_files(config_file_name: str, W2_config_file_name: s
                             detail=error_str)
 
 
-def save_debug_json(json_dict : Dict[str, Any]):
+def save_debug_json(json_dict : Dict[str, Any] | None):
     if json_dict is not None and "debug_json_output" in json_dict["configuration"]:
         with open(json_dict["configuration"]["debug_json_output"], 'w') as file:
             json.dump(json_dict, file, indent=4)
