@@ -645,7 +645,8 @@ def validate_F1040_file(file_path: str) -> F1040Document:
     
     with open(file_path, 'r') as f:
         data = json.load(f)
-    
+   
+    data = data["F1040"] 
     # Parse and validate against our schema
     return F1040Document.model_validate(data)
 
@@ -659,6 +660,7 @@ if __name__ == "__main__":
     try:
         file_path = sys.argv[1]
         validated_data = validate_F1040_file(file_path)
+        print(validated_data.model_dump_json(indent=2))
         print(f"✅ F1040 file validated successfully: {file_path}")
         print(f"Tax year: {validated_data.configuration.tax_year}")
         print(f"Taxpayer: {validated_data.name_address_ssn.first_name_middle_initial} {validated_data.name_address_ssn.last_name}")
