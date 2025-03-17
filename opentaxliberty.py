@@ -507,6 +507,7 @@ def parse_and_validate_input_files(config_file_name: str,
         raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, 
                             detail=error_str)
 
+# Decimal doesn't have a build in serialization function so we borrowed this one
 class DecimalEncoder(json.JSONEncoder):
     def default(self, obj):
         if isinstance(obj, Decimal):
