@@ -262,7 +262,7 @@ class Dependents(BaseModel):
 class Income(BaseModel):
     """Income section of the 1040 form."""
     # Lines 1a-1i and 1z
-    L1a: Union[str, int, float, Decimal] = Field(..., description="Wages, salaries, tips, etc.")
+    L1a: Union[str, int, float, Decimal] = Field(default="get_W2_box_1_sum()", description="Wages, salaries, tips, etc.")
     L1a_tag: str = Field(..., description="PDF field tag for line 1a")
     L1b: Optional[Union[int, float, Decimal]] = Field(None, description="Household employee wages")
     L1b_tag: Optional[str] = Field(None, description="PDF field tag for line 1b")
@@ -565,6 +565,23 @@ class F1040Document(BaseModel):
     third_party_designee: Optional[ThirdPartyDesignee] = None
     sign_here: SignHere
 
+    ''' model validator execution order
+    Model Validator Execution Order
+
+    1. mode='before' validators run first, in the order they are defined in the class
+    2. Field validation happens next (including field validators)
+    3. mode='after' validators run last, also in the order they are defined in the class
+
+    Key Points to Remember:
+
+    1. The mode='before' validators are executed on the raw input data before any field validation
+    2. The mode='after' validators are executed after the model is fully constructed, in the order they appear in the class definition
+    3. If validators depend on each other, arrange them in the appropriate order in your class definition
+    4. You can use these ordering rules to ensure calculations happen in the correct sequence
+
+    For future validators, simply place them in the class definition in the order you want them to execute.
+
+    '''
     @model_validator(mode='before')
     @classmethod
     def replace_W2_box_sums(cls, data):
@@ -584,28 +601,6 @@ class F1040Document(BaseModel):
                     data.pop("W2_box_2_sum", None)  # Explicitly remove the key
         
         return data
-
-    @model_validator(mode='after')
-    def validate_refund_amount_you_owe(self):
-        """
-        Validate that either Refund section or Amount You Owe section is used, but not both.
-        The determination is based on the comparison of lines 33 and 24.
-        """
-        # We need to infer whether there should be a refund or amount owed
-        # This should be calculated based on the relationship between payments (L33) and tax (L24)
-        
-        has_refund_section = self.refund is not None and self.refund.L34_subtract is not None
-        has_amount_owed_section = self.amount_you_owe is not None and self.amount_you_owe.L37 is not None
-        
-        # We can't have both sections populated
-        if has_refund_section and has_amount_owed_section and self.amount_you_owe.L37 != 0:
-            raise ValueError("Cannot have both Refund and Amount You Owe sections populated - they are mutually exclusive")
-        
-        # We should have at least one section
-        if not has_refund_section and not has_amount_owed_section:
-            raise ValueError("Must have either Refund or Amount You Owe section populated")
-            
-        return self
 
     @model_validator(mode='after')
     def calculate_standard_deduction(self):
@@ -643,6 +638,39 @@ class F1040Document(BaseModel):
             # These would need to be implemented based on tax rules
             
         return self
+
+    @model_validator(mode='after')
+    def calculate_income(self):
+        """
+        Calculate the income section of the F1040
+        """
+        if hasattr(self, 'income') and hasattr(self.income, 'L1z'):
+            self.income.L1z = (self.income.L1a + self.income.L1b + self.income.L1c + 
+                self.income.L1d + self.income.L1e + self.income.L1f + 
+                self.income.L1g + self.income.L1h + self.income.L1i)
+
+    @model_validator(mode='after')
+    def validate_refund_amount_you_owe(self):
+        """
+        Validate that either Refund section or Amount You Owe section is used, but not both.
+        The determination is based on the comparison of lines 33 and 24.
+        """
+        # We need to infer whether there should be a refund or amount owed
+        # This should be calculated based on the relationship between payments (L33) and tax (L24)
+        
+        has_refund_section = self.refund is not None and self.refund.L34_subtract is not None
+        has_amount_owed_section = self.amount_you_owe is not None and self.amount_you_owe.L37 is not None
+        
+        # We can't have both sections populated
+        if has_refund_section and has_amount_owed_section and self.amount_you_owe.L37 != 0:
+            raise ValueError("Cannot have both Refund and Amount You Owe sections populated - they are mutually exclusive")
+        
+        # We should have at least one section
+        if not has_refund_section and not has_amount_owed_section:
+            raise ValueError("Must have either Refund or Amount You Owe section populated")
+            
+        return self
+
 
 
 def validate_F1040_file(file_path: str) -> F1040Document:

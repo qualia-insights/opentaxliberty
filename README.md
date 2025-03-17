@@ -52,7 +52,7 @@ convenience to the government sites.
     - [X] make sure name is required
     - [X] make sure SSN is required
 - [X] Implement mypy and make it part of the tests
-- [ ] unify json config file and make a single config file....I know we seperated the W2
+- [X] unify json config file and make a single config file....I know we seperated the W2
     - this will make it easier to process multiple forms
     - also I think it will make it easier for our users
     - [X] put configuration in the top of the json config file....I don't think anybody else uses the config information?
