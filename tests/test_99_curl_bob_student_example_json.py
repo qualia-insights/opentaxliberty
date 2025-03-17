@@ -336,6 +336,40 @@ def test_process_tax_form_with_curl():
             else:
                 log_debug("❌ Line 25a value not found in PDF or debug JSON")
                 print("Warning: Line 25a value not found in PDF or debug JSON. Test will continue.")
+
+            # VERIFICATION 4: Line 12 equals 14600 (Standard deduction for Single filing status)
+            # Lookup the field name for Line 12
+            L12_field_name = form_config.get("income", {}).get("L12_tag")
+            log_debug(f"Looking for Line 12 using field name: {L12_field_name}")
+
+            # Get the value from the PDF
+            L12_value = pdf_values.get(L12_field_name)
+            log_debug(f"Found value for Line 12 (field {L12_field_name}): {L12_value}")
+
+            L12_verified = False
+            L12_source = None
+
+            if L12_value is not None:
+                # Convert string representations to Decimal
+                if isinstance(L12_value, str):
+                    L12_value = L12_value.replace(',', '')
+                try:
+                    pdf_L12_value = Decimal(str(L12_value))
+                    
+                    # Assert that Line 12 equals 14600 (standard deduction for Single)
+                    assert abs(pdf_L12_value - Decimal('14600')) < Decimal('0.01'), \
+                        f"Line 12 value ({pdf_L12_value}) does not equal 14600 for standard deduction"
+                    log_debug(f"✓ Line 12 value equals 14600 as required for standard deduction")
+                    L12_verified = True
+                    L12_source = L12_source or "PDF"
+                except (ValueError, TypeError) as e:
+                    log_debug(f"Error converting Line 12 value ({L12_value}) to Decimal: {str(e)}")
+                    log_debug("❌ Line 12 value could not be verified")
+                    # This is important to verify
+                    assert False, f"Line 12 value ({L12_value}) could not be verified as 14600"
+            else:
+                log_debug("❌ Line 12 value not found in PDF or debug JSON")
+                assert False, "Line 12 value not found in PDF or debug JSON - cannot verify it equals 14600"
                 
         except Exception as e:
             log_debug(f"Error validating PDF values: {str(e)}")
@@ -358,6 +392,9 @@ def test_process_tax_form_with_curl():
             print(f"✅ Verified Line 25a matches W2 box 2 sum: {expected_box_2_sum} (Source: {L25a_source})")
         else:
             print(f"Line 25a verification skipped. Expected W2 box 2 sum: {expected_box_2_sum}")
+
+        # Print Line 12 verification result
+        print(f"✅ Verified Line 12 equals 14600 for standard deduction (Source: {L12_source})")
             
         if debug_json_path and Path(debug_json_path).exists():
             print(f"Debug JSON saved at: {debug_json_path}")

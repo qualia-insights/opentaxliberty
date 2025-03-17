@@ -470,5 +470,120 @@ class TestF1040Validation:
         
         os.unlink(tmp_path)
 
+    def test_calculate_standard_deduction(self, valid_f1040_data):
+        """Test automatic calculation of standard deduction based on filing status."""
+        
+        # Test cases for different filing statuses
+        test_cases = [
+            # Single filing status
+            {
+                "filing_status": {
+                    "single_or_HOH": "/1", 
+                    "single_or_HOH_tag": "c1_3[0]",
+                    "married_filing_jointly_or_QSS": "/Off", 
+                    "married_filing_jointly_or_QSS_tag": "c1_3[1]",
+                    "married_filing_separately": "/Off", 
+                    "married_filing_separately_tag": "c1_3[2]"
+                },
+                "expected_deduction": 14600
+            },
+            # Married filing separately
+            {
+                "filing_status": {
+                    "single_or_HOH": "/Off", 
+                    "single_or_HOH_tag": "c1_3[0]",
+                    "married_filing_jointly_or_QSS": "/Off", 
+                    "married_filing_jointly_or_QSS_tag": "c1_3[1]",
+                    "married_filing_separately": "/1", 
+                    "married_filing_separately_tag": "c1_3[2]"
+                },
+                "expected_deduction": 14600
+            },
+            # Married filing jointly
+            {
+                "filing_status": {
+                    "single_or_HOH": "/Off", 
+                    "single_or_HOH_tag": "c1_3[0]",
+                    "married_filing_jointly_or_QSS": "/3", 
+                    "married_filing_jointly_or_QSS_tag": "c1_3[1]",
+                    "married_filing_separately": "/Off", 
+                    "married_filing_separately_tag": "c1_3[2]"
+                },
+                "expected_deduction": 29200
+            },
+            # Qualifying surviving spouse
+            {
+                "filing_status": {
+                    "single_or_HOH": "/Off", 
+                    "single_or_HOH_tag": "c1_3[0]",
+                    "married_filing_jointly_or_QSS": "/4", 
+                    "married_filing_jointly_or_QSS_tag": "c1_3[1]",
+                    "married_filing_separately": "/Off", 
+                    "married_filing_separately_tag": "c1_3[2]"
+                },
+                "expected_deduction": 29200
+            },
+            # Head of household
+            {
+                "filing_status": {
+                    "single_or_HOH": "/2", 
+                    "single_or_HOH_tag": "c1_3[0]",
+                    "married_filing_jointly_or_QSS": "/Off", 
+                    "married_filing_jointly_or_QSS_tag": "c1_3[1]",
+                    "married_filing_separately": "/Off", 
+                    "married_filing_separately_tag": "c1_3[2]"
+                },
+                "expected_deduction": 21900
+            }
+        ]
+        
+        for i, test_case in enumerate(test_cases):
+            # Create a deep copy of the valid data for this test case
+            test_data = json.loads(json.dumps(valid_f1040_data))
+            
+            # Update the filing status fields
+            for key, value in test_case["filing_status"].items():
+                test_data["filing_status"][key] = value
+            
+            # Set L12 to 0 to ensure it gets calculated
+            test_data["income"]["L12"] = 0
+            
+            with tempfile.NamedTemporaryFile(suffix='.json', delete=False) as tmp:
+                tmp.write(json.dumps(test_data).encode())
+                tmp_path = tmp.name
+            
+            try:
+                # Validate the file, which should trigger calculate_standard_deduction
+                validated = validate_F1040_file(tmp_path)
+                
+                # Verify the standard deduction was calculated correctly
+                assert validated.income.L12 == test_case["expected_deduction"], \
+                    f"Test case {i+1}: Expected standard deduction of {test_case['expected_deduction']}, " \
+                    f"got {validated.income.L12}"
+                
+            finally:
+                os.unlink(tmp_path)
+
+    def test_standard_deduction_not_overwritten(self, valid_f1040_data):
+        """Test that existing standard deduction values are not overwritten."""
+        
+        # Set L12 to a non-zero value
+        valid_f1040_data["income"]["L12"] = 14600
+        
+        with tempfile.NamedTemporaryFile(suffix='.json', delete=False) as tmp:
+            tmp.write(json.dumps(valid_f1040_data).encode())
+            tmp_path = tmp.name
+        
+        try:
+            # Validate the file
+            validated = validate_F1040_file(tmp_path)
+            
+            # Verify the standard deduction was not changed
+            assert validated.income.L12 == 14600, \
+                f"Expected standard deduction to remain 14600, but got {validated.income.L12}"
+            
+        finally:
+            os.unlink(tmp_path)
+
 if __name__ == "__main__":
     pytest.main(["-xvs", __file__])
