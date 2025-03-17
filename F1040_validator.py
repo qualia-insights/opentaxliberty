@@ -565,10 +565,6 @@ class F1040Document(BaseModel):
     third_party_designee: Optional[ThirdPartyDesignee] = None
     sign_here: SignHere
 
-    # Store the W2 sums from context
-    W2_box_1_sum: Optional[Decimal] = None
-    W2_box_2_sum: Optional[Decimal] = None
-
     @model_validator(mode='before')
     @classmethod
     def replace_W2_box_sums(cls, data):

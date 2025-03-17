@@ -179,11 +179,12 @@ def test_process_tax_form_with_curl():
         log_debug(f"Verifying Line 34 equals 102.31 for bob_student_F1040.json and bob_student_W2.json")
         
         # Calculate expected W2 box sums from W2 data
-        with open(W2_config_file_path, 'r') as f:
+        with open(config_file_path, 'r') as f:
             w2_data = json.load(f)
             
-        expected_box_1_sum = sum(Decimal(str(entry['box_1'])) for entry in w2_data.get('W2', []))
-        expected_box_2_sum = sum(Decimal(str(entry['box_2'])) for entry in w2_data.get('W2', []))
+        w2_data = w2_data["W2"]
+        expected_box_1_sum = sum(Decimal(str(entry['box_1'])) for entry in w2_data.get('W2_entries', []))
+        expected_box_2_sum = sum(Decimal(str(entry['box_2'])) for entry in w2_data.get('W2_entries', []))
         
         log_debug(f"Expected W2 Box 1 sum: {expected_box_1_sum}")
         log_debug(f"Expected W2 Box 2 sum: {expected_box_2_sum}")
@@ -237,6 +238,7 @@ def test_process_tax_form_with_curl():
             with open(config_file_path, 'r') as f:
                 form_config = json.load(f)
             
+            form_config = form_config["F1040"]
             # Look up the field names from the configuration
             L1a_field_name = form_config.get("income", {}).get("L1a_tag")
             L25a_field_name = form_config.get("payments", {}).get("L25a_tag")

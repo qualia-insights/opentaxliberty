@@ -587,11 +587,16 @@ def parse_and_validate_input_files(config_file_name: str,
         raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, 
                             detail=error_str)
 
+class DecimalEncoder(json.JSONEncoder):
+    def default(self, obj):
+        if isinstance(obj, Decimal):
+            return float(obj)  # Convert Decimal to float
+        return super().default(obj)
 
 def save_debug_json(json_dict : Dict[str, Any] | None):
     if json_dict is not None and "debug_json_output" in json_dict["configuration"]:
         with open(json_dict["configuration"]["debug_json_output"], 'w') as file:
-            json.dump(json_dict, file, indent=4)
+            json.dump(json_dict, file, indent=4, cls=DecimalEncoder)
 
 class processing_response(BaseModel):
     """Response model for successful processing"""
