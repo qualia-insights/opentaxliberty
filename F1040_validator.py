@@ -18,7 +18,7 @@ import json
 from typing import List, Dict, Any, Optional, Union, Literal
 from decimal import Decimal
 from pydantic import BaseModel, Field, field_validator, model_validator
-
+from W2_validator import validate_W2_json, W2Document, W2Entry, W2Configuration
 
 class F1040Configuration(BaseModel):
     """Configuration section for the F1040 form."""
@@ -565,6 +565,36 @@ class F1040Document(BaseModel):
     third_party_designee: Optional[ThirdPartyDesignee] = None
     sign_here: SignHere
 
+    # Store the W2 sums from context
+    W2_box_1_sum: Optional[Decimal] = None
+    W2_box_2_sum: Optional[Decimal] = None
+
+    @model_validator(mode='before')
+    @classmethod
+    def extract_context(cls, data):
+        """Extract W2 sums from validation context."""
+        if isinstance(data, dict) and not isinstance(data, BaseModel):
+            # Get the validation context
+            context = model_rebuild_dataclass_instance.context.get()
+            
+            if context and not context.get("disable_context"):
+                # Store W2 sums from context in the model
+                if "W2_box_1_sum" in context:
+                    data["W2_box_1_sum"] = context["W2_box_1_sum"]
+                if "W2_box_2_sum" in context:
+                    data["W2_box_2_sum"] = context["W2_box_2_sum"]
+                
+                # Process W2 function calls in the data
+                if "income" in data and "L1a" in data["income"] and data["income"]["L1a"] == "get_W2_box_1_sum()":
+                    if data.get("W2_box_1_sum") is not None:
+                        data["income"]["L1a"] = data["W2_box_1_sum"]
+                
+                if "payments" in data and "L25a" in data["payments"] and data["payments"]["L25a"] == "get_W2_box_2_sum()":
+                    if data.get("W2_box_2_sum") is not None:
+                        data["payments"]["L25a"] = data["W2_box_2_sum"]
+        
+        return data
+
     @model_validator(mode='after')
     def validate_refund_amount_you_owe(self):
         """
@@ -627,10 +657,10 @@ class F1040Document(BaseModel):
 
 def validate_F1040_file(file_path: str) -> F1040Document:
     """
-    Validate a F1040 configuration file and return a validated F1040Document.
+    Validate a Open Tax Liberty configuration file and return a validated F1040Document.
     
     Args:
-        file_path (str): Path to the F1040 JSON configuration file
+        file_path (str): Path to the Open Tax Liberty JSON configuration file
         
     Returns:
         F1040Document: Validated F1040 document
@@ -641,21 +671,40 @@ def validate_F1040_file(file_path: str) -> F1040Document:
         ValidationError: If the JSON doesn't conform to the F1040Document schema
     """
     if not os.path.exists(file_path):
-        raise ValueError(f"F1040 configuration file does not exist: {file_path}")
+        raise ValueError(f"Open Tax Liberty configuration file does not exist: {file_path}")
     
     with open(file_path, 'r') as f:
         data = json.load(f)
    
-    data = data["F1040"] 
-    # Parse and validate against our schema
-    return F1040Document.model_validate(data)
-
+    # first we have to acquire the W2 data using the W2_validator.py 
+    # this will compute the totals for box_1 and box_2 on all W2 in the global configuration file
+    if "W2" not in data:                                                   
+        raise ValueError(f"Open Tax Liberty configration file has no W2 section!")
+    W2_json_data = data["W2"]
+    W2_doc = validate_W2_json(W2_json_data) 
+    context = {
+        "W2_box_1_sum": W2_doc.totals["total_box_1"],
+        "W2_box_2_sum": W2_doc.totals["total_box_2"]
+    } 
+   
+    if "F1040" not in data:                                                   
+        raise ValueError(f"Open Tax Liberty configration file has no F1040 section!")
+    F1040_data = data["F1040"] 
+    # Parse and validate against our schema, passing the context which includes the W2 Boxes Totals
+    return F1040Document.model_validate(F1040_data, context=context)
 
 # If the module is run directly, validate a file
 if __name__ == "__main__":
     if len(sys.argv) != 2:
         print("Usage: python F1040_validator.py <path_to_F1040_json>")
         sys.exit(1)
+    
+    # Add stack trace for debugging
+    import traceback
+    stack_trace = traceback.format_stack()
+    print("Stack trace at F1040_validator.py main execution:")
+    for line in stack_trace:
+        print(line.strip())
     
     try:
         file_path = sys.argv[1]
@@ -675,4 +724,6 @@ if __name__ == "__main__":
             
     except Exception as e:
         print(f"❌ Validation failed: {str(e)}")
+        print("Detailed error traceback:")
+        traceback.print_exc()
         sys.exit(1)

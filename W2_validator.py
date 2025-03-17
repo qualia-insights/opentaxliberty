@@ -127,6 +127,26 @@ class W2Document(BaseModel):
         
         return self
 
+def validate_W2_json(json_data: Dict[str, Any]) -> W2Document:
+    """
+    Validate a open tax liberty configuration data and return a validated W2Document.
+    
+    Args:
+        json_data (Dict[str, Any]): the open tax liberty configuration file as a global config file
+        
+    Returns:
+        W2Document: Validated W2 document
+        
+    Raises:
+        ValueError: If the file doesn't exist
+        json.JSONDecodeError: If the file contains invalid JSON
+        ValidationError: If the JSON doesn't conform to the W2Document schema
+    """
+    if not json_data:
+        raise ValueError(f"Open Tax Liberty Json configration data does not exist!")
+    
+    # Parse and validate against our schema
+    return W2Document.model_validate(json_data)
 
 def validate_W2_file(file_path: str) -> W2Document:
     """
@@ -153,12 +173,18 @@ def validate_W2_file(file_path: str) -> W2Document:
     # Parse and validate against our schema
     return W2Document.model_validate(data)
 
-
 # If the module is run directly, validate a file
 if __name__ == "__main__":
     if len(sys.argv) != 2:
         print("Usage: python W2_validator.py <path_to_W2_json>")
         sys.exit(1)
+    
+    # Add stack trace for debugging
+    import traceback
+    stack_trace = traceback.format_stack()
+    print("Stack trace at W2_validator.py main execution:")
+    for line in stack_trace:
+        print(line.strip())
     
     try:
         file_path = sys.argv[1]
@@ -170,4 +196,6 @@ if __name__ == "__main__":
         print(f"Total Box 2 (Federal Tax Withheld): {validated_data.totals['total_box_2']}")
     except Exception as e:
         print(f"❌ Validation failed: {str(e)}")
+        print("Detailed error traceback:")
+        traceback.print_exc()
         sys.exit(1)
