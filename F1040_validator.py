@@ -285,38 +285,51 @@ class Income(BaseModel):
     L1z_tag: str = Field(..., description="PDF field tag for line 1z")
     
     # Other income lines
-    L2a: Optional[Union[int, float, Decimal]] = Field(None, description="Tax-exempt interest")
+    L2a: Decimal = Field(default=0, description="Tax-exempt interest")
     L2a_tag: Optional[str] = Field(None, description="PDF field tag for line 2a")
-    L2b: Optional[Union[int, float, Decimal]] = Field(None, description="Taxable interest")
+    L2b: Decimal = Field(default=0, description="Taxable interest")
     L2b_tag: Optional[str] = Field(None, description="PDF field tag for line 2b")
-    L3a: Optional[Union[int, float, Decimal]] = Field(None, description="Qualified dividends")
+    L3a: Decimal = Field(default=0, description="Qualified dividends")
     L3a_tag: Optional[str] = Field(None, description="PDF field tag for line 3a")
-    L3b: Optional[Union[int, float, Decimal]] = Field(None, description="Ordinary dividends")
+    L3b: Decimal = Field(default=0, description="Ordinary dividends")
     L3b_tag: Optional[str] = Field(None, description="PDF field tag for line 3b")
-    L4a: Optional[Union[int, float, Decimal]] = Field(None, description="IRA distributions")
+    L4a: Decimal = Field(default=0, description="IRA distributions")
     L4a_tag: Optional[str] = Field(None, description="PDF field tag for line 4a")
-    L4b: Optional[Union[int, float, Decimal]] = Field(None, description="Taxable IRA distributions")
+    L4b: Decimal = Field(default=0, description="Taxable IRA distributions")
     L4b_tag: Optional[str] = Field(None, description="PDF field tag for line 4b")
-    L5a: Optional[Union[int, float, Decimal]] = Field(None, description="Pensions and annuities")
+    L5a: Decimal = Field(default=0, description="Pensions and annuities")
     L5a_tag: Optional[str] = Field(None, description="PDF field tag for line 5a")
-    L5b: Optional[Union[int, float, Decimal]] = Field(None, description="Taxable pensions and annuities")
+    L5b: Decimal = Field(default=0, description="Taxable pensions and annuities")
     L5b_tag: Optional[str] = Field(None, description="PDF field tag for line 5b")
-    L6a: Optional[Union[int, float, Decimal]] = Field(None, description="Social security benefits")
+    L6a: Decimal = Field(default=0, description="Social security benefits")
     L6a_tag: Optional[str] = Field(None, description="PDF field tag for line 6a")
-    L6b: Optional[Union[int, float, Decimal]] = Field(None, description="Taxable social security benefits")
+    L6b: Decimal = Field(default=0, description="Taxable social security benefits")
     L6b_tag: Optional[str] = Field(None, description="PDF field tag for line 6b")
     L6c: Optional[str] = Field(None, description="Are you a retired public safety officer?")
     L6c_tag: Optional[str] = Field(None, description="PDF field tag for line 6c")
     L7cb: Optional[str] = Field(None, description="Capital gain or loss")
     L7cb_tag: Optional[str] = Field(None, description="PDF field tag for line 7cb")
-    L7: Optional[Union[int, float, Decimal]] = Field(None, description="Capital gain or loss")
+    L7: Decimal = Field(default=0, description="Capital gain or loss")
     L7_tag: Optional[str] = Field(None, description="PDF field tag for line 7")
-    L8: Optional[Union[int, float, Decimal]] = Field(None, description="Other income")
+    L8: Decimal = Field(default=0, description="Other income")
     L8_tag: Optional[str] = Field(None, description="PDF field tag for line 8")
     
     # Total income and adjusted gross income
-    L9_sum: List[str] = Field(..., description="List of fields to sum for line 9")
-    L9_sum_tag: str = Field(..., description="PDF field tag for line 9")
+    L9: Decimal = Field(default=0, description="Total income")
+    L9_tag: str = Field(..., description="PDF field tag for line 9")
+    L10: Decimal = Field(default=0, description="Adjustments to income")
+    L10_tag: Optional[str] = Field(None, description="PDF field tag for line 10")
+    L11_subtract: List[str] = Field(..., description="List of fields to subtract for line 11")
+    L11_subtract_tag: str = Field(..., description="PDF field tag for line 11")
+    L12: Decimal = Field(default=0, description="Standard deduction or itemized deductions")
+    L12_tag: Optional[str] = Field(None, description="PDF field tag for line 12")
+    L13: Decimal = Field(default=0, description="Qualified business income deduction")
+    L13_tag: Optional[str] = Field(None, description="PDF field tag for line 13")
+    L14_sum: List[str] = Field(..., description="List of fields to sum for line 14")
+    L14_sum_tag: str = Field(..., description="PDF field tag for line 14")
+    L15_subtract: List[str] = Field(..., description="List of fields to subtract for line 15")
+    L15_subtract_tag: str = Field(..., description="PDF field tag for line 15")
+
     L10: Optional[Union[int, float, Decimal]] = Field(None, description="Adjustments to income")
     L10_tag: Optional[str] = Field(None, description="PDF field tag for line 10")
     L11_subtract: List[str] = Field(..., description="List of fields to subtract for line 11")
@@ -650,6 +663,11 @@ class F1040Document(BaseModel):
                 self.income.L1d + self.income.L1e + self.income.L1f + 
                 self.income.L1g + self.income.L1h + self.income.L1i)
         
+        if hasattr(self, 'income') and hasattr(self.income, 'L9'):
+            self.income.L9 = (self.income.L1z + self.income.L2b + self.income.L3b + 
+                self.income.L4b + self.income.L5b + self.income.L6b + 
+                self.income.L7 + self.income.L8)
+
         return self
 
     @model_validator(mode='after')
