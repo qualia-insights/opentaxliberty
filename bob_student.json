@@ -18,7 +18,7 @@
       "tax_year": 2024,
       "output_file_name": "bob_student_F1040.pdf",
       "form": "F1040",
-      "debug_json_output": "/workspace/temp/bob_student_F1040.json"
+      "debug_json_output": "/workspace/temp/bob_student.json"
     },
     "name_address_ssn": {
       "_comment": "this is the header block of the top of the Form 1040, it is ok to leave a field blank",

@@ -55,6 +55,7 @@ convenience to the government sites.
 - [ ] unify json config file and make a single config file....I know we seperated the W2
     - this will make it easier to process multiple forms
     - also I think it will make it easier for our users
+    - [ ] put configuration in the top of the json config file....I don't think anybody else uses the config information?
 - [ ] Refactor code to use Pydantic more
     - This will remove potential errors from user by simplyfying json config file
     - [ ] Put calculations into F1040_validator.py

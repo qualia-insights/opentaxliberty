@@ -514,8 +514,8 @@ class DecimalEncoder(json.JSONEncoder):
         return super().default(obj)
 
 def save_debug_json(json_dict : Dict[str, Any] | None):
-    if json_dict is not None and "debug_json_output" in json_dict["configuration"]:
-        with open(json_dict["configuration"]["debug_json_output"], 'w') as file:
+    if json_dict is not None and "debug_json_output" in json_dict["F1040"]["configuration"]:
+        with open(json_dict["F1040"]["configuration"]["debug_json_output"], 'w') as file:
             json.dump(json_dict, file, indent=4, cls=DecimalEncoder)
 
 class processing_response(BaseModel):
@@ -549,7 +549,6 @@ async def process_tax_form(
     job_dir = os.path.join(UPLOAD_DIR, form_id)
     os.makedirs(job_dir, exist_ok=True)
     
-    config_dict = None
     W2_data = None
     W2_dict = None
     F1040_data = None
@@ -585,7 +584,11 @@ async def process_tax_form(
         # Add the cleanup task to run after the response is sent
         background_tasks.add_task(remove_job_directory, job_dir)
 
-        save_debug_json(F1040_dict)
+        merged_dict = {
+            "W2": W2_dict,
+            "F1040": F1040_dict
+        }
+        save_debug_json(merged_dict)
 
         # send the file back to the requestor
         return FileResponse(
