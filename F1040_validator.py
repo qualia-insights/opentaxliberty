@@ -324,10 +324,10 @@ class Income(BaseModel):
     L12_tag: Optional[str] = Field(None, description="PDF field tag for line 12")
     L13: Decimal = Field(default=0, description="Qualified business income deduction")
     L13_tag: Optional[str] = Field(None, description="PDF field tag for line 13")
-    L14_sum: List[str] = Field(..., description="List of fields to sum for line 14")
-    L14_sum_tag: str = Field(..., description="PDF field tag for line 14")
-    L15_subtract: List[str] = Field(..., description="List of fields to subtract for line 15")
-    L15_subtract_tag: str = Field(..., description="PDF field tag for line 15")
+    L14: Decimal = Field(default=0, description="Sum of standard deduction and QBI deduction")
+    L14_tag: str = Field(..., description="PDF field tag for line 14")
+    L15: Union[str, Decimal] = Field(default=0, description="Taxable income")
+    L15_tag: str = Field(..., description="PDF field tag for line 15")
 
     @field_validator('L6c', 'L7cb')
     @classmethod
@@ -656,6 +656,15 @@ class F1040Document(BaseModel):
 
         if hasattr(self, 'income') and hasattr(self.income, 'L11'):
             self.income.L11 = self.income.L9 - self.income.L10
+
+        if hasattr(self, 'income') and hasattr(self.income, 'L14'):
+            self.income.L14 = self.income.L12 + self.income.L13
+
+        if hasattr(self, 'income') and hasattr(self.income, 'L15'):
+            self.income.L15 = self.income.L11 - self.income.L14
+            if self.income.L15 <= 0:
+                self.income.L15 = "-0-"
+
 
         return self
 
