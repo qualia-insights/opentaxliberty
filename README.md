@@ -64,6 +64,7 @@ convenience to the government sites.
     - [ ] remove sum and subtraction code from opentaxliberty.py
     - [ ] test all these changes
 - [ ] put pdf template location in json config file....then we don't have to pass in a bunch of stuff
+- [ ] update the README.md in tests...how do we run all the tests? how do we run a single test
 - [ ] complete the json config file for schedule C
 - [ ] schedule 1, this is where schedule C profit or loss goes, maybe ? we should look into this more
 - [ ] complete the json config file for State of Ohio
