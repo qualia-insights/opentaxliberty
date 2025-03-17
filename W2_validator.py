@@ -81,7 +81,7 @@ class W2Document(BaseModel):
     """Complete W2 document structure."""
     configuration: W2Configuration
     W2: List[W2Entry] = Field(default_factory=list, description="List of W2 entries (can be empty)")
-    totals: Optional[Dict[str, Any]] = Field(None, description="Calculated totals")
+    totals: Dict[str, Any] = Field(description="Calculated totals")
 
     @model_validator(mode='before')
     @classmethod
@@ -104,8 +104,11 @@ class W2Document(BaseModel):
             total_box_1 = sum(entry.box_1 for entry in w2_entries)
             total_box_2 = sum(entry.box_2 for entry in w2_entries)
         
-        if not self.totals:
+        if self.totals is None:
             self.totals = {}
+
+        # Add an assertion to tell mypy that totals is definitely a dictionary at this point
+        assert self.totals is not None
             
         self.totals["total_box_1"] = total_box_1
         self.totals["total_box_2"] = total_box_2
