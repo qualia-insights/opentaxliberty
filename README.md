@@ -10,7 +10,7 @@ differences:
 - Open Tax Liberty is written in Python
 - Open Tax Liberty uses a json file for configuration
 
-The software is still a work in progress.  
+The software is still a work in progress it is not ready for prime time.   
 
 ## Tax Forms for 2024 Tax Year
 
@@ -43,11 +43,14 @@ convenience to the government sites.
     - making alot of progress on pytests but could likely use some more
     - [X] especially test_99 we should check to make sure we have the right answers on the form
     - [X] a test to check that Line 34 is equal to 102.31 which I think is the correct answer for Bob Student
-- [ ] use pydantic to validate IRS form 1040
+- [X] use pydantic to validate IRS form 1040
     - [X] create F1040_validator.py 
     - [X] create test case
-    - [ ] integrate F1040 validator.py with opentaxliberty.py
+    - [X] integrate F1040 validator.py with opentaxliberty.py
+- [ ] double check F1040_validatory.py logic
+    - [ ] like standard deduction based on filing status
 - [ ] complete the json config file for schedule C
+- [ ] schedule 1, this is where schedule C profit or loss goes, maybe ? we should look into this more
 - [ ] complete the json config file for State of Ohio
 - [ ] complete the json config file for schedule A
 - [ ] complete the json config file for schedule B
