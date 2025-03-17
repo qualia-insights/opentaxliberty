@@ -262,26 +262,27 @@ class Dependents(BaseModel):
 class Income(BaseModel):
     """Income section of the 1040 form."""
     # Lines 1a-1i and 1z
-    L1a: Union[str, int, float, Decimal] = Field(default="get_W2_box_1_sum()", description="Wages, salaries, tips, etc.")
+    # Lines 1a-1i and 1z
+    L1a: Union[str, Decimal] = Field(default="get_W2_box_1_sum()", description="Wages, salaries, tips, etc.")
     L1a_tag: str = Field(..., description="PDF field tag for line 1a")
-    L1b: Optional[Union[int, float, Decimal]] = Field(None, description="Household employee wages")
+    L1b: Decimal = Field(default=0, description="Household employee wages")
     L1b_tag: Optional[str] = Field(None, description="PDF field tag for line 1b")
-    L1c: Optional[Union[int, float, Decimal]] = Field(None, description="Tip income")
+    L1c: Decimal = Field(default=0, description="Tip income")
     L1c_tag: Optional[str] = Field(None, description="PDF field tag for line 1c")
-    L1d: Optional[Union[int, float, Decimal]] = Field(None, description="Medicaid waiver payments")
+    L1d: Decimal = Field(default=0, description="Medicaid waiver payments")
     L1d_tag: Optional[str] = Field(None, description="PDF field tag for line 1d")
-    L1e: Optional[Union[int, float, Decimal]] = Field(None, description="Taxable dependent care benefits")
+    L1e: Decimal = Field(default=0, description="Taxable dependent care benefits")
     L1e_tag: Optional[str] = Field(None, description="PDF field tag for line 1e")
-    L1f: Optional[Union[int, float, Decimal]] = Field(None, description="Employer provided adoption benefits")
+    L1f: Decimal = Field(default=0, description="Employer provided adoption benefits")
     L1f_tag: Optional[str] = Field(None, description="PDF field tag for line 1f")
-    L1g: Optional[Union[int, float, Decimal]] = Field(None, description="Scholarship and fellowship grants")
+    L1g: Decimal = Field(default=0, description="Scholarship and fellowship grants")
     L1g_tag: Optional[str] = Field(None, description="PDF field tag for line 1g")
-    L1h: Optional[Union[int, float, Decimal]] = Field(None, description="Pensions and annuities from Form 1099-R, Box 2a")
+    L1h: Decimal = Field(default=0, description="Pensions and annuities from Form 1099-R, Box 2a")
     L1h_tag: Optional[str] = Field(None, description="PDF field tag for line 1h")
-    L1i: Optional[Union[int, float, Decimal]] = Field(None, description="Other earned income")
+    L1i: Decimal = Field(default=0, description="Other earned income")
     L1i_tag: Optional[str] = Field(None, description="PDF field tag for line 1i")
-    L1z_sum: List[str] = Field(..., description="List of fields to sum for line 1z")
-    L1z_sum_tag: str = Field(..., description="PDF field tag for line 1z")
+    L1z: Decimal = Field(0, description="List of fields to sum for line 1z")
+    L1z_tag: str = Field(..., description="PDF field tag for line 1z")
     
     # Other income lines
     L2a: Optional[Union[int, float, Decimal]] = Field(None, description="Tax-exempt interest")
@@ -648,6 +649,8 @@ class F1040Document(BaseModel):
             self.income.L1z = (self.income.L1a + self.income.L1b + self.income.L1c + 
                 self.income.L1d + self.income.L1e + self.income.L1f + 
                 self.income.L1g + self.income.L1h + self.income.L1i)
+        
+        return self
 
     @model_validator(mode='after')
     def validate_refund_amount_you_owe(self):
