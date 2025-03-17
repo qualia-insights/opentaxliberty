@@ -47,7 +47,7 @@
 	"_comment": "only one of these boxes should be turned on, the values are different so read the comments!",
 
 	"_comment": "single: on = /1, head of household: on = /2, off = /Off",
-	"single_or_HOH": "/2",
+	"single_or_HOH": "/1",
 	"single_or_HOH_tag": "c1_3[0]",
 
 	"_comment": "married filing jointly: on = /3, qualifying surviving spouse: on = /4, off = /Off",
