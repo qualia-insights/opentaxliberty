@@ -283,8 +283,8 @@ def process_input_config(input_json_data: Dict[str, Any], W2_data: Dict[str, Any
                 continue
             else:
                 tag_key = f"{sub_key}_tag"
-                if tag_key in F1040_tags_dict[key]:
-                    write_field_pdf(writer, input_json_data[key][tag_key], sub_value)
+                if tag_key in F1040_tags_dict["F1040"][key]:
+                    write_field_pdf(writer, F1040_tags_dict["F1040"][key][tag_key], sub_value)
 
 def parse_and_validate_input_files(config_file_name: str, 
         pdf_template_file_name: str, job_dir: str) -> tuple[W2Document, F1040Document]:
