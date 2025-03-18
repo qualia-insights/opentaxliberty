@@ -252,99 +252,6 @@ def find_key_in_json(input_json_data: Dict[str, Any], target_key: str) -> Any:
     
     return result    
 
-def calculate_sum(input_json_data, key, sum_key, writer=None):
-    """
-    Calculate the sum of values specified in a list within the JSON data.
-    
-    Args:
-        input_json_data (dict): The input JSON data containing the values
-        key (str): The section key in the JSON data
-        sum_key (str): The key containing the list of values to sum
-        writer (PdfWriter, optional): PDF writer to update the field
-        
-    Returns:
-        float or int: The calculated sum
-        
-    Raises:
-        KeyError: If the tag key is not found
-        ValueError: If a value in the sum cannot be converted to a number
-    """
-    tag_key = f"{sum_key}_tag"
-    if tag_key not in input_json_data[key]:
-        raise KeyError(f"Tag key '{tag_key}' not found in '{key}' section")
-    
-    sum_fields_list = input_json_data[key][sum_key]
-    sum_calculation = 0
-    
-    for field in sum_fields_list:
-        is_numeric, numeric_value = is_number(find_key_in_json(input_json_data, field))
-        if is_numeric:
-            sum_calculation += numeric_value
-    
-    # Update the field in the PDF if writer is provided
-    if writer:
-        write_field_pdf(writer, input_json_data[key][tag_key], sum_calculation)
-    
-    # Update the value in the JSON data
-    input_json_data[key][sum_key] = sum_calculation
-    
-    return sum_calculation
-
-
-def calculate_subtraction(input_json_data, key, subtract_key, writer=None):
-    """
-    Calculate the result of subtraction between values specified in a list.
-    
-    Args:
-        input_json_data (dict): The input JSON data containing the values
-        key (str): The section key in the JSON data
-        subtract_key (str): The key containing the list of values for subtraction
-        writer (PdfWriter, optional): PDF writer to update the field
-        
-    Returns:
-        float, int, or str: The calculated subtraction result or "-0-" if negative
-        
-    Raises:
-        KeyError: If the tag key is not found
-        ValueError: If a value in the subtraction cannot be converted to a number
-    """
-    tag_key = f"{subtract_key}_tag"
-    if tag_key not in input_json_data[key]:
-        raise KeyError(f"Tag key '{tag_key}' not found in '{key}' section")
-    
-    sub_fields_list = input_json_data[key][subtract_key]
-    
-    # Get the first value
-    field_value = find_key_in_json(input_json_data, sub_fields_list[0])
-    is_numeric, numeric_value = is_number(field_value)
-    if not is_numeric:
-        raise ValueError(f"Value '{field_value}' cannot be converted to a number for subtraction")
-    
-    sub_calculation = numeric_value
-    
-    # Subtract subsequent values
-    for index in range(1, len(sub_fields_list)):
-        field_value = find_key_in_json(input_json_data, sub_fields_list[index])
-        is_numeric, numeric_value = is_number(field_value)
-        if is_numeric:
-            sub_calculation = sub_calculation - numeric_value
-    
-    # Handle negative result
-    result_value = sub_calculation
-    display_value = sub_calculation
-    
-    if sub_calculation < 0:
-        display_value = "-0-"
-        result_value = 0
-    
-    # Update the field in the PDF if writer is provided
-    if writer:
-        write_field_pdf(writer, input_json_data[key][tag_key], display_value)
-    
-    # Update the value in the JSON data
-    input_json_data[key][subtract_key] = result_value
-    
-    return result_value
 
 def process_input_config(input_json_data: Dict[str, Any], W2_data: Dict[str, Any], writer: PdfWriter):
     """
@@ -374,21 +281,6 @@ def process_input_config(input_json_data: Dict[str, Any], W2_data: Dict[str, Any
             if sub_key == 'value' or sub_key == '_comment' or "_tag" in sub_key:
                 continue
                 
-            # Process sum operations
-            elif "sum" in sub_key:
-                try:
-                    calculate_sum(input_json_data, key, sub_key, writer)
-                except (KeyError, ValueError) as e:
-                    logger.error(f"Error calculating sum for {key}.{sub_key}: {str(e)}")
-                    raise
-                    
-            # Process subtraction operations
-            elif "subtract" in sub_key:
-                try:
-                    calculate_subtraction(input_json_data, key, sub_key, writer)
-                except (KeyError, ValueError) as e:
-                    logger.error(f"Error calculating subtraction for {key}.{sub_key}: {str(e)}")
-                    raise
             # Process simple tag fields
             else:
                 tag_key = f"{sub_key}_tag"
