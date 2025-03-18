@@ -60,9 +60,10 @@ convenience to the government sites.
 - [ ] Refactor code to use Pydantic more
     - This will remove potential errors from user by simplyfying json config file
     - [X] Put calculations into F1040_validator.py
-    - [ ] Put keys into F1040_validator.py
-    - [ ] remove keys from bob_student_json.py
-    - [ ] create a function in F1040_validator.py to retreive keys based on field name
+    - [X] Put keys into F1040_tags.py
+    - [X] remove keys from bob_student_json.py
+    - [ ] create a function in opentaxliberty.py to retreive keys based on field name
+    - [ ] validate that every field in the json config file has a tag
     - [X] remove sum and subtraction code from opentaxliberty.py
     - [ ] test all these changes
 - [ ] put pdf template location in json config file....then we don't have to pass in a bunch of stuff
