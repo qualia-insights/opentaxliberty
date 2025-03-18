@@ -265,8 +265,8 @@
       "L25b_tag": "f2_12[0]",
       "L25c": 2,
       "L25c_tag": "f2_13[0]",
-      "L25d_sum": ["L25a", "L25b", "L25c"],
-      "L25d_sum_tag": "f2_14[0]",
+      "L25d": 0,
+      "L25d_tag": "f2_14[0]",
       "L26": 4,
       "L26_tag": "f2_15[0]",
       "L27": 5,
@@ -277,10 +277,10 @@
       "L29_tag": "f2_18[0]",
       "L31": 8,
       "L31_tag": "f2_20[0]",
-      "L32_sum": ["L27", "L28", "L29", "L31"],
-      "L32_sum_tag": "f2_21[0]",
-      "L33_sum": ["L25d_sum", "L26", "L32_sum"],
-      "L33_sum_tag": "f2_22[0]"
+      "L32": 0,
+      "L32_tag": "f2_21[0]",
+      "L33": 0,
+      "L33_tag": "f2_22[0]"
     },
     "refund": {
       "_comment": "lines 34 - 36 that make up refund and only if you overpaid, meaning line 33 is greater than line 24",

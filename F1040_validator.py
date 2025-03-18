@@ -388,28 +388,28 @@ class TaxAndCredits(BaseModel):
 
 class Payments(BaseModel):
     """Payments section of the 1040 form."""
-    L25a: Union[str, int, float, Decimal] = Field(..., description="Federal income tax withheld from Forms W-2")
+    L25a: Union[str, Decimal] = Field(..., description="Federal income tax withheld from Forms W-2")
     L25a_tag: str = Field(..., description="PDF field tag for line 25a")
-    L25b: Optional[Union[int, float, Decimal]] = Field(None, description="Federal income tax withheld from Form 1099")
-    L25b_tag: Optional[str] = Field(None, description="PDF field tag for line 25b")
-    L25c: Optional[Union[int, float, Decimal]] = Field(None, description="Federal income tax withheld from other forms")
-    L25c_tag: Optional[str] = Field(None, description="PDF field tag for line 25c")
-    L25d_sum: List[str] = Field(..., description="List of fields to sum for line 25d")
-    L25d_sum_tag: str = Field(..., description="PDF field tag for line 25d")
-    L26: Optional[Union[int, float, Decimal]] = Field(None, description="Estimated tax payments")
-    L26_tag: Optional[str] = Field(None, description="PDF field tag for line 26")
-    L27: Optional[Union[int, float, Decimal]] = Field(None, description="Earned income credit (EIC)")
-    L27_tag: Optional[str] = Field(None, description="PDF field tag for line 27")
-    L28: Optional[Union[int, float, Decimal]] = Field(None, description="Additional child tax credit")
-    L28_tag: Optional[str] = Field(None, description="PDF field tag for line 28")
-    L29: Optional[Union[int, float, Decimal]] = Field(None, description="American opportunity credit")
-    L29_tag: Optional[str] = Field(None, description="PDF field tag for line 29")
-    L31: Optional[Union[int, float, Decimal]] = Field(None, description="Amount from Schedule 3, line 15")
-    L31_tag: Optional[str] = Field(None, description="PDF field tag for line 31")
-    L32_sum: List[str] = Field(..., description="List of fields to sum for line 32")
-    L32_sum_tag: str = Field(..., description="PDF field tag for line 32")
-    L33_sum: List[str] = Field(..., description="List of fields to sum for line 33")
-    L33_sum_tag: str = Field(..., description="PDF field tag for line 33")
+    L25b: Decimal = Field(default=Decimal('0'), description="Federal income tax withheld from Form 1099")
+    L25b_tag: str = Field(..., description="PDF field tag for line 25b")
+    L25c: Decimal = Field(default=Decimal('0'), description="Federal income tax withheld from other forms")
+    L25c_tag: str = Field(..., description="PDF field tag for line 25c")
+    L25d: Decimal = Field(default=Decimal('0'), description="Sum of lines 25a, 25b, and 25c")
+    L25d_tag: str = Field(..., description="PDF field tag for line 25d")
+    L26: Decimal = Field(default=Decimal('0'), description="Estimated tax payments")
+    L26_tag: str = Field(..., description="PDF field tag for line 26")
+    L27: Decimal = Field(default=Decimal('0'), description="Earned income credit (EIC)")
+    L27_tag: str = Field(..., description="PDF field tag for line 27")
+    L28: Decimal = Field(default=Decimal('0'), description="Additional child tax credit")
+    L28_tag: str = Field(..., description="PDF field tag for line 28")
+    L29: Decimal = Field(default=Decimal('0'), description="American opportunity credit")
+    L29_tag: str = Field(..., description="PDF field tag for line 29")
+    L31: Decimal = Field(default=Decimal('0'), description="Amount from Schedule 3, line 15")
+    L31_tag: str = Field(..., description="PDF field tag for line 31")
+    L32: Decimal = Field(default=Decimal('0'), description="List of fields to sum for line 32")
+    L32_tag: str = Field(..., description="PDF field tag for line 32")
+    L33: Decimal = Field(default=Decimal('0'), description="List of fields to sum for line 33")
+    L33_tag: str = Field(..., description="PDF field tag for line 33")
     
     @field_validator('L25a')
     @classmethod
@@ -696,6 +696,24 @@ class F1040Document(BaseModel):
 
         return self
 
+    @model_validator(mode='after')
+    def calculate_payments(self):
+        """
+        Calculate the Payments section of the F1040
+        """
+        if hasattr(self, 'tax_and_credits') and hasattr(self.payments, 'L25d'):
+            self.payments.L25d = (self.payments.L25a + self.payments.L25b +
+                    self.payments.L25c)
+        
+        if hasattr(self, 'tax_and_credits') and hasattr(self.payments, 'L32'):
+            self.payments.L32 = (self.payments.L27 + self.payments.L28 +
+                self.payments.L29 + self.payments.L31)
+
+        if hasattr(self, 'tax_and_credits') and hasattr(self.payments, 'L33'):
+            self.payments.L33 = (self.payments.L25d + self.payments.L26 +
+                self.payments.L32)
+
+        return self
 
     @model_validator(mode='after')
     def validate_refund_amount_you_owe(self):
