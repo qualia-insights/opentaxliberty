@@ -67,7 +67,7 @@
       "_comment": "for YES set value = /1 and tag = c1_5[0]",
       "_comment": "for NO set value = /2 and tag = c1_5[1]",
       "yes": "/Off",
-      "value": "/2"
+      "no": "/2"
     },
     "standard_deduction": {
       "_comment": "use /1 for checkmark or /Off for no checkmark for all fields in standard deduction box",

@@ -35,6 +35,7 @@ import shutil
 import traceback
 from W2_validator import validate_W2_file, W2Document, W2Entry, W2Configuration
 from F1040_validator import validate_F1040_file, F1040Document
+from F1040_tags import F1040_tags_dict
 import tempfile
 
 # pypdf dependencies
@@ -271,20 +272,18 @@ def process_input_config(input_json_data: Dict[str, Any], W2_data: Dict[str, Any
             continue
             
         # Check for simple value/tag pairs
-        if 'tag' in input_json_data[key] and 'value' in input_json_data[key]:
-            write_field_pdf(writer, input_json_data[key]['tag'], input_json_data[key]['value'])
+        #if 'tag' in input_json_data[key] and 'value' in input_json_data[key]:
+        #    write_field_pdf(writer, input_json_data[key]['tag'], input_json_data[key]['value'])
             
         # Process any additional sub-keys that have corresponding tag fields
         for sub_key, sub_value in input_json_data[key].items():
             # Skip special keys
             # we skip the _tag because we use that information within the operations below
-            if sub_key == 'value' or sub_key == '_comment' or "_tag" in sub_key:
+            if sub_key == '_comment' in sub_key:
                 continue
-                
-            # Process simple tag fields
             else:
                 tag_key = f"{sub_key}_tag"
-                if tag_key in input_json_data[key]:
+                if tag_key in F1040_tags_dict[key]:
                     write_field_pdf(writer, input_json_data[key][tag_key], sub_value)
 
 def parse_and_validate_input_files(config_file_name: str, 
