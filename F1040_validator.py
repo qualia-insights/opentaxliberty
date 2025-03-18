@@ -426,12 +426,12 @@ class Payments(BaseModel):
 
 class Refund(BaseModel):
     """Refund section of the 1040 form."""
-    L34_subtract: List[str] = Field(..., description="List of fields to subtract for line 34")
-    L34_subtract_tag: str = Field(..., description="PDF field tag for line 34")
+    L34: Decimal = Field(default=Decimal('0'), description="Line 34 subtraction result")
+    L34_tag: str = Field(..., description="PDF field tag for line 34")
     L35a_check: Optional[str] = Field(None, description="Amount applied to estimated tax")
     L35a_check_tag: Optional[str] = Field(None, description="PDF field tag for amount applied to estimated tax checkbox")
-    L35a_sum: Optional[List[str]] = Field(None, description="List of fields to sum for line 35a")
-    L35a_sum_tag: Optional[str] = Field(None, description="PDF field tag for line 35a")
+    L35a: Decimal = Field(default=Decimal('0'), description="Line 35a sum result")
+    L35a_tag: Optional[str] = Field(None, description="PDF field tag for line 35a")
     L35a_b: Optional[str] = Field(None, description="Routing number for direct deposit")
     L35a_b_tag: Optional[str] = Field(None, description="PDF field tag for routing number")
     L35c_checking: Optional[str] = Field(None, description="Checking account checkbox")
@@ -716,6 +716,22 @@ class F1040Document(BaseModel):
         return self
 
     @model_validator(mode='after')
+    def calculate_refund(self):
+        """
+        Calculate the Redund section of the F1040
+        """
+        if hasattr(self, 'tax_and_credits') and hasattr(self.refund, 'L34'):
+            if isinstance(self.payments.L33, Decimal) and isinstance(self.tax_and_credits.L24, Decimal):
+                self.refund.L34 = self.payments.L33 - self.tax_and_credits.L24 
+            elif isinstance(self.tax_and_credits.L24, str):
+                self.refund.L34 = self.payments.L33
+        
+        if hasattr(self, 'tax_and_credits') and hasattr(self.refund, 'L35a'):
+            self.refund.L35a = self.refund.L34
+
+        return self
+
+    @model_validator(mode='after')
     def validate_refund_amount_you_owe(self):
         """
         Validate that either Refund section or Amount You Owe section is used, but not both.
@@ -724,7 +740,7 @@ class F1040Document(BaseModel):
         # We need to infer whether there should be a refund or amount owed
         # This should be calculated based on the relationship between payments (L33) and tax (L24)
         
-        has_refund_section = self.refund is not None and self.refund.L34_subtract is not None
+        has_refund_section = self.refund is not None and self.refund.L34 is not None
         has_amount_owed_section = self.amount_you_owe is not None and self.amount_you_owe.L37 is not None
         
         # We can't have both sections populated
