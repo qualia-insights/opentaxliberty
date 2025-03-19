@@ -49,16 +49,9 @@ def test_bad_json():
         # assert result.returncode == 0, f"Command failed with return code {result.returncode}"
                                                                                 
         # Check for successful HTTP response                                    
+        os.remove("bad_json.json")
         assert "HTTP/1.1 400 Bad Request" in result.stderr, "Expected 400 Bad Request response was not found in curl output"
 
-        '''
-        command_string = 'curl -v "http://mse-8:8000/api/process-tax-form" -H "accept: application/json" -H "Content-Type: multipart/form-data" -F "config_file=@bad_json.json"  -F "pdf_form=@/workspace/code/taxes/2024/f1040_blank.pdf" --output /workspace/temp/processed_form.pdf'
-        command_list = shlex.split(command_string)                              
-        result = subprocess.run(command_list,                                   
-                capture_output=True, text=True, check=True)
-        os.remove("bad_json.json")
-        assert "HTTP/1.1 400 Unprocessable Entity" in result.stderr, "result code of 422 was not found in curl output"
-        '''
                                                                     
         # check to make sure the background tasks removed the job_dir           
         time.sleep(2)                                                           
