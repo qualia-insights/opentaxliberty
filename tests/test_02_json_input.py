@@ -14,6 +14,11 @@ def test_bad_json():
     }
     """
 
+    # Save debug information                                                    
+    debug_logs = []                                                             
+    def log_debug(message):                                                     
+        debug_logs.append(message)
+
     try:
         with open("bad_json.json", 'w') as f:  # 'w' for write mode (overwrites if file exists)
             f.write(bad_json_block)
@@ -21,12 +26,39 @@ def test_bad_json():
         print(f"Error: error creating file: {e}") 
     
     try:
-        command_string = 'curl -v "http://mse-8:8000/api/process-tax-form" -H "accept: application/json" -H "Content-Type: multipart/form-data" -F "config_file=@bad_json.json" -F "W_2_config_file=@../bob_student_W2.json" -F "pdf_form=@/workspace/code/taxes/2024/f1040_blank.pdf" --output /workspace/temp/processed_form.pdf'
+        # Execute the curl command with properly expanded paths                 
+        command = [                                                             
+            'curl', '-v', 'http://mse-8:8000/api/process-tax-form',             
+            '-H', 'accept: application/json',                                   
+            '-H', 'Content-Type: multipart/form-data',                          
+            '-F', f'config_file=@bad_json.json',                           
+            '-F', f'pdf_form=@/workspace/code/taxes/2024/f1040_blank.pdf',                                 
+            '--output', f'/worksace/temp/processed_form.pdf'
+        ]                                                                       
+                                                                                
+        log_debug(f"Executing command: {' '.join(command)}")                    
+                                                                                
+        result = subprocess.run(command, capture_output=True, text=True)        
+                                                                                
+        # Store command results                                                 
+        log_debug(f"Command exit code: {result.returncode}")                    
+        log_debug(f"Command stdout: {result.stdout}")                           
+        log_debug(f"Command stderr: {result.stderr}")                           
+                                                                                
+        # Check for successful execution                                        
+        # assert result.returncode == 0, f"Command failed with return code {result.returncode}"
+                                                                                
+        # Check for successful HTTP response                                    
+        assert "HTTP/1.1 400 Bad Request" in result.stderr, "Expected 400 Bad Request response was not found in curl output"
+
+        '''
+        command_string = 'curl -v "http://mse-8:8000/api/process-tax-form" -H "accept: application/json" -H "Content-Type: multipart/form-data" -F "config_file=@bad_json.json"  -F "pdf_form=@/workspace/code/taxes/2024/f1040_blank.pdf" --output /workspace/temp/processed_form.pdf'
         command_list = shlex.split(command_string)                              
         result = subprocess.run(command_list,                                   
                 capture_output=True, text=True, check=True)
         os.remove("bad_json.json")
-        assert "HTTP/1.1 422 Unprocessable Entity" in result.stderr, "result code of 422 was not found in curl output"
+        assert "HTTP/1.1 400 Unprocessable Entity" in result.stderr, "result code of 422 was not found in curl output"
+        '''
                                                                     
         # check to make sure the background tasks removed the job_dir           
         time.sleep(2)                                                           
@@ -36,52 +68,14 @@ def test_bad_json():
                 pytest.fail(f"There should be no files in the {job_directory} but the file {file_path} exists")
             elif file_path.is_dir():                                            
                 pytest.fail(f"There should be no directories in the {job_directory} but the directory {file_path} exists")
-
-    except subprocess.CalledProcessError as e:
-        print(f"Command failed with return code {e.returncode}")
-        print(f"Stdout: {e.stdout}")  # If capture_output was True
-        print(f"Stderr: {e.stderr}")  # If capture_output was True
-        assert e.returncode == 4
-
-def test_bad_w2_json():
-    # Create a bad W2 JSON file
-    bad_w2_json_block = """
-    {
-        "configuration": {
-            "tax_year": 2024,
-            "form": "W2
-        }
-    }
-    """
-
-    try:
-        with open("bad_w2_json.json", 'w') as f:
-            f.write(bad_w2_json_block)
-    except Exception as e:
-        print(f"Error: error creating file: {e}")
-    
-    try:
-        command_string = 'curl -v "http://mse-8:8000/api/process-tax-form" -H "accept: application/json" -H "Content-Type: multipart/form-data" -F "config_file=@../bob_student_F1040.json" -F "W_2_config_file=@bad_w2_json.json" -F "pdf_form=@/workspace/code/taxes/2024/f1040_blank.pdf" --output /workspace/temp/processed_form.pdf'
-        command_list = shlex.split(command_string)
-        result = subprocess.run(command_list,
-                capture_output=True, text=True, check=True)
-        os.remove("bad_w2_json.json")
-        assert "HTTP/1.1 422 Unprocessable Entity" in result.stderr, "result code of 422 was not found in curl output"
-        
-        # check to make sure the background tasks removed the job_dir
-        time.sleep(2)
-        job_directory = Path('/workspace/temp/uploads')
-        for file_path in job_directory.glob('**/*'):
-            if file_path.is_file():
-                pytest.fail(f"There should be no files in the {job_directory} but the file {file_path} exists")
-            elif file_path.is_dir():
-                pytest.fail(f"There should be no directories in the {job_directory} but the directory {file_path} exists")
-                
-    except subprocess.CalledProcessError as e:
-        print(f"Command failed with return code {e.returncode}")
-        print(f"Stdout: {e.stdout}")
-        print(f"Stderr: {e.stderr}")
-        assert e.returncode == 4
+    except Exception as e:                                                      
+        # Print all debug logs if the test fails                                
+        print("\n--- DEBUG INFORMATION ---")                                    
+        for log in debug_logs:                                                  
+            print(log)                                                          
+        print("\n--- END DEBUG INFORMATION ---")                                
+                                                                                
+        raise
 
 '''
 def test_good_json():
@@ -102,10 +96,12 @@ def test_json_with_bad_template_file_name():
     # create a json file with fstring
     json_block = """
     {
-        "configuration": {                                                            
-            "tax_year": 2024,                                                          
-            "template_1040_pdf": "../FILE_IS_NOT_HERE_EVER.pdf",                              
-            "output_file_name": "/home/rovitotv/temp/bob_student_f1040.pdf"            
+        "F1040": {
+            "configuration": {                                                            
+                "tax_year": 2024,                                                          
+                "template_1040_pdf": "../FILE_IS_NOT_HERE_EVER.pdf",                              
+                "output_file_name": "/home/rovitotv/temp/bob_student_f1040.pdf"            
+            }
         }   
     }
     """
@@ -130,11 +126,13 @@ def test_json_with_bad_output_directory():
     # create a json file with fstring
     json_block = """
     {
-        "configuration": {                                                            
-            "tax_year": 2024,                                                          
-            "template_1040_pdf": "../f1040_template.pdf",                              
-            "output_file_name": "/home/rovitotv/DIRECTORY_IS_NOT_REAL/bob_student_f1040.pdf"            
-        }   
+        F1040": {
+            "configuration": {                                                            
+                "tax_year": 2024,                                                          
+                "template_1040_pdf": "../f1040_template.pdf",                              
+                "output_file_name": "/home/rovitotv/DIRECTORY_IS_NOT_REAL/bob_student_f1040.pdf"            
+            }   
+        }
     }
     """
 

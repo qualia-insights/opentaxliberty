@@ -342,7 +342,7 @@ def parse_and_validate_input_files(config_file_name: str,
             logging.info(f"Total Box 1 (Wages): {W2_data.totals['total_box_1']}")
             logging.info(f"Total Box 2 (Federal Tax Withheld): {W2_data.totals['total_box_2']}")
         except json.JSONDecodeError as e:
-            error_str = f"Error: Invalid JSON format in W2 configuration file ({W2_config_file_name}): {str(e)}"
+            error_str = f"Error: Invalid JSON format in W2 configuration file ({config_file_name}): {str(e)}"
             logging.error(error_str)
             raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, 
                 detail=error_str)
