@@ -65,8 +65,9 @@ convenience to the government sites.
     - [X] remove keys from bob_student_json.py
     - [X] create a function in opentaxliberty.py to retreive keys based on field name
     - [X] rename F1040_tags.py to tax_form_tags.py then we will have one dictionary to represent all tags
-    - [ ] validate that every field in the json config file has a tag
+    - [ ] validate that every field in the json config file has a tag, should this live in F1040_validator.py?
     - [X] remove sum and subtraction code from opentaxliberty.py
+    - [ ] We need to review the tests
     - [ ] test all these changes
 - [ ] put pdf template location in json config file....then we don't have to pass in a bunch of stuff
 - [ ] update the README.md in tests...how do we run all the tests? how do we run a single test
