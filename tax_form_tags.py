@@ -1,4 +1,4 @@
-# F1040_tags.py F1040 Tags module for Open Tax Liberty
+# tax_form_tags.py Tax Form Tags module for Open Tax Liberty
 # Copyright (C) 2025 Todd & Linda Rovito/Qualia Insights LLC
 #
 # This program is free software: you can redistribute it and/or modify
@@ -6,8 +6,11 @@
 # the Free Software Foundation, either version 3 of the License, or
 # (at your option) any later version.
 #
-# Dictionary of all F1040 tag fields 
-F1040_tags_dict = {
+# Dictionary of all Tax Form Tags fields:
+#
+# The following Tax Forms are covered in this dictionary:
+#   - IRS F1040 
+tax_form_tags_dict = {
     "F1040": {
         "configuration": {
             # No tag fields in configuration section

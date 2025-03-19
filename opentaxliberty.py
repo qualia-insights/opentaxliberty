@@ -35,7 +35,7 @@ import shutil
 import traceback
 from W2_validator import validate_W2_file, W2Document, W2Entry, W2Configuration
 from F1040_validator import validate_F1040_file, F1040Document
-from F1040_tags import F1040_tags_dict
+from tax_form_tags import tax_form_tags_dict
 import tempfile
 
 # pypdf dependencies
