@@ -37,24 +37,10 @@ def test_perfect_arguments():
         assert False, "Command execution failed"
 '''
 
-def test_missing_arguments():
-    try:
-        # Test with missing W_2_config_file
-        command_string = 'curl -v "http://mse-8:8000/api/process-tax-form" -H "accept: application/json" -H "Content-Type: multipart/form-data" -F "config_file=@../bob_student_F1040.json" -F "pdf_form=@/workspace/code/taxes/2024/f1040_blank.pdf" --output /workspace/temp/processed_form.pdf'
-        command_list = shlex.split(command_string)
-        result = subprocess.run(command_list, 
-                capture_output=True, text=True, check=True)
-        assert "HTTP/1.1 422 Unprocessable Entity" in result.stderr, "Expected 422 status code not found in curl output"
-    except subprocess.CalledProcessError as e:
-        print(f"Command failed with return code {e.returncode}")
-        print(f"Stdout: {e.stdout}")  # If capture_output was True
-        print(f"Stderr: {e.stderr}")  # If capture_output was True
-        assert False, "Command execution failed"
-
 def test_missing_pdf_form():
     try:
         # Test with missing pdf_form
-        command_string = 'curl -v "http://mse-8:8000/api/process-tax-form" -H "accept: application/json" -H "Content-Type: multipart/form-data" -F "config_file=@../bob_student_F1040.json" -F "W_2_config_file=@../bob_student_W2.json" --output /workspace/temp/processed_form.pdf'
+        command_string = 'curl -v "http://mse-8:8000/api/process-tax-form" -H "accept: application/json" -H "Content-Type: multipart/form-data" -F "config_file=@../bob_student.json" --output /workspace/temp/processed_form.pdf'
         command_list = shlex.split(command_string)
         result = subprocess.run(command_list, 
                 capture_output=True, text=True, check=True)
@@ -68,7 +54,7 @@ def test_missing_pdf_form():
 def test_missing_config_file():
     try:
         # Test with missing config_file
-        command_string = 'curl -v "http://mse-8:8000/api/process-tax-form" -H "accept: application/json" -H "Content-Type: multipart/form-data" -F "W_2_config_file=@../bob_student_W2.json" -F "pdf_form=@/workspace/code/taxes/2024/f1040_blank.pdf" --output /workspace/temp/processed_form.pdf'
+        command_string = 'curl -v "http://mse-8:8000/api/process-tax-form" -H "accept: application/json" -H "Content-Type: multipart/form-data" -F "pdf_form=@/workspace/code/taxes/2024/f1040_blank.pdf" --output /workspace/temp/processed_form.pdf'
         command_list = shlex.split(command_string)
         result = subprocess.run(command_list, 
                 capture_output=True, text=True, check=True)
