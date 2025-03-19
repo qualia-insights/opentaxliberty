@@ -12,7 +12,7 @@ import sys
 
 # Add the parent directory to sys.path
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
-from F1040_tags import F1040_tags_dict
+from tax_form_tags import tax_form_tags_dict
 
 def test_process_tax_form_with_curl():
     """
@@ -245,9 +245,9 @@ def test_process_tax_form_with_curl():
             
             form_config = form_config["F1040"]
             # Look up the field names from the configuration
-            L1a_field_name = F1040_tags_dict["F1040"]["income"]["L1a_tag"]
-            L25a_field_name = F1040_tags_dict["F1040"]["payments"]["L25a_tag"]
-            L34_field_name = F1040_tags_dict["F1040"]["refund"]["L34_tag"]
+            L1a_field_name = tax_form_tags_dict["F1040"]["income"]["L1a_tag"]
+            L25a_field_name = tax_form_tags_dict["F1040"]["payments"]["L25a_tag"]
+            L34_field_name = tax_form_tags_dict["F1040"]["refund"]["L34_tag"]
             
             log_debug(f"Looking for Line 1a using field name: {L1a_field_name}")
             log_debug(f"Looking for Line 25a using field name: {L25a_field_name}")
@@ -341,7 +341,7 @@ def test_process_tax_form_with_curl():
 
             # VERIFICATION 4: Line 12 equals 14600 (Standard deduction for Single filing status)
             # Lookup the field name for Line 12
-            L12_field_name = F1040_tags_dict["F1040"]["income"]["L12_tag"]
+            L12_field_name = tax_form_tags_dict["F1040"]["income"]["L12_tag"]
             log_debug(f"Looking for Line 12 using field name: {L12_field_name}")
 
             # Get the value from the PDF
