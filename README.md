@@ -27,48 +27,21 @@ convenience to the government sites.
 
 ## Todo
 
-- Lets bring the heat....we have Friday 3/14, Saturday 3/15, Sunday 3/16, and Monday 3/17 to work on OTL
-- [X] math error on line 34
-- [X] finish 1040 form 
-- [X] complete the json config file for 1040
-- [X] seperate the W2 in its own json file because it will be used on state forms as well
-- [X] setup multiple git remotes....one remote at home and one remote at GitLab
-    - I think this is working now....we have to update the git howto
-- [X] refactor W2_validator.py to work with 0 or more W2(s)
-- [X] integrate W2_validator.py into opentaxliberty.py
-- [X] why is test_04_sum_function.py failing when adding values that are None?
-    - check out the function test_sum_with_none_values I removed the None value2 from sum to make it work
-    - no reason to fix this test if we got rid of the sum function
-- [X] pytests for the W2 json and use pydantic to validate W2 by itself
-- [ ] pytests for form 1040
-    - making alot of progress on pytests but could likely use some more
-    - [X] especially test_99 we should check to make sure we have the right answers on the form
-    - [X] a test to check that Line 34 is equal to 102.31 which I think is the correct answer for Bob Student
-- [X] use pydantic to validate IRS form 1040
-    - [X] create F1040_validator.py 
-    - [X] create test case
-    - [X] integrate F1040 validator.py with opentaxliberty.py
-- [X] double check F1040_validatory.py logic
-    - [X] like standard deduction based on filing status
-    - [X] make sure name is required
-    - [X] make sure SSN is required
-- [X] Implement mypy and make it part of the tests
-- [X] unify json config file and make a single config file....I know we seperated the W2
-    - this will make it easier to process multiple forms
-    - also I think it will make it easier for our users
-    - [X] put configuration in the top of the json config file....I don't think anybody else uses the config information?
-        - for now lets keep the information where it is
+New strategy....I like having a single form in a single file so F1040.py should
+be able to stand on its own.  It should validate, make the PDF, EVERYTHING 
+related to a form F1040. Same goes for the W2. Then OpenTaxLiberty simply imports F1040
+and asks F1040.py to make the PDF form.  OpenTaxLiberty will provide the OpenAPI
+interfaces to the forms(s).  At some point we have to stop playing around and
+get our own taxes DONE :-)
+
+- [ ] rename F1040_validator.py to F1040.py
+- [ ] rename W2_validator.py to W2.py
+- [ ] put pdf writer logic into F1040.py
+- [ ] make sure mypy is still working 
 - [ ] Refactor code to use Pydantic more
-    - This will remove potential errors from user by simplyfying json config file
-    - [X] Put calculations into F1040_validator.py
-    - [X] Put keys into F1040_tags.py
-    - [X] remove keys from bob_student_json.py
-    - [X] create a function in opentaxliberty.py to retreive keys based on field name
-    - [X] rename F1040_tags.py to tax_form_tags.py then we will have one dictionary to represent all tags
     - [ ] validate that every field in the json config file has a tag, should this live in F1040_validator.py?
-    - [X] remove sum and subtraction code from opentaxliberty.py
     - [ ] We need to review the tests
-    - [ ] test all these changes
+- [ ] pytests for form 1040
 - [ ] put pdf template location in json config file....then we don't have to pass in a bunch of stuff
 - [ ] update the README.md in tests...how do we run all the tests? how do we run a single test
 - [ ] complete the json config file for schedule C
