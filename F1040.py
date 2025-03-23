@@ -21,6 +21,7 @@ from pydantic import BaseModel, Field, field_validator, model_validator
 from W2 import validate_W2_json, W2Document, W2Entry, W2Configuration
 from pathlib import Path
 import tempfile
+from tax_form_tags import tax_form_tags_dict
 
 # PDF Imports used to create the PDF
 from pypdf import PdfReader, PdfWriter
@@ -689,6 +690,38 @@ def create_F1040_pdf(F1040_doc: F1040Document, template_F1040_pdf_path: str, out
             pass
     except (OSError, PermissionError) as e:
         raise ValueError(f"Cannot write to output directory {parent_dir}: {str(e)}")
+
+    # setup the PdfWriter.....first we have to read the template
+    reader = PdfReader(template_F1040_pdf_path)
+    writer = PdfWriter()
+    writer.append(reader)
+
+    F1040_dict = F1040_data.model_dump()  # this converts F1040_data into a dict
+
+    for key in F1040_dict:
+        if key == "configuration":
+            continue
+            
+        # Check for simple value/tag pairs
+        #if 'tag' in input_json_data[key] and 'value' in input_json_data[key]:
+        #    write_field_pdf(writer, input_json_data[key]['tag'], input_json_data[key]['value'])
+            
+        # Process any additional sub-keys that have corresponding tag fields
+        for sub_key, sub_value in F1040_dict[key].items():
+            # Skip special keys
+            # we skip the _tag because we use that information within the operations below
+            if sub_key == '_comment' in sub_key:
+                continue
+            else:
+                tag_key = f"{sub_key}_tag"
+                if tag_key in tax_form_tags_dict["F1040"][key]:
+                    write_field_pdf(writer, tax_form_tags_dict["F1040"][key][tag_key], sub_value)
+                else:
+                    raise ValueError(f"Cannot find tag_key: {tag_key} in tax_form_tags_dict") 
+
+    # now save the PDF
+    with open(output_F1040_pdf_path, "wb") as output_stream:                          
+        writer.write(output_stream)
 
 
 # If the module is run directly, validate the config file, then create the F1040 PDF file
