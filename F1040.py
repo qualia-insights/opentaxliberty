@@ -25,7 +25,7 @@ from tax_form_tags import tax_form_tags_dict
 
 # PDF Imports used to create the PDF
 from pypdf import PdfReader, PdfWriter
-import pdf_utility
+from pdf_utility import write_field_pdf
 
 class F1040Configuration(BaseModel):
     """Configuration section for the F1040 form."""
