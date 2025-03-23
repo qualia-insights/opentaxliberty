@@ -182,51 +182,6 @@ def write_field_pdf(writer: PdfWriter, field_name: str, field_value: str):
     if not field_found:
         logging.debug(f"Field '{field_name}' not found on any page")
 
-def find_key_in_json(input_json_data: Dict[str, Any], target_key: str) -> Any:
-    """
-    Search recursively through a nested JSON structure to find the first occurrence of a specific key.
-    
-    Args:
-        input_json_data (Dict[str, Any]): The JSON data to search through
-        target_key (str): The key to search for
-        
-    Returns:
-        Any: The value associated with the first occurrence of the key, or None if not found
-    """
-    # Define a recursive helper function to search through the structure
-    def search_recursive(data, key):
-        # Base case: if data is a dictionary
-        if isinstance(data, dict):
-            # First check if the key exists directly in this dictionary
-            if key in data:
-                return data[key]
-            
-            # If not, recursively search through all values in the dictionary
-            for k, v in data.items():
-                result = search_recursive(v, key)
-                if result is not None:  # Found the key in this branch
-                    return result
-                    
-        # If data is a list, search through each element
-        elif isinstance(data, list):
-            for item in data:
-                result = search_recursive(item, key)
-                if result is not None:  # Found the key in this branch
-                    return result
-                    
-        # If we get here, the key wasn't found in this branch
-        return None
-
-    # Start the recursive search
-    result = search_recursive(input_json_data, target_key)
-    
-    # If the key wasn't found, raise an exception
-    if result is None:
-        raise KeyError(f"Key '{target_key}' not found in the JSON structure")
-    
-    return result    
-
-
 def process_input_config(input_json_data: Dict[str, Any], W2_data: Dict[str, Any], writer: PdfWriter):
     """
     Process the input configuration data and update the PDF form fields.
