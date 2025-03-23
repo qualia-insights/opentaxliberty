@@ -33,8 +33,8 @@ from datetime import datetime
 from decimal import Decimal
 import shutil
 import traceback
-from W2_validator import validate_W2_file, W2Document, W2Entry, W2Configuration
-from F1040_validator import validate_F1040_file, F1040Document
+from W2 import validate_W2_file, W2Document, W2Entry, W2Configuration
+from F1040 import validate_F1040_file, F1040Document
 from tax_form_tags import tax_form_tags_dict
 import tempfile
 

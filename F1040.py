@@ -18,7 +18,7 @@ import json
 from typing import List, Dict, Any, Optional, Union, Literal
 from decimal import Decimal
 from pydantic import BaseModel, Field, field_validator, model_validator
-from W2_validator import validate_W2_json, W2Document, W2Entry, W2Configuration
+from W2 import validate_W2_json, W2Document, W2Entry, W2Configuration
 
 class F1040Configuration(BaseModel):
     """Configuration section for the F1040 form."""
