@@ -114,14 +114,14 @@ class DigitalAssets(BaseModel):
     
     @field_validator('yes')
     @classmethod
-    def validate_digital_assets_value(cls, v):
+    def validate_digital_assets_yes(cls, v):
         if v not in ["/1", "/Off"]:
             raise ValueError(f"Digital assets value must be '/1' (Yes) or '/2' (No), got '{v}'")
         return v
 
     @field_validator('no')
     @classmethod
-    def validate_digital_assets_value(cls, v):
+    def validate_digital_assets_no(cls, v):
         if v not in ["/2", "/Off"]:
             raise ValueError(f"Digital assets value must be '/1' (Yes) or '/2' (No), got '{v}'")
         return v
