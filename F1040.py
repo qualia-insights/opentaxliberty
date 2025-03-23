@@ -1,4 +1,4 @@
-# F1040 Validation module for Open Tax Liberty
+# F1040 module for Open Tax Liberty
 # Copyright (C) 2025 Todd & Linda Rovito/Qualia Insights LLC
 #
 # This program is free software: you can redistribute it and/or modify
@@ -7,7 +7,7 @@
 # (at your option) any later version.
 #
 # Usage:
-#   from F1040_validator import validate_F1040_file
+#   from F1040 import validate_F1040_file
 #   validated_data = validate_F1040_file("path/to/your/f1040_config.json")
 # or run directly from the command line:
 #   python F1040_validator.py path/to/your/f1040_config.json
@@ -602,7 +602,6 @@ class F1040Document(BaseModel):
             
         return self
 
-
 def validate_F1040_file(file_path: str) -> F1040Document:
     """
     Validate a Open Tax Liberty configuration file and return a validated F1040Document.
@@ -641,16 +640,16 @@ def validate_F1040_file(file_path: str) -> F1040Document:
     # Parse and validate against our schema, passing the context which includes the W2 Boxes Totals
     return F1040Document.model_validate(F1040_data)
 
-# If the module is run directly, validate a file
+# If the module is run directly, validate the config file, then create the F1040 PDF file
 if __name__ == "__main__":
-    if len(sys.argv) != 2:
-        print("Usage: python F1040_validator.py <path_to_F1040_json>")
+    if len(sys.argv) != 3:
+        print("Usage: python F1040_validator.py <path_to_F1040_json> <path_to_template_F1040_pdf>")
         sys.exit(1)
     
     # Add stack trace for debugging
     import traceback
     stack_trace = traceback.format_stack()
-    print("Stack trace at F1040_validator.py main execution:")
+    print("Stack trace at F1040.py main execution:")
     for line in stack_trace:
         print(line.strip())
     

@@ -34,9 +34,10 @@ and asks F1040.py to make the PDF form.  OpenTaxLiberty will provide the OpenAPI
 interfaces to the forms(s).  At some point we have to stop playing around and
 get our own taxes DONE :-)
 
-- [ ] rename F1040_validator.py to F1040.py
-- [ ] rename W2_validator.py to W2.py
+- [X] rename F1040_validator.py to F1040.py
+- [X] rename W2_validator.py to W2.py
 - [ ] put pdf writer logic into F1040.py
+- [ ] F1040.py should stand on its own being able to validate json config files and make a complete F1040 pdf
 - [ ] make sure mypy is still working 
 - [ ] Refactor code to use Pydantic more
     - [ ] validate that every field in the json config file has a tag, should this live in F1040_validator.py?
