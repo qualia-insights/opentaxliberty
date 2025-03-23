@@ -37,6 +37,7 @@ get our own taxes DONE :-)
 - [X] rename F1040_validator.py to F1040.py
 - [X] rename W2_validator.py to W2.py
 - [ ] put pdf writer logic into F1040.py
+- [ ] use argparse in F1040.py instead of sys
 - [ ] F1040.py should stand on its own being able to validate json config files and make a complete F1040 pdf
 - [ ] make sure mypy is still working 
 - [ ] Refactor code to use Pydantic more
