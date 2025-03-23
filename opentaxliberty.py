@@ -93,48 +93,6 @@ os.makedirs(UPLOAD_DIR, exist_ok=True)
 
 # FastAPI Program =============================================================  
 
-def is_number(value):
-    """
-    Check if a value is a number or can be converted to a number.
-    
-    Args:
-        value: The value to check
-        
-    Returns:
-        tuple: (is_number, converted_value)
-            - is_number (bool): True if the value is a number or can be converted to a number
-            - converted_value: The numeric value if conversion was successful, None otherwise
-    """
-    # Handle None values
-    if value is None:
-        return False, None
-        
-    # Handle native numeric types
-    if isinstance(value, (int, float, Decimal)):
-        return True, value
-        
-    # Try to convert strings to numbers
-    if isinstance(value, str):
-        # Remove any thousands separators and spaces
-        cleaned_value = value.replace(',', '').replace(' ', '')
-        
-        # Skip empty strings
-        if not cleaned_value:
-            return False, None
-            
-        # Try to convert to float
-        try:
-            converted_value = float(cleaned_value)
-            # If it's a whole number, convert to int for cleaner representation
-            if converted_value.is_integer():
-                converted_value = int(converted_value)
-            return True, converted_value
-        except ValueError:
-            pass
-            
-    # Not a number
-    return False, None
-
 # Define a function to delete the file and its directory
 def remove_job_directory(directory_path_str: str):
     try:

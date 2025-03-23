@@ -20,6 +20,10 @@ from decimal import Decimal
 from pydantic import BaseModel, Field, field_validator, model_validator
 from W2 import validate_W2_json, W2Document, W2Entry, W2Configuration
 
+# PDF Imports used to create the PDF
+from pypdf import PdfReader, PdfWriter
+import pdf_utility
+
 class F1040Configuration(BaseModel):
     """Configuration section for the F1040 form."""
     tax_year: int = Field(..., description="Tax year for the 1040 form")
@@ -640,10 +644,14 @@ def validate_F1040_file(file_path: str) -> F1040Document:
     # Parse and validate against our schema, passing the context which includes the W2 Boxes Totals
     return F1040Document.model_validate(F1040_data)
 
+def create_F1040_pdf(F1040_doc: F1040Document, template_F1040_pdf_path: str, output_F1040_pdf_path: str):
+    
+
+
 # If the module is run directly, validate the config file, then create the F1040 PDF file
 if __name__ == "__main__":
-    if len(sys.argv) != 3:
-        print("Usage: python F1040_validator.py <path_to_F1040_json> <path_to_template_F1040_pdf>")
+    if len(sys.argv) != 4:
+        print("Usage: python F1040_validator.py <path_to_F1040_json> <path_to_template_F1040_pdf> <output_F1040_pdf_path>")
         sys.exit(1)
     
     # Add stack trace for debugging
@@ -654,10 +662,10 @@ if __name__ == "__main__":
         print(line.strip())
     
     try:
-        file_path = sys.argv[1]
-        validated_data = validate_F1040_file(file_path)
+        json_file_path = sys.argv[1]
+        validated_data = validate_F1040_file(json_file_path)
         print(validated_data.model_dump_json(indent=2))
-        print(f"✅ F1040 file validated successfully: {file_path}")
+        print(f"✅ F1040 file validated successfully: {json_file_path}")
         print(f"Tax year: {validated_data.configuration.tax_year}")
         print(f"Taxpayer: {validated_data.name_address_ssn.first_name_middle_initial} {validated_data.name_address_ssn.last_name}")
         
@@ -668,6 +676,8 @@ if __name__ == "__main__":
             print(f"Amount owed: {validated_data.amount_you_owe.L37}")
         else:
             print("Neither refund nor amount owed specified")
+
+        create_F1040_pdf(validated_data, sys.argv[1], sys.argv[2])
             
     except Exception as e:
         print(f"❌ Validation failed: {str(e)}")
