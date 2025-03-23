@@ -182,33 +182,6 @@ def write_field_pdf(writer: PdfWriter, field_name: str, field_value: str):
     if not field_found:
         logging.debug(f"Field '{field_name}' not found on any page")
 
-def read_field_pdf(reader: PdfReader, field_name: str) -> str:
-    """
-    Read the value of a form field from a PDF.
-    
-    Args:
-        reader (PdfReader): The PDF reader object
-        field_name (str): The name of the field to read
-        
-    Returns:
-        str: The value of the field, or empty string if field doesn't exist or has no value
-    """
-    fields = reader.get_fields()
-    
-    # Check if the field exists
-    assert fields is not None, "fields dictionary should not be None at this point this is to help mypy"
-    if field_name in fields:
-        field = fields[field_name]
-        
-        # Handle different field types appropriately
-        if isinstance(field, dict) and "/V" in field:
-            return str(field["/V"])
-        elif not isinstance(field, dict):
-            return str(field)
-    
-    # Return empty string if field doesn't exist or has no value
-    return ""
-
 def find_key_in_json(input_json_data: Dict[str, Any], target_key: str) -> Any:
     """
     Search recursively through a nested JSON structure to find the first occurrence of a specific key.
