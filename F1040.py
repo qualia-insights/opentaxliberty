@@ -645,6 +645,26 @@ def validate_F1040_file(file_path: str) -> F1040Document:
     return F1040Document.model_validate(F1040_data)
 
 def create_F1040_pdf(F1040_doc: F1040Document, template_F1040_pdf_path: str, output_F1040_pdf_path: str):
+    """
+    create a F1040 PDF form 
+    
+    Args:
+        F1040_doc (F1040Document): validated F1040Document
+        template_F1040_pdf_path (str): path to the PDF template
+        output_F1040_pdf_path (str): path to the output pdf file
+
+    Returns:
+        nothing
+        
+    Raises:
+        ValueError: If the template_F1040_pdf file doesn't exist
+        json.JSONDecodeError: If the file contains invalid JSON
+        ValidationError: If the JSON doesn't conform to the F1040Document schema
+    """
+    if not os.path.exists(template_F1040_pdf_path):
+        raise ValueError(f"Open Tax Liberty template F1040 pdf file does not exist: {template_F1040_pdf_path}")
+
+    
     
 
 
@@ -680,7 +700,7 @@ if __name__ == "__main__":
         create_F1040_pdf(validated_data, sys.argv[1], sys.argv[2])
             
     except Exception as e:
-        print(f"❌ Validation failed: {str(e)}")
+        print(f"❌ Validation and Create failed: {str(e)}")
         print("Detailed error traceback:")
         traceback.print_exc()
         sys.exit(1)
