@@ -1,8 +1,8 @@
 # Open Tax Liberty - Python program to make IRS 1040 forms                      
 # Copyright (C) 2025 Todd & Linda Rovito/Qualia Insights LLCa
 #
-# PDF Field Inspector - utility to print all fields in a PDF form
-# Based on the Open Tax Liberty project
+# PDF Field Inspector - utility to print all fields in a PDF form and
+# write fields to the PDF
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU Affero General Public License as published by
@@ -15,8 +15,44 @@ from pathlib import Path
 import json
 
 # pypdf dependencies
-from pypdf import PdfReader
+from pypdf import PdfReader, PdfWriter
 from pypdf.constants import AnnotationDictionaryAttributes
+
+def write_field_pdf(writer: PdfWriter, field_name: str, field_value: str):
+    """
+    Update a form field across all pages of a PDF.
+    
+    Args:
+        writer (PdfWriter): The PDF writer object
+        field_name (str): The name of the field to update
+        field_value (str): The value to set the field to
+    """
+    if field_value == "":
+        return
+    elif field_value == 0:
+        return
+        
+    # Try to update the field on each page
+    field_found = False
+    for page_num in range(len(writer.pages)):
+        try:
+            # Check if this page has the field by attempting to update it
+            writer.update_page_form_field_values(
+                writer.pages[page_num],
+                {field_name: field_value},
+                auto_regenerate=False
+            )
+            field_found = True
+            # If we don't want to update the same field on multiple pages,
+            # we could break here after the first success
+            # break
+        except Exception as e:
+            # Field might not exist on this page, continue to next page
+            continue
+            
+    # Optionally log if field wasn't found on any page
+    if not field_found:
+        logging.debug(f"Field '{field_name}' not found on any page")
 
 def get_form_fields(pdf_path):
     """Get all form fields from the PDF file."""
