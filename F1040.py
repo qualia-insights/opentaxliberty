@@ -19,6 +19,8 @@ from typing import List, Dict, Any, Optional, Union, Literal
 from decimal import Decimal
 from pydantic import BaseModel, Field, field_validator, model_validator
 from W2 import validate_W2_json, W2Document, W2Entry, W2Configuration
+from pathlib import Path
+import tempfile
 
 # PDF Imports used to create the PDF
 from pypdf import PdfReader, PdfWriter
@@ -664,8 +666,29 @@ def create_F1040_pdf(F1040_doc: F1040Document, template_F1040_pdf_path: str, out
     if not os.path.exists(template_F1040_pdf_path):
         raise ValueError(f"Open Tax Liberty template F1040 pdf file does not exist: {template_F1040_pdf_path}")
 
+    # Validate output path
+    output_path = Path(output_F1040_pdf_path)
     
+    # Check parent directory exists
+    parent_dir = output_path.parent
+    if not parent_dir.exists():
+        raise ValueError(f"Output directory does not exist: {parent_dir}")
     
+    # Check parent directory is writable
+    if not os.access(parent_dir, os.W_OK):
+        raise ValueError(f"Output directory is not writable: {parent_dir}")
+    
+    # Validate file extension
+    if output_path.suffix.lower() != '.pdf':
+        raise ValueError(f"Output file must have a .pdf extension: {output_F1040_pdf_path}")
+    
+    # Try to create a test file to ensure we can write to this location
+    try:
+        with tempfile.NamedTemporaryFile(dir=parent_dir, delete=True) as tmp:
+            # If this succeeds, we have write permissions
+            pass
+    except (OSError, PermissionError) as e:
+        raise ValueError(f"Cannot write to output directory {parent_dir}: {str(e)}")
 
 
 # If the module is run directly, validate the config file, then create the F1040 PDF file
