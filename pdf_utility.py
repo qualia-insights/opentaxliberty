@@ -45,14 +45,13 @@ def write_field_pdf(writer: PdfWriter, field_name: str, field_value: str):
             field_found = True
             # If we don't want to update the same field on multiple pages,
             # we could break here after the first success
-            # break
+            break
         except Exception as e:
             # Field might not exist on this page, continue to next page
             continue
             
-    # Optionally log if field wasn't found on any page
     if not field_found:
-        logging.debug(f"Field '{field_name}' not found on any page")
+        raise ValueError(f"Field '{field_name}' not found on any page")
 
 def get_form_fields(pdf_path):
     """Get all form fields from the PDF file."""
