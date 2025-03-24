@@ -731,7 +731,7 @@ class DecimalEncoder(json.JSONEncoder):
             return float(obj)  # Convert Decimal to float
         return super().default(obj)
 
-def save_debug_json(F1040_doc: F1040Document, debug_json_path: str = None):
+def save_debug_json(F1040_doc: F1040Document, debug_json_path: Optional[str] = None):
     """
     Save F1040Document as JSON for debugging purposes.
     

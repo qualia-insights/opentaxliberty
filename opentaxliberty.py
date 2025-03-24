@@ -175,7 +175,7 @@ async def process_F1040(
             logging.info(f"Total Box 1 (Wages): {W2_doc.totals['total_box_1']}")
             logging.info(f"Total Box 2 (Federal Tax Withheld): {W2_doc.totals['total_box_2']}")
         except json.JSONDecodeError as e:
-            error_str = f"Error: Invalid JSON format in W2 configuration file ({config_file_name}): {str(e)}"
+            error_str = f"Error: Invalid JSON format in W2 configuration file ({config_path}): {str(e)}"
             logging.error(error_str)
             raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, 
                 detail=error_str)
@@ -205,7 +205,7 @@ async def process_F1040(
             else:
                 logging.info("Neither refund nor amount owed specified")
         except json.JSONDecodeError as e:
-            error_str = f"Error: Invalid JSON format in F1040 configuration file ({config_file_name}): {str(e)}"
+            error_str = f"Error: Invalid JSON format in F1040 configuration file ({config_path}): {str(e)}"
             logging.error(error_str)
             raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, 
                 detail=error_str)
@@ -248,7 +248,8 @@ async def process_F1040(
 
         # Cleanup before re-raising the HTTPException
         remove_job_directory(job_dir)
-        save_debug_json(F1040_doc.model_dump())
+        if F1040_doc is not None:
+            save_debug_json(F1040_doc.model_dump())
 
         # Include line number information in the error detail
         error_info = f"Error processing form: {str(http_ex)} at line {traceback.extract_tb(http_ex.__traceback__)[-1].lineno}"
@@ -266,7 +267,8 @@ async def process_F1040(
     
         # cleanup before raising a generic exception
         remove_job_directory(job_dir)
-        save_debug_json(F1040_doc.model_dump())
+        if F1040_doc is not None:
+            save_debug_json(F1040_doc.model_dump())
     
         # Include line number information in the error detail
         error_info = f"Error processing form: {str(e)} at line {traceback.extract_tb(e.__traceback__)[-1].lineno}"
