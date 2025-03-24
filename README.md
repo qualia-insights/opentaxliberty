@@ -31,8 +31,10 @@ New strategy....I like having a single form in a single file so F1040.py should
 be able to stand on its own.  It should validate, make the PDF, EVERYTHING 
 related to a form F1040. Same goes for the W2. Then OpenTaxLiberty simply imports F1040
 and asks F1040.py to make the PDF form.  OpenTaxLiberty will provide the OpenAPI
-interfaces to the forms(s).  At some point we have to stop playing around and
-get our own taxes DONE :-)
+interfaces to the forms(s).  OpenTaxLiberty should have an OpenAPI call for each
+tax form that it can process.
+
+At some point we have to stop playing around and get our own taxes DONE :-)
 
 - [X] rename F1040_validator.py to F1040.py
 - [X] rename W2_validator.py to W2.py
