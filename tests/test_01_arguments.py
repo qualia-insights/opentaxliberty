@@ -40,7 +40,7 @@ def test_perfect_arguments():
 def test_missing_pdf_form():
     try:
         # Test with missing pdf_form
-        command_string = 'curl -v "http://mse-8:8000/api/process-tax-form" -H "accept: application/json" -H "Content-Type: multipart/form-data" -F "config_file=@../bob_student.json" --output /workspace/temp/processed_form.pdf'
+        command_string = 'curl -v "http://mse-8:8000/api/process-F1040" -H "accept: application/json" -H "Content-Type: multipart/form-data" -F "config_file=@../bob_student.json" --output /workspace/temp/processed_form.pdf'
         command_list = shlex.split(command_string)
         result = subprocess.run(command_list, 
                 capture_output=True, text=True, check=True)
@@ -54,7 +54,7 @@ def test_missing_pdf_form():
 def test_missing_config_file():
     try:
         # Test with missing config_file
-        command_string = 'curl -v "http://mse-8:8000/api/process-tax-form" -H "accept: application/json" -H "Content-Type: multipart/form-data" -F "pdf_form=@/workspace/code/taxes/2024/f1040_blank.pdf" --output /workspace/temp/processed_form.pdf'
+        command_string = 'curl -v "http://mse-8:8000/api/process-F1040" -H "accept: application/json" -H "Content-Type: multipart/form-data" -F "pdf_form=@/workspace/code/taxes/2024/f1040_blank.pdf" --output /workspace/temp/processed_form.pdf'
         command_list = shlex.split(command_string)
         result = subprocess.run(command_list, 
                 capture_output=True, text=True, check=True)

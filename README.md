@@ -43,7 +43,7 @@ At some point we have to stop playing around and get our own taxes DONE :-)
 - [X] F1040.py should stand on its own being able to validate json config files and make a complete F1040 pdf
 - [X] make opentaxliberty.py work with the new and improved F1040.py
 - [X] change name of opentaxliberty.py OpenAPI call to F1040....we can make a OpenAPI call for each form we support!
-- [ ] make sure mypy is still working 
+- [X] make sure mypy is still working 
 - [ ] Refactor code to use Pydantic more
     - [ ] validate that every field in the json config file has a tag, should this live in F1040_validator.py?
     - [ ] We need to review the tests
