@@ -104,106 +104,6 @@ def remove_job_directory(directory_path_str: str):
     except Exception as e:
         logger.error(f"Error deleting file or directory: {str(e)}")
 
-def parse_and_validate_input_files(config_file_name: str, 
-        pdf_template_file_name: str, job_dir: str) -> tuple[W2Document, F1040Document]:
-    """
-    Parse and validate the input configuration files and PDF template.
-    
-    This function verifies that the PDF template exists and attempts to parse the JSON
-    configuration files for tax form and W2 data. It performs proper validation using
-    the W2_validator and F1040_validator modules and raises appropriate exceptions if any validation fails.
-    
-    Args:
-        config_file_name (str): Path to the main tax form configuration JSON file
-        pdf_template_file_name (str): Path to the PDF template file
-        job_dir (str): Directory path for the current processing job
-        
-    Returns:
-        [W2Document, F1040Document]: A tuple containing:
-            - W2_data: The validated W2Document object
-            - F1040_data: The validated F1040Document object
-            
-    Raises:
-        HTTPException(404): If the PDF template file does not exist
-        HTTPException(400): If the JSON files have invalid format or validation fails
-        HTTPException(500): For other unexpected errors during processing
-    """
-    config_data = None
-    W2_data = None
-    F1040_data = None
-    
-    try:
-        # check template
-        template_file_path = Path(pdf_template_file_name)
-        if template_file_path.exists() == False:
-            error_str = f"Error: Template PDF does not exist: {template_file_path}"
-            logging.error(error_str)
-            raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, 
-                                detail=error_str)
-   
-        # Validate W2 file using the W2_validator
-        try:
-            W2_data = validate_W2_file(config_file_name)
-            logging.info(f"W2 file validated successfully with {len(W2_data.W2_entries)} entries")
-            logging.info(f"Total Box 1 (Wages): {W2_data.totals['total_box_1']}")
-            logging.info(f"Total Box 2 (Federal Tax Withheld): {W2_data.totals['total_box_2']}")
-        except json.JSONDecodeError as e:
-            error_str = f"Error: Invalid JSON format in W2 configuration file ({config_file_name}): {str(e)}"
-            logging.error(error_str)
-            raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, 
-                detail=error_str)
-        except ValueError as e:
-            error_str = f"Error: Invalid W2 data: {str(e)}"
-            logging.error(error_str)
-            raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, 
-                detail=error_str)
-        except Exception as e:
-            error_str = f"Error validating W2 file: {str(e)}"
-            logging.error(error_str)
-            raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, 
-                detail=error_str)
-
-        # Validate F1040 file using the F1040_validator
-        try:
-            F1040_data = validate_F1040_file(config_file_name)
-            logging.info(f"F1040 file validated successfully")
-            logging.info(f"Tax year: {F1040_data.configuration.tax_year}")
-            logging.info(f"Taxpayer: {F1040_data.name_address_ssn.first_name_middle_initial} {F1040_data.name_address_ssn.last_name}")
-            
-            # Log refund or amount owed
-            if F1040_data.refund and hasattr(F1040_data.refund, 'L34_subtract_tag'):
-                logging.info("Refund expected")
-            elif F1040_data.amount_you_owe and F1040_data.amount_you_owe.L37:
-                logging.info(f"Amount owed: {F1040_data.amount_you_owe.L37}")
-            else:
-                logging.info("Neither refund nor amount owed specified")
-        except json.JSONDecodeError as e:
-            error_str = f"Error: Invalid JSON format in F1040 configuration file ({config_file_name}): {str(e)}"
-            logging.error(error_str)
-            raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, 
-                detail=error_str)
-        except ValueError as e:
-            error_str = f"Error: Invalid F1040 data: {str(e)}"
-            logging.error(error_str)
-            raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, 
-                detail=error_str)
-        except Exception as e:
-            error_str = f"Error validating F1040 file: {str(e)}"
-            logging.error(error_str)
-            raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, 
-                detail=error_str)
-
-        return W2_data, F1040_data
-        
-    except HTTPException:
-        # re-raise HTTP exceptions to be handled by FastAPI
-        raise
-    except Exception as e: # Catch other potential errors
-        error_str = f"An unexpected error occurred while processing configuration: {str(e)}"
-        logging.error(error_str)
-        raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, 
-                            detail=error_str)
-
 # Decimal doesn't have a build in serialization function so we borrowed this one
 class DecimalEncoder(json.JSONEncoder):
     def default(self, obj):
@@ -260,26 +160,69 @@ async def process_tax_form(
         with open(pdf_path, "wb") as f:
             f.write(await pdf_form.read())
 
-        W2_doc, F1040_doc = parse_and_validate_input_files(config_path, pdf_path, job_dir)
+        # check template
+        template_file_path = Path(pdf_path)
+        if template_file_path.exists() == False:
+            error_str = f"Error: Template PDF does not exist: {template_file_path}"
+            logging.error(error_str)
+            raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, 
+                                detail=error_str)
+   
+        # Validate W2 file using the W2_validator
+        try:
+            W2_doc = validate_W2_file(config_path)
+            logging.info(f"W2 file validated successfully with {len(W2_doc.W2_entries)} entries")
+            logging.info(f"Total Box 1 (Wages): {W2_doc.totals['total_box_1']}")
+            logging.info(f"Total Box 2 (Federal Tax Withheld): {W2_doc.totals['total_box_2']}")
+        except json.JSONDecodeError as e:
+            error_str = f"Error: Invalid JSON format in W2 configuration file ({config_file_name}): {str(e)}"
+            logging.error(error_str)
+            raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, 
+                detail=error_str)
+        except ValueError as e:
+            error_str = f"Error: Invalid W2 data: {str(e)}"
+            logging.error(error_str)
+            raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, 
+                detail=error_str)
+        except Exception as e:
+            error_str = f"Error validating W2 file: {str(e)}"
+            logging.error(error_str)
+            raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, 
+                detail=error_str)
+
+        # Validate F1040 file using the F1040_validator
+        try:
+            F1040_doc = validate_F1040_file(config_path)
+            logging.info(f"F1040 file validated successfully")
+            logging.info(f"Tax year: {F1040_doc.configuration.tax_year}")
+            logging.info(f"Taxpayer: {F1040_doc.name_address_ssn.first_name_middle_initial} {F1040_doc.name_address_ssn.last_name}")
+            
+            # Log refund or amount owed
+            if F1040_doc.refund and hasattr(F1040_doc.refund, 'L34'):
+                logging.info("Refund expected")
+            elif F1040_doc.amount_you_owe and F1040_doc.amount_you_owe.L37:
+                logging.info(f"Amount owed: {F1040_doc.amount_you_owe.L37}")
+            else:
+                logging.info("Neither refund nor amount owed specified")
+        except json.JSONDecodeError as e:
+            error_str = f"Error: Invalid JSON format in F1040 configuration file ({config_file_name}): {str(e)}"
+            logging.error(error_str)
+            raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, 
+                detail=error_str)
+        except ValueError as e:
+            error_str = f"Error: Invalid F1040 data: {str(e)}"
+            logging.error(error_str)
+            raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, 
+                detail=error_str)
+        except Exception as e:
+            error_str = f"Error validating F1040 file: {str(e)}"
+            logging.error(error_str)
+            raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, 
+                detail=error_str)
+
         output_file = os.path.join(job_dir, F1040_doc.configuration.output_file_name)
         create_F1040_pdf(F1040_doc, pdf_path, output_file)
-        '''
-        F1040_dict = F1040_data.model_dump()  # this converts F1040_data into a dict
-        W2_dict = W2_data.model_dump() # this converts W2_data into a dict
 
-        reader = PdfReader(pdf_path)
-        writer = PdfWriter()
-
-        writer.append(reader)
-        
-        # No need to call process_input_W2 since the W2 validation already calculates totals
-        # Now we can directly use W2_data.totals in process_input_config
-        process_input_config(F1040_dict, W2_dict, writer)
-
-        output_file = os.path.join(job_dir, F1040_dict["configuration"]["output_file_name"])
-        with open(output_file, "wb") as output_stream:
-            writer.write(output_stream)
-        '''
         # Add the cleanup task to run after the response is sent
         background_tasks.add_task(remove_job_directory, job_dir)
 
@@ -305,7 +248,7 @@ async def process_tax_form(
 
         # Cleanup before re-raising the HTTPException
         remove_job_directory(job_dir)
-        save_debug_json(F1040_dict)
+        save_debug_json(F1040_doc.model_dump())
 
         # Include line number information in the error detail
         error_info = f"Error processing form: {str(http_ex)} at line {traceback.extract_tb(http_ex.__traceback__)[-1].lineno}"
@@ -323,7 +266,7 @@ async def process_tax_form(
     
         # cleanup before raising a generic exception
         remove_job_directory(job_dir)
-        save_debug_json(F1040_dict)
+        save_debug_json(F1040_doc.model_dump())
     
         # Include line number information in the error detail
         error_info = f"Error processing form: {str(e)} at line {traceback.extract_tb(e.__traceback__)[-1].lineno}"
