@@ -696,7 +696,7 @@ def create_F1040_pdf(F1040_doc: F1040Document, template_F1040_pdf_path: str, out
     writer = PdfWriter()
     writer.append(reader)
 
-    F1040_dict = F1040_data.model_dump()  # this converts F1040_data into a dict
+    F1040_dict = F1040_doc.model_dump()  # this converts F1040_data into a dict
 
     for key in F1040_dict:
         if key == "configuration":
@@ -753,7 +753,7 @@ if __name__ == "__main__":
         else:
             print("Neither refund nor amount owed specified")
 
-        create_F1040_pdf(validated_data, sys.argv[1], sys.argv[2])
+        create_F1040_pdf(validated_data, sys.argv[2], sys.argv[3])
             
     except Exception as e:
         print(f"❌ Validation and Create failed: {str(e)}")
