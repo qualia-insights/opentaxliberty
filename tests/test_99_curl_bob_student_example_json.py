@@ -84,7 +84,7 @@ def test_process_tax_form_with_curl():
         
         # Execute the curl command with properly expanded paths
         command = [
-            'curl', '-v', 'http://mse-8:8000/api/process-tax-form',
+            'curl', '-v', 'http://mse-8:8000/api/process-F1040',
             '-H', 'accept: application/json',
             '-H', 'Content-Type: multipart/form-data',
             '-F', f'config_file=@{config_file_path}',

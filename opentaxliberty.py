@@ -121,14 +121,14 @@ class processing_response(BaseModel):
     message: str
     filename: str
 
-@app.post("/api/process-tax-form", response_class=FileResponse)
-async def process_tax_form(
+@app.post("/api/process-F1040", response_class=FileResponse)
+async def process_F1040(
     background_tasks: BackgroundTasks,
     config_file: UploadFile = File(...),
     pdf_form: UploadFile = File(...),
 ):
     """
-    Process a tax form PDF using a JSON configuration file.
+    Process a F1040 PDF using a JSON configuration file.
     
     Args:
         background_tasks: Background tasks to run after returning response
