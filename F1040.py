@@ -10,11 +10,12 @@
 #   from F1040 import validate_F1040_file
 #   validated_data = validate_F1040_file("path/to/your/f1040_config.json")
 # or run directly from the command line:
-#   python F1040_validator.py path/to/your/f1040_config.json
+#   python F1040.py --help
 
 import os
 import sys
 import json
+import argparse
 from typing import List, Dict, Any, Optional, Union, Literal
 from decimal import Decimal
 from pydantic import BaseModel, Field, field_validator, model_validator
@@ -481,15 +482,15 @@ class F1040Document(BaseModel):
             
             # Single or Married Filing Separately
             if filing_status.single_or_HOH == "/1" or filing_status.married_filing_separately == "/1":
-                self.income.L12 = 14600
+                self.income.L12 = Decimal('14600')
                 
             # Married Filing Jointly or Qualifying Surviving Spouse
             elif filing_status.married_filing_jointly_or_QSS in ["/3", "/4"]:
-                self.income.L12 = 29200
+                self.income.L12 = Decimal('29200')
                 
             # Head of Household
             elif filing_status.single_or_HOH == "/2":
-                self.income.L12 = 21900
+                self.income.L12 = Decimal('21900')
                 
             # Add adjustments for age, blindness, and dependent status if applicable
             # These would need to be implemented based on tax rules
@@ -724,39 +725,94 @@ def create_F1040_pdf(F1040_doc: F1040Document, template_F1040_pdf_path: str, out
         writer.write(output_stream)
 
 
-# If the module is run directly, validate the config file, then create the F1040 PDF file
-if __name__ == "__main__":
-    if len(sys.argv) != 4:
-        print("Usage: python F1040_validator.py <path_to_F1040_json> <path_to_template_F1040_pdf> <output_F1040_pdf_path>")
-        sys.exit(1)
+def main():
+    """Main function to process F1040 form using command-line arguments."""
+    parser = argparse.ArgumentParser(
+        description="Validate F1040 tax form data and create a filled in F1040 PDF."
+    )
     
-    # Add stack trace for debugging
-    import traceback
-    stack_trace = traceback.format_stack()
-    print("Stack trace at F1040.py main execution:")
-    for line in stack_trace:
-        print(line.strip())
+    parser.add_argument(
+        "--config", 
+        required=True,
+        help="Path to the Open Tax Liberty JSON configuration file"
+    )
+    
+    parser.add_argument(
+        "--template", 
+        required=True,
+        help="Path to the blank F1040 PDF template"
+    )
+    
+    parser.add_argument(
+        "--output", 
+        required=True,
+        help="Path where to save the output filled F1040 PDF"
+    )
+    
+    parser.add_argument(
+        "--debug-json", 
+        help="Path where to save debug JSON output (overrides the path in config file)"
+    )
+    
+    parser.add_argument(
+        "--verbose", 
+        action="store_true",
+        help="Enable verbose output"
+    )
+    
+    args = parser.parse_args()
+    
+    # Show stack trace for debugging if verbose
+    if args.verbose:
+        import traceback
+        stack_trace = traceback.format_stack()
+        print("Stack trace at F1040.py main execution:")
+        for line in stack_trace:
+            print(line.strip())
     
     try:
-        json_file_path = sys.argv[1]
-        validated_data = validate_F1040_file(json_file_path)
-        print(validated_data.model_dump_json(indent=2))
-        print(f"✅ F1040 file validated successfully: {json_file_path}")
+        # Validate the F1040 data
+        validated_data = validate_F1040_file(args.config)
+        
+        if args.verbose:
+            print(validated_data.model_dump_json(indent=2))
+            
+        print(f"✅ F1040 file validated successfully: {args.config}")
         print(f"Tax year: {validated_data.configuration.tax_year}")
         print(f"Taxpayer: {validated_data.name_address_ssn.first_name_middle_initial} {validated_data.name_address_ssn.last_name}")
         
         # Determine if there's a refund or amount owed
-        if validated_data.refund and hasattr(validated_data.refund, 'L34_subtract_tag'):
-            print(f"Refund expected")
+        if validated_data.refund and hasattr(validated_data.refund, 'L34'):
+            print(f"Refund expected: {validated_data.refund.L34}")
         elif validated_data.amount_you_owe and validated_data.amount_you_owe.L37:
             print(f"Amount owed: {validated_data.amount_you_owe.L37}")
         else:
             print("Neither refund nor amount owed specified")
 
-        create_F1040_pdf(validated_data, sys.argv[2], sys.argv[3])
+        # Create the F1040 PDF
+        print(f"Creating PDF at {args.output}...")
+        create_F1040_pdf(validated_data, args.template, args.output)
+        print(f"✅ F1040 PDF created successfully: {args.output}")
+        
+        # Save debug JSON if requested
+        if args.debug_json:
+            save_debug_json(validated_data, args.debug_json)
+            print(f"Debug JSON saved to: {args.debug_json}")
+        elif validated_data.configuration.debug_json_output:
+            save_debug_json(validated_data)
+            print(f"Debug JSON saved to: {validated_data.configuration.debug_json_output}")
+        
+        return 0
             
     except Exception as e:
-        print(f"❌ Validation and Create failed: {str(e)}")
-        print("Detailed error traceback:")
-        traceback.print_exc()
-        sys.exit(1)
+        print(f"❌ Error: {str(e)}")
+        
+        if args.verbose:
+            print("Detailed error traceback:")
+            traceback.print_exc()
+            
+        return 1
+
+# If the module is run directly, use the argument parser to process command line arguments
+if __name__ == "__main__":
+    sys.exit(main())
