@@ -36,9 +36,10 @@ get our own taxes DONE :-)
 
 - [X] rename F1040_validator.py to F1040.py
 - [X] rename W2_validator.py to W2.py
-- [ ] put pdf writer logic into F1040.py
-- [ ] use argparse in F1040.py instead of sys
-- [ ] F1040.py should stand on its own being able to validate json config files and make a complete F1040 pdf
+- [X] put pdf writer logic into F1040.py
+- [X] use argparse in F1040.py instead of sys
+- [X] F1040.py should stand on its own being able to validate json config files and make a complete F1040 pdf
+- [ ] make opentaxliberty.py work with the new and improved F1040.py
 - [ ] make sure mypy is still working 
 - [ ] Refactor code to use Pydantic more
     - [ ] validate that every field in the json config file has a tag, should this live in F1040_validator.py?
