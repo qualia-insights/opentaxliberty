@@ -43,9 +43,8 @@ def write_field_pdf(writer: PdfWriter, field_name: str, field_value: str):
                 auto_regenerate=False
             )
             field_found = True
-            # If we don't want to update the same field on multiple pages,
-            # we could break here after the first success
-            break
+            # It is not a good idea to break this loop
+            # if we put a break here the second page is blank
         except Exception as e:
             # Field might not exist on this page, continue to next page
             continue
