@@ -34,7 +34,7 @@ from decimal import Decimal
 import shutil
 import traceback
 from W2 import validate_W2_file, W2Document, W2Entry, W2Configuration
-from F1040 import validate_F1040_file, F1040Document
+from F1040 import validate_F1040_file, F1040Document, create_F1040_pdf
 from tax_form_tags import tax_form_tags_dict
 import tempfile
 
@@ -104,74 +104,6 @@ def remove_job_directory(directory_path_str: str):
     except Exception as e:
         logger.error(f"Error deleting file or directory: {str(e)}")
 
-def write_field_pdf(writer: PdfWriter, field_name: str, field_value: str):
-    """
-    Update a form field across all pages of a PDF.
-    
-    Args:
-        writer (PdfWriter): The PDF writer object
-        field_name (str): The name of the field to update
-        field_value (str): The value to set the field to
-    """
-    if field_value == "":
-        return
-    elif field_value == 0:
-        return
-        
-    # Try to update the field on each page
-    field_found = False
-    for page_num in range(len(writer.pages)):
-        try:
-            # Check if this page has the field by attempting to update it
-            writer.update_page_form_field_values(
-                writer.pages[page_num],
-                {field_name: field_value},
-                auto_regenerate=False
-            )
-            field_found = True
-            # If we don't want to update the same field on multiple pages,
-            # we could break here after the first success
-            # break
-        except Exception as e:
-            # Field might not exist on this page, continue to next page
-            continue
-            
-    # Optionally log if field wasn't found on any page
-    if not field_found:
-        logging.debug(f"Field '{field_name}' not found on any page")
-
-def process_input_config(input_json_data: Dict[str, Any], W2_data: Dict[str, Any], writer: PdfWriter):
-    """
-    Process the input configuration data and update the PDF form fields.
-    
-    Args:
-        input_json_data (Dict[str, Any]): The input JSON configuration data
-        W2_data (Dict[str, Any]): The W2 data containing totals
-        writer (PdfWriter): The PDF writer to update form fields
-        
-    Raises:
-        KeyError: If a required key is not found
-        ValueError: If a value cannot be processed correctly
-    """
-    for key in input_json_data:
-        if key == "configuration":
-            continue
-            
-        # Check for simple value/tag pairs
-        #if 'tag' in input_json_data[key] and 'value' in input_json_data[key]:
-        #    write_field_pdf(writer, input_json_data[key]['tag'], input_json_data[key]['value'])
-            
-        # Process any additional sub-keys that have corresponding tag fields
-        for sub_key, sub_value in input_json_data[key].items():
-            # Skip special keys
-            # we skip the _tag because we use that information within the operations below
-            if sub_key == '_comment' in sub_key:
-                continue
-            else:
-                tag_key = f"{sub_key}_tag"
-                if tag_key in tax_form_tags_dict["F1040"][key]:
-                    write_field_pdf(writer, tax_form_tags_dict["F1040"][key][tag_key], sub_value)
-
 def parse_and_validate_input_files(config_file_name: str, 
         pdf_template_file_name: str, job_dir: str) -> tuple[W2Document, F1040Document]:
     """
@@ -209,18 +141,6 @@ def parse_and_validate_input_files(config_file_name: str,
             raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, 
                                 detail=error_str)
    
-        '''
-        # this code is redundant because of the Validate F1040 code below 
-        # Parse main config file
-        try:
-            with open(config_file_name, 'r') as f:
-                config_data = json.load(f)  # Load the JSON data from the config file
-        except json.JSONDecodeError as e:
-            error_str = f"Error: Invalid JSON format in main configuration file ({config_file_name}): {str(e)}"
-            logging.error(error_str)
-            raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, 
-                detail=error_str)
-        '''        
         # Validate W2 file using the W2_validator
         try:
             W2_data = validate_W2_file(config_file_name)
@@ -327,10 +247,8 @@ async def process_tax_form(
     job_dir = os.path.join(UPLOAD_DIR, form_id)
     os.makedirs(job_dir, exist_ok=True)
     
-    W2_data = None
-    W2_dict = None
-    F1040_data = None
-    F1040_dict = None
+    W2_doc = None
+    F1040_doc = None
     try:
         # Save json configuration file
         config_path = os.path.join(job_dir, f"config_{config_file.filename}")
@@ -342,7 +260,10 @@ async def process_tax_form(
         with open(pdf_path, "wb") as f:
             f.write(await pdf_form.read())
 
-        W2_data, F1040_data = parse_and_validate_input_files(config_path, pdf_path, job_dir)
+        W2_doc, F1040_doc = parse_and_validate_input_files(config_path, pdf_path, job_dir)
+        output_file = os.path.join(job_dir, F1040_doc.configuration.output_file_name)
+        create_F1040_pdf(F1040_doc, pdf_path, output_file)
+        '''
         F1040_dict = F1040_data.model_dump()  # this converts F1040_data into a dict
         W2_dict = W2_data.model_dump() # this converts W2_data into a dict
 
@@ -358,13 +279,13 @@ async def process_tax_form(
         output_file = os.path.join(job_dir, F1040_dict["configuration"]["output_file_name"])
         with open(output_file, "wb") as output_stream:
             writer.write(output_stream)
-
+        '''
         # Add the cleanup task to run after the response is sent
         background_tasks.add_task(remove_job_directory, job_dir)
 
         merged_dict = {
-            "W2": W2_dict,
-            "F1040": F1040_dict
+            "W2": W2_doc.model_dump(),
+            "F1040": F1040_doc.model_dump() 
         }
         save_debug_json(merged_dict)
 
@@ -372,7 +293,7 @@ async def process_tax_form(
         return FileResponse(
             path=output_file,
             media_type="application/pdf",
-            filename=F1040_dict["configuration"]["output_file_name"])
+            filename=F1040_doc.configuration.output_file_name)
 
     except HTTPException as http_ex:
         # Get the full stack trace as a string

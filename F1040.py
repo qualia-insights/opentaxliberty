@@ -724,6 +724,27 @@ def create_F1040_pdf(F1040_doc: F1040Document, template_F1040_pdf_path: str, out
     with open(output_F1040_pdf_path, "wb") as output_stream:                          
         writer.write(output_stream)
 
+# Add this helper function before the main function
+class DecimalEncoder(json.JSONEncoder):
+    def default(self, obj):
+        if isinstance(obj, Decimal):
+            return float(obj)  # Convert Decimal to float
+        return super().default(obj)
+
+def save_debug_json(F1040_doc: F1040Document, debug_json_path: str = None):
+    """
+    Save F1040Document as JSON for debugging purposes.
+    
+    Args:
+        F1040_doc (F1040Document): The F1040Document to save
+        debug_json_path (str, optional): Path where to save the JSON. If None, uses the path from the configuration
+    """
+    if debug_json_path is None and F1040_doc.configuration.debug_json_output:
+        debug_json_path = F1040_doc.configuration.debug_json_output
+        
+    if debug_json_path:
+        with open(debug_json_path, 'w') as file:
+            json.dump(F1040_doc.model_dump(), file, indent=4, cls=DecimalEncoder)
 
 def main():
     """Main function to process F1040 form using command-line arguments."""
