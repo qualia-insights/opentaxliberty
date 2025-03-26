@@ -1,0 +1,306 @@
+{
+  "W2": {
+    "configuration": {
+      "_comment": "W2 is wage and tax statement, you should have one of these for each job that you work",
+      "_comment": "See README.md on why we use W2 and not W-2",
+      "_comment": "Under W2_entries it is possible to have no entries or multiple entries",
+      "tax_year": 2024,
+      "form": "W2"
+    },
+    "W2_entries": [
+      {"organization": "Data Entry Inc", "box_1": 550, "box_2": 0},
+      {"organization": "Fast Food", "box_1": 3907.57, "box_2": 54.31},
+      {"organization": "Mexican Buffet", "box_1": 1576.59, "box_2": 15.00}
+    ]
+  },
+  "F1040": {
+    "configuration": {
+      "tax_year": 2024,
+      "output_file_name": "bob_student_F1040.pdf",
+      "form": "F1040",
+      "debug_json_output": "/workspace/temp/bob_student.json"
+    },
+    "name_address_ssn": {
+      "_comment": "this is the header block of the top of the Form 1040, it is ok to leave a field blank",
+      "first_name_middle_initial": "Bob S",
+      "last_name": "Example",
+      "ssn": "222        22        2222",
+      "spouse_first_name_middle_inital": "Linda S",
+      "spouse_last_name": "Example",
+      "spouse_ssn": "222        22        3333",
+      "home_address": "9370 Liberty Street",
+      "apartment_no": "10",
+      "city": "Dayton",
+      "state": "Ohio",
+      "zip": "45468",
+      "foreign_country_name": "Italy",
+      "foreign_country_province": "Tuscany",
+      "foreign_country_postal_code": "999999",
+      
+      "_comment": "presendial election campaign box, if you want to have $3 go to this fund",
+      "_comment": "use /1 for check mark or /Off for no check mark",
+      "presidential_you": "/Off",
+      "presidential_spouse": "/Off"
+    },
+    "filing_status": {
+      "_comment": "only one of these boxes should be turned on, the values are different so read the comments!",
+
+      "_comment": "single: on = /1, head of household: on = /2, off = /Off",
+      "single_or_HOH": "/1",
+
+      "_comment": "married filing jointly: on = /3, qualifying surviving spouse: on = /4, off = /Off",
+      "married_filing_jointly_or_QSS": "/Off",
+
+      "_comment": "married filing separately: on = /4, off = /Off",
+      "married_filing_separately": "/Off",
+
+      "_comment": "treating nonresident alien: on = /1, off = /Off",
+      "treating_nonresident_alien": "/Off",
+
+      "_comment": "leave the field spouse_or_child_name blank if not needed",
+      "spouse_or_child_name": "Not Mine",
+
+      "_comment": "leave the field nonresident_alien_name blank if not needed",
+      "nonresident_alien_name": "ET"
+    },
+    "digital_assets": {
+      "_comment": "for YES set value = /1 and tag = c1_5[0]",
+      "_comment": "for NO set value = /2 and tag = c1_5[1]",
+      "yes": "/Off",
+      "no": "/2"
+    },
+    "standard_deduction": {
+      "_comment": "use /1 for checkmark or /Off for no checkmark for all fields in standard deduction box",
+      "you_as_a_dependent": "/1",
+      "your_spouse_as_a_dependent": "/1",
+      "spouse_itemizes": "/1",
+      "born_before_jan_2_1960": "/1",
+      "are_blind": "/1",
+      "spouse_born_before_jan_2_1960": "/1",
+      "spouse_is_blind": "/1"
+    },
+    "dependents": {
+      "_comment": "use /1 for checkmark or /Off for no checkmark if you have more than 4 dependents",
+      "check_if_more_than_4_dependents": "/Off",
+
+      "_comment": "dependent 1",
+      "dependent_1_first_last_name": "Bob Example Junior",
+      "dependent_1_ssn": "333      33      3333",
+      "dependent_1_relationship": "Son",
+      "dependent_1_child_tax_credit": "/1",
+      "dependent_1_credit_for_other_dependents": "/1",
+
+      "_comment": "dependent 2",
+      "dependent_2_first_last_name": "Leroy Example",
+      "dependent_2_ssn": "333      44      3333",
+      "dependent_2_relationship": "Son",
+      "dependent_2_child_tax_credit": "/1",
+      "dependent_2_credit_for_other_dependents": "/1",
+
+      "_comment": "dependent 3",
+      "dependent_3_first_last_name": "George Example",
+      "dependent_3_ssn": "333      55      3333",
+      "dependent_3_relationship": "Son",
+      "dependent_3_child_tax_credit": "/1",
+      "dependent_3_credit_for_other_dependents": "/1",
+
+      "_comment": "dependent 4",
+      "dependent_4_first_last_name": "Donald Example",
+      "dependent_4_ssn": "333      66      3333",
+      "dependent_4_relationship": "Son",
+      "dependent_4_child_tax_credit": "/1",
+      "dependent_4_credit_for_other_dependents": "/1"
+    },
+    "income": {
+      "_comment": "this is for lines 1 - 15 that make up income",
+      "_comment": "get_W2_box_1_sum() is a special function that retrieves the sum of box_1 from the W2 data",
+      "L1a": "get_W2_box_1_sum()",
+      "L1b": 100,
+      "L1c": 1,
+      "L1d": 1,
+      "L1e": 1,
+      "L1f": 1,
+      "L1g": 100,
+      "L1h": 100,
+      "L1i": 1,
+      "L1z": 0, 
+      "L2a": 2,
+      "L2b": 3,
+      "L3a": 4,
+      "L3b": 5,
+      "L4a": 6,
+      "L4b": 7,
+      "L5a": 8,
+      "L5b": 9,
+      "L6a": 10,
+      "L6b": 11,
+      "L6c": "/1",
+      "L7cb": "/1",
+      "L7": 11,
+      "L8": 12,
+      "L9": 0,
+      "L10": 13,
+      "L11": 0,
+      "_comment": "Leave L12 set to 0 if you want OpenTaxLiberty to insert correct value based on filling status",
+      "L12": 0,
+      "L13": 10,
+      "L14": 0,
+      "L15": 0
+    },
+    "tax_and_credits": {
+      "L16_check_8814": "/1",
+      "L16_check_4972": "/1",
+      "L16_check_3": "/1",
+      "L16_check_3_field": 0,
+      "L16": 0,
+      "L17": 0,
+      "L18": 0,
+      "L19": 0,
+      "L20": 8,
+      "L21": 0,
+      "L22": 0,
+      "L23": 0,
+      "L24": 0
+    },
+    "payments": {
+      "_comment": "this is for lines 25 - 33 that make up payments",             
+      "_comment": "get_W2_box_2_sum() is a special function that retrieves the sum of box_2 from the W2 data",
+      "L25a": "get_W2_box_2_sum()",
+      "L25b": 1,
+      "L25c": 2,
+      "L25d": 0,
+      "L26": 4,
+      "L27": 5,
+      "L28": 6,
+      "L29": 7,
+      "L31": 8,
+      "L32": 0,
+      "L33": 0
+    },
+    "refund": {
+      "_comment": "lines 34 - 36 that make up refund and only if you overpaid, meaning line 33 is greater than line 24",
+      "L34": 0,
+      "L35a_check": "/Off",
+      "L35a": 0,
+      "_comment": "getting the spacing right is a pain, it might take some trial and error",
+      "L35a_b": " 1     2    3    4    5     6     7     8    9",
+      "L35c_checking": "/1",
+      "L35c_savings": "/Off",
+      "L35a_d": " 1     2    3    4    5     6     7     8    9",
+      "L36": ""
+    },
+    "amount_you_owe": {
+      "_comment": "lines 37 - 38 that make up amount you owe only if you underpaid, meaning line 33 is less than line 24",
+      "L37": 0,
+      "L38": 0
+    },
+    "third_party_designee": {
+      "do_you_want_to_designate_yes": "/1",
+      "do_you_want_to_designate_no": "/Off",
+      "desginee_name": "Tom Smith",
+      "desginee_phone": "(111)222-3333",
+      "desginee_pin": "1   2   3   4  5  6"
+    },
+    "sign_here": {
+      "your_occupation": "Computer Scientist",
+      "your_pin": "1  2   3   4  5  6",
+      "spouse_occupation": "Teacher",
+      "spouse_pin": "1  2   3   4  5  6",
+      "phone_no": "(111)222-3333",
+      "email": "bob_student@univ.edu"
+    }
+  },
+  "F1040SC": {
+    "configuration": {
+      "tax_year": 2024,
+      "form": "F1040SC",
+      "output_file_name": "bob_student_schedule_c.pdf",
+      "debug_json_output": "/workspace/temp/bob_student_schedule_c_debug.json"
+    },
+    "business_information": {
+      "business_name": "Bob S Example",
+      "business_address": "9370 Liberty Street, Apt. 10",
+      "business_city_state_zip": "Dayton, OH 45468",
+      "ein": "98-7654321",
+      "business_code": "541519",
+      "accounting_method_cash": "/1",
+      "accounting_method_accrual": "/Off",
+      "accounting_method_other": "/Off",
+      "accounting_method_other_text": "",
+      "not_started_business": "/Off",
+      "acquired_business": "/Off",
+      "modified_business": "/1",
+      "material_participation_yes": "/1",
+      "material_participation_no": "/Off",
+      "issued_1099_required_yes": "/1",
+      "issued_1099_required_no": "/Off",
+      "issued_1099_not_required_yes": "/Off",
+      "issued_1099_not_required_no": "/1"
+    },
+    "income": {
+      "gross_receipts": 42500.00,
+      "returns_allowances": 350.00,
+      "other_income": 750.00
+    },
+    "expenses": {
+      "advertising": 450.00,
+      "car_truck_expenses": 2800.00,
+      "commissions_fees": 0.00,
+      "contract_labor": 3500.00,
+      "depletion": 0.00,
+      "depreciation": 1800.00,
+      "employee_benefits": 0.00,
+      "insurance": 1200.00,
+      "interest_mortgage": 0.00,
+      "interest_other": 300.00,
+      "legal_professional": 950.00,
+      "office_expense": 780.00,
+      "pension_profit_sharing": 0.00,
+      "rent_lease_vehicles": 0.00,
+      "rent_lease_other": 0.00,
+      "repairs_maintenance": 250.00,
+      "supplies": 1860.00,
+      "taxes_licenses": 580.00,
+      "travel": 1200.00,
+      "meals": 950.00,
+      "utilities": 1800.00,
+      "wages": 0.00
+    },
+    "other_expenses": {
+      "expense_items": [
+        {
+          "description": "Software subscriptions",
+          "amount": 1450.00
+        },
+        {
+          "description": "Professional development",
+          "amount": 950.00
+        },
+        {
+          "description": "Industry conferences",
+          "amount": 750.00
+        }
+      ]
+    },
+    "vehicle_information": {
+      "vehicle_description": "2022 Honda Civic",
+      "date_placed_in_service": "06/15/2022",
+      "business_miles": 6250,
+      "commuting_miles": 1050,
+      "other_miles": 3200,
+      "vehicle_personal_yes": "/1",
+      "vehicle_personal_no": "/Off",
+      "another_vehicle_yes": "/Off",
+      "another_vehicle_no": "/1",
+      "evidence_yes": "/1",
+      "evidence_no": "/Off",
+      "evidence_written_yes": "/1",
+      "evidence_written_no": "/Off"
+    },
+    "home_office_information": {
+      "simplified_method_used": "/1",
+      "home_business_percentage": 15,
+      "home_office_deduction": 1500.00
+    }
+  }
+}
