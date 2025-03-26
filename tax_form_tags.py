@@ -167,5 +167,131 @@ tax_form_tags_dict = {
             "phone_no_tag": "f2_37[0]",
             "email_tag": "f2_38[0]"
         }
+    },
+    "F1040SC": {
+        "configuration": {
+            # No tag fields in configuration section
+        },
+        "business_info": {
+            "name_of_proprietor_tag": "f1_01[0]",
+            "ssn_tag": "f1_02[0]",
+            "principal_business_tag": "f1_03[0]",
+            "business_code_tag": "f1_04[0]",
+            "business_name_tag": "f1_05[0]",
+            "ein_tag": "f1_06[0]",
+            "business_address_tag": "f1_07[0]",
+            "city_state_zip_tag": "f1_08[0]"
+        },
+        "accounting_method": {
+            "cash_tag": "c1_1[0]",
+            "accrual_tag": "c1_1[1]",
+            "other_tag": "c1_1[2]",
+            "other_specify_tag": "f1_09[0]"
+        },
+        "questions": {
+            "material_participation_yes_tag": "c1_2[0]",
+            "material_participation_no_tag": "c1_2[1]",
+            "started_acquired_tag": "c1_3[0]",
+            "payments_requiring_1099_yes_tag": "c1_4[0]",
+            "payments_requiring_1099_no_tag": "c1_4[1]",
+            "filed_required_1099_yes_tag": "c1_5[0]",
+            "filed_required_1099_no_tag": "c1_5[1]"
+        },
+        "income": {
+            "statutory_employee_tag": "c1_6[0]",
+            "gross_receipts_tag": "f1_10[0]",
+            "returns_allowances_tag": "f1_11[0]",
+            "subtract_line2_from_line1_tag": "f1_12[0]",
+            "cost_of_goods_sold_tag": "f1_13[0]",
+            "gross_profit_tag": "f1_14[0]",
+            "other_income_tag": "f1_15[0]",
+            "gross_income_tag": "f1_16[0]"
+        },
+        "expenses": {
+            "advertising_tag": "f1_17[0]",
+            "car_truck_expenses_tag": "f1_18[0]",
+            "commissions_fees_tag": "f1_19[0]",
+            "contract_labor_tag": "f1_20[0]",
+            "depletion_tag": "f1_21[0]",
+            "depreciation_tag": "f1_22[0]",
+            "employee_benefits_tag": "f1_23[0]",
+            "insurance_tag": "f1_24[0]",
+            "mortgage_interest_tag": "f1_25[0]",
+            "other_interest_tag": "f1_26[0]",
+            "legal_professional_tag": "f1_27[0]",
+            "office_expense_tag": "f1_28[0]",
+            "pension_profit_sharing_tag": "f1_29[0]",
+            "rent_lease_vehicles_tag": "f1_30[0]",
+            "rent_lease_other_tag": "f1_31[0]",
+            "repairs_maintenance_tag": "f1_32[0]",
+            "supplies_tag": "f1_33[0]",
+            "taxes_licenses_tag": "f1_34[0]",
+            "travel_tag": "f1_35[0]",
+            "meals_tag": "f1_36[0]",
+            "utilities_tag": "f1_37[0]",
+            "wages_tag": "f1_38[0]",
+            "other_expenses_tag": "f1_39[0]",
+            "energy_efficient_bldg_tag": "f1_40[0]",
+            "total_expenses_tag": "f1_41[0]",
+            "tentative_profit_loss_tag": "f1_42[0]"
+        },
+        "home_office": {
+            "home_total_area_tag": "f1_43[0]",
+            "home_business_area_tag": "f1_44[0]",
+            "home_office_expenses_tag": "f1_45[0]"
+        },
+        "net_profit_loss": {
+            "net_profit_loss_tag": "f1_46[0]",
+            "all_investment_at_risk_tag": "c1_7[0]",
+            "some_investment_not_at_risk_tag": "c1_7[1]"
+        },
+        "cost_of_goods": {
+            "cost_method_tag": "c2_1[0]",
+            "lower_cost_market_tag": "c2_1[1]",
+            "other_method_tag": "c2_1[2]",
+            "change_in_inventory_yes_tag": "c2_2[0]",
+            "change_in_inventory_no_tag": "c2_2[1]",
+            "inventory_beginning_tag": "f2_01[0]",
+            "purchases_tag": "f2_02[0]",
+            "cost_of_labor_tag": "f2_03[0]",
+            "materials_supplies_tag": "f2_04[0]",
+            "other_costs_tag": "f2_05[0]",
+            "sum_lines_35_39_tag": "f2_06[0]",
+            "inventory_end_tag": "f2_07[0]",
+            "cost_of_goods_sold_tag": "f2_08[0]"
+        },
+        "vehicle_info": {
+            "vehicle_service_date_tag": "f2_09[0]",
+            "business_miles_tag": "f2_10[0]",
+            "commuting_miles_tag": "f2_11[0]",
+            "other_miles_tag": "f2_12[0]",
+            "personal_use_yes_tag": "c2_3[0]",
+            "personal_use_no_tag": "c2_3[1]",
+            "another_vehicle_yes_tag": "c2_4[0]",
+            "another_vehicle_no_tag": "c2_4[1]",
+            "evidence_yes_tag": "c2_5[0]",
+            "evidence_no_tag": "c2_5[1]",
+            "written_evidence_yes_tag": "c2_6[0]",
+            "written_evidence_no_tag": "c2_6[1]"
+        },
+        "other_expenses": {
+            "other_expenses_line1_desc_tag": "f2_13[0]",
+            "other_expenses_line1_amount_tag": "f2_14[0]",
+            "other_expenses_line2_desc_tag": "f2_15[0]",
+            "other_expenses_line2_amount_tag": "f2_16[0]",
+            "other_expenses_line3_desc_tag": "f2_17[0]",
+            "other_expenses_line3_amount_tag": "f2_18[0]",
+            "other_expenses_line4_desc_tag": "f2_19[0]",
+            "other_expenses_line4_amount_tag": "f2_20[0]",
+            "other_expenses_line5_desc_tag": "f2_21[0]",
+            "other_expenses_line5_amount_tag": "f2_22[0]",
+            "other_expenses_line6_desc_tag": "f2_23[0]",
+            "other_expenses_line6_amount_tag": "f2_24[0]",
+            "other_expenses_line7_desc_tag": "f2_25[0]",
+            "other_expenses_line7_amount_tag": "f2_26[0]",
+            "other_expenses_line8_desc_tag": "f2_27[0]",
+            "other_expenses_line8_amount_tag": "f2_28[0]",
+            "total_other_expenses_tag": "f2_29[0]"
+        }
     }
 }
