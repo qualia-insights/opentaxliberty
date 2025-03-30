@@ -52,29 +52,27 @@ class F1040scConfiguration(BaseModel):
 class BusinessInformation(BaseModel):
     """Business information section of Schedule C."""
     business_name: str = Field(..., description="Name of proprietor")
+    ssn: Optional[str] = Field(None, description="SSN")
+    principal_business: Optional[str] = Field(None, description="Principal business")
+    business_code: Optional[str] = Field(None, description="Business code")
+    business_name_separate: Optional[str] = Field(None, description="Business name (if different)")
+    ein: Optional[str] = Field(None, description="Employer ID number (EIN)")
     business_address: str = Field(..., description="Business address (street)")
     business_city_state_zip: str = Field(..., description="Business address (city, state, ZIP)")
-    ein: Optional[str] = Field(None, description="Employer ID number (EIN)")
-    business_code: Optional[str] = Field(None, description="Business code")
     accounting_method_cash: str = Field("/Off", description="Cash accounting method checkbox")
     accounting_method_accrual: str = Field("/Off", description="Accrual accounting method checkbox")
     accounting_method_other: str = Field("/Off", description="Other accounting method checkbox")
     accounting_method_other_text: Optional[str] = Field(None, description="Other accounting method description")
-    not_started_business: str = Field("/Off", description="Not started business checkbox")
-    acquired_business: str = Field("/Off", description="Acquired business checkbox")
-    modified_business: str = Field("/Off", description="Modified business checkbox")
-    
     material_participation_yes: str = Field("/Off", description="Yes checkbox for material participation")
     material_participation_no: str = Field("/Off", description="No checkbox for material participation")
-    
+    not_started_business: str = Field("/Off", description="Not started business checkbox")
     issued_1099_required_yes: str = Field("/Off", description="Yes checkbox for issued 1099s when required")
     issued_1099_required_no: str = Field("/Off", description="No checkbox for issued 1099s when required")
-    
     issued_1099_not_required_yes: str = Field("/Off", description="Yes checkbox for required to file 1099s")
     issued_1099_not_required_no: str = Field("/Off", description="No checkbox for required to file 1099s")
 
     @field_validator('accounting_method_cash', 'accounting_method_accrual', 'accounting_method_other',
-                    'not_started_business', 'acquired_business', 'modified_business',
+                    'not_started_business', 
                     'material_participation_yes', 'material_participation_no',
                     'issued_1099_required_yes', 'issued_1099_required_no',
                     'issued_1099_not_required_yes', 'issued_1099_not_required_no')
@@ -149,106 +147,108 @@ class BusinessInformation(BaseModel):
 
 class Income(BaseModel):
     """Income section of Schedule C."""
-    gross_receipts: Decimal = Field(default=Decimal('0'), description="Gross receipts or sales")
-    returns_allowances: Decimal = Field(default=Decimal('0'), description="Returns and allowances")
-    other_income: Decimal = Field(default=Decimal('0'), description="Other business income")
-    gross_income: Decimal = Field(default=Decimal('0'), description="Gross income")
+    statutory_employee: Optional[str] = Field("/Off", description="Statutory employee checkbox")
+    L1: Decimal = Field(default=Decimal('0'), description="Gross receipts or sales")
+    L2: Decimal = Field(default=Decimal('0'), description="Returns and allowances")
+    L3: Decimal = Field(default=Decimal('0'), description="Subtract line 2 from line 1")
+    L4: Decimal = Field(default=Decimal('0'), description="Cost of goods sold")
+    L5: Decimal = Field(default=Decimal('0'), description="Gross profit")
+    L6: Decimal = Field(default=Decimal('0'), description="Other business income")
+    L7: Decimal = Field(default=Decimal('0'), description="Gross income")
+
+    @field_validator('statutory_employee')
+    @classmethod
+    def validate_checkbox(cls, v):
+        if v not in ["/1", "/Off"]:
+            raise ValueError(f"Checkbox value must be '/1' (checked) or '/Off' (unchecked), got '{v}'")
+        return v
 
     @model_validator(mode='after')
-    def calculate_gross_income(self):
-        """Calculate gross income (Line 7) from other income fields."""
-        self.gross_income = self.gross_receipts - self.returns_allowances + self.other_income
+    def calculate_income(self):
+        """Calculate income fields."""
+        self.L3 = self.L1 - self.L2
+        self.L5 = self.L3 - self.L4
+        self.L7 = self.L5 + self.L6
         return self
 
 
 class Expenses(BaseModel):
     """Expenses section of Schedule C."""
-    advertising: Decimal = Field(default=Decimal('0'), description="Advertising")
-    car_truck_expenses: Decimal = Field(default=Decimal('0'), description="Car and truck expenses")
-    commissions_fees: Decimal = Field(default=Decimal('0'), description="Commissions and fees")
-    contract_labor: Decimal = Field(default=Decimal('0'), description="Contract labor")
-    depletion: Decimal = Field(default=Decimal('0'), description="Depletion")
-    depreciation: Decimal = Field(default=Decimal('0'), description="Depreciation")
-    employee_benefits: Decimal = Field(default=Decimal('0'), description="Employee benefit programs")
-    insurance: Decimal = Field(default=Decimal('0'), description="Insurance (other than health)")
-    interest_mortgage: Decimal = Field(default=Decimal('0'), description="Interest on mortgage")
-    interest_other: Decimal = Field(default=Decimal('0'), description="Interest - other")
-    legal_professional: Decimal = Field(default=Decimal('0'), description="Legal and professional services")
-    office_expense: Decimal = Field(default=Decimal('0'), description="Office expense")
-    pension_profit_sharing: Decimal = Field(default=Decimal('0'), description="Pension and profit-sharing plans")
-    rent_lease_vehicles: Decimal = Field(default=Decimal('0'), description="Rent/lease - vehicles, machinery, equipment")
-    rent_lease_other: Decimal = Field(default=Decimal('0'), description="Rent/lease - other business property")
-    repairs_maintenance: Decimal = Field(default=Decimal('0'), description="Repairs and maintenance")
-    supplies: Decimal = Field(default=Decimal('0'), description="Supplies")
-    taxes_licenses: Decimal = Field(default=Decimal('0'), description="Taxes and licenses")
-    travel: Decimal = Field(default=Decimal('0'), description="Travel")
-    meals: Decimal = Field(default=Decimal('0'), description="Deductible meals")
-    utilities: Decimal = Field(default=Decimal('0'), description="Utilities")
-    wages: Decimal = Field(default=Decimal('0'), description="Wages")
-    
-    other_expenses_total: Decimal = Field(default=Decimal('0'), description="Total other expenses")
-    
-    total_expenses: Decimal = Field(default=Decimal('0'), description="Total expenses")
+    L8: Decimal = Field(default=Decimal('0'), description="Advertising")
+    L9: Decimal = Field(default=Decimal('0'), description="Car and truck expenses")
+    L10: Decimal = Field(default=Decimal('0'), description="Commissions and fees")
+    L11: Decimal = Field(default=Decimal('0'), description="Contract labor")
+    L12: Decimal = Field(default=Decimal('0'), description="Depletion")
+    L13: Decimal = Field(default=Decimal('0'), description="Depreciation")
+    L14: Decimal = Field(default=Decimal('0'), description="Employee benefit programs")
+    L15: Decimal = Field(default=Decimal('0'), description="Insurance (other than health)")
+    L16a: Decimal = Field(default=Decimal('0'), description="Interest on mortgage")
+    L16b: Decimal = Field(default=Decimal('0'), description="Interest - other")
+    L17: Decimal = Field(default=Decimal('0'), description="Legal and professional services")
+    L18: Decimal = Field(default=Decimal('0'), description="Office expense")
+    L19: Decimal = Field(default=Decimal('0'), description="Pension and profit-sharing plans")
+    L20a: Decimal = Field(default=Decimal('0'), description="Rent/lease - vehicles, machinery, equipment")
+    L20b: Decimal = Field(default=Decimal('0'), description="Rent/lease - other business property")
+    L21: Decimal = Field(default=Decimal('0'), description="Repairs and maintenance")
+    L22: Decimal = Field(default=Decimal('0'), description="Supplies")
+    L23: Decimal = Field(default=Decimal('0'), description="Taxes and licenses")
+    L24a: Decimal = Field(default=Decimal('0'), description="Travel")
+    L24b: Decimal = Field(default=Decimal('0'), description="Deductible meals")
+    L25: Decimal = Field(default=Decimal('0'), description="Utilities")
+    L26: Decimal = Field(default=Decimal('0'), description="Wages")
+    L27a: Decimal = Field(default=Decimal('0'), description="Other expenses")
+    L27b: Decimal = Field(default=Decimal('0'), description="Energy efficient buildings")
+    L28: Decimal = Field(default=Decimal('0'), description="Total expenses")
+    L29: Decimal = Field(default=Decimal('0'), description="Tentative profit/loss")
 
 
-class OtherExpenses(BaseModel):
-    """Other expenses section of Schedule C."""
-    expense_items: List[Dict[str, Union[str, Decimal]]] = Field(
-        default_factory=list,
-        description="List of other expense items, each with 'description' and 'amount' keys"
-    )
-    
-    @field_validator('expense_items')
+class HomeOfficeInformation(BaseModel):
+    """Home Office Information section of Schedule C."""
+    simplified_method: Optional[str] = Field(None, description="Checkbox for simplified method")
+    home_total_area: Optional[str] = Field(None, description="Total square footage of home")
+    home_business_area: Optional[str] = Field(None, description="Business square footage")
+    L30: Optional[Decimal] = Field(None, description="Home office deduction")
+
+    @field_validator('simplified_method')
     @classmethod
-    def validate_expense_items(cls, v):
-        """Validate expense items format."""
-        if not isinstance(v, list):
-            raise ValueError("expense_items must be a list")
-        
-        for i, item in enumerate(v):
-            if not isinstance(item, dict):
-                raise ValueError(f"Item {i} must be a dictionary")
-            
-            if 'description' not in item:
-                raise ValueError(f"Item {i} must have a 'description' key")
-            
-            if 'amount' not in item:
-                raise ValueError(f"Item {i} must have an 'amount' key")
-            
-            # Convert amount to Decimal if it's not already
-            if not isinstance(item['amount'], Decimal):
-                try:
-                    item['amount'] = Decimal(str(item['amount']))
-                except (ValueError, TypeError):
-                    raise ValueError(f"Item {i} amount must be a valid number")
-        
+    def validate_checkbox(cls, v):
+        if v is not None and v not in ["/1", "/Off"]:
+            raise ValueError(f"Checkbox value must be '/1' (checked) or '/Off' (unchecked), got '{v}'")
         return v
-    
-    def calculate_total(self) -> Decimal:
-        """Calculate the total of all other expenses."""
-        return sum(Decimal(str(item['amount'])) for item in self.expense_items)
+
+
+class NetProfitLoss(BaseModel):
+    """Net Profit or Loss section of Schedule C."""
+    L31: Decimal = Field(default=Decimal('0'), description="Net profit or loss")
+    L32a: Optional[str] = Field(None, description="All investment at risk")
+    L32b: Optional[str] = Field(None, description="Some investment not at risk")
+
+    @field_validator('L32a', 'L32b')
+    @classmethod
+    def validate_checkbox(cls, v):
+        if v is not None and v not in ["/1", "/Off"]:
+            raise ValueError(f"Checkbox value must be '/1' (checked) or '/Off' (unchecked), got '{v}'")
+        return v
 
 
 class CostOfGoodsSold(BaseModel):
     """Cost of Goods Sold section of Schedule C."""
-    method_cost: str = Field("/Off", description="Cost method checkbox")
-    method_lower_market: str = Field("/Off", description="Lower of cost or market method checkbox")
-    method_other: str = Field("/Off", description="Other method checkbox")
-    
-    beginning_inventory: Decimal = Field(default=Decimal('0'), description="Beginning inventory")
-    purchases: Decimal = Field(default=Decimal('0'), description="Purchases")
-    labor_costs: Decimal = Field(default=Decimal('0'), description="Labor costs")
-    materials_supplies: Decimal = Field(default=Decimal('0'), description="Materials and supplies")
-    other_costs: Decimal = Field(default=Decimal('0'), description="Other costs")
-    ending_inventory: Decimal = Field(default=Decimal('0'), description="Ending inventory")
-    
-    personal_items_yes: str = Field("/Off", description="Yes checkbox for personal items")
-    personal_items_no: str = Field("/Off", description="No checkbox for personal items")
-    
-    total_cost: Decimal = Field(default=Decimal('0'), description="Total cost of goods sold")
+    L33a: str = Field("/Off", description="Cost method checkbox")
+    L33b: str = Field("/Off", description="Lower of cost or market method checkbox")
+    L33c: str = Field("/Off", description="Other method checkbox")
+    L34_yes: str = Field("/Off", description="Inventory change Yes")
+    L34_no: str = Field("/Off", description="Inventory change No")
+    L35: Decimal = Field(default=Decimal('0'), description="Beginning inventory")
+    L36: Decimal = Field(default=Decimal('0'), description="Purchases")
+    L37: Decimal = Field(default=Decimal('0'), description="Cost of labor")
+    L38: Decimal = Field(default=Decimal('0'), description="Materials and supplies")
+    L39: Decimal = Field(default=Decimal('0'), description="Other costs")
+    L40: Decimal = Field(default=Decimal('0'), description="Sum lines 35-39")
+    L41: Decimal = Field(default=Decimal('0'), description="Ending inventory")
+    L42: Decimal = Field(default=Decimal('0'), description="Cost of goods sold")
 
-    @field_validator('method_cost', 'method_lower_market', 'method_other',
-                    'personal_items_yes', 'personal_items_no')
+    @field_validator('L33a', 'L33b', 'L33c',
+                    'L34_yes', 'L34_no')
     @classmethod
     def validate_checkbox(cls, v):
         if v not in ["/1", "/Off"]:
@@ -259,9 +259,9 @@ class CostOfGoodsSold(BaseModel):
     def validate_method(self):
         """Validate that exactly one valuation method is selected."""
         methods = [
-            (self.method_cost, "cost"),
-            (self.method_lower_market, "lower of cost or market"),
-            (self.method_other, "other")
+            (self.L33a, "cost"),
+            (self.L33b, "lower of cost or market"),
+            (self.L33c, "other")
         ]
         
         selected_methods = [name for method, name in methods if method == "/1"]
@@ -272,57 +272,44 @@ class CostOfGoodsSold(BaseModel):
         return self
     
     @model_validator(mode='after')
-    def validate_personal_items(self):
-        """Validate that exactly one personal items option is selected."""
-        yes_selected = self.personal_items_yes == "/1"
-        no_selected = self.personal_items_no == "/1"
+    def validate_inventory_change(self):
+        """Validate that exactly one inventory change option is selected."""
+        yes_selected = self.L34_yes == "/1"
+        no_selected = self.L34_no == "/1"
         
         if yes_selected and no_selected:
-            raise ValueError("Cannot select both Yes and No for personal items")
+            raise ValueError("Cannot select both Yes and No for inventory change")
         
         if not (yes_selected or no_selected):
-            raise ValueError("Must select either Yes or No for personal items")
+            raise ValueError("Must select either Yes or No for inventory change")
             
         return self
     
     @model_validator(mode='after')
-    def calculate_total_cost(self):
+    def calculate_totals(self):
         """Calculate total cost of goods sold."""
-        self.total_cost = (
-            self.beginning_inventory + 
-            self.purchases + 
-            self.labor_costs + 
-            self.materials_supplies + 
-            self.other_costs - 
-            self.ending_inventory
-        )
+        self.L40 = self.L35 + self.L36 + self.L37 + self.L38 + self.L39
+        self.L42 = self.L40 - self.L41
         return self
 
 
 class VehicleInformation(BaseModel):
     """Vehicle Information section of Schedule C."""
-    vehicle_description: Optional[str] = Field(None, description="Vehicle description")
-    date_placed_in_service: Optional[str] = Field(None, description="Date vehicle placed in service")
-    business_miles: Optional[Decimal] = Field(None, description="Business miles")
-    commuting_miles: Optional[Decimal] = Field(None, description="Commuting miles")
-    other_miles: Optional[Decimal] = Field(None, description="Other personal miles")
-    
-    vehicle_personal_yes: Optional[str] = Field(None, description="Yes checkbox for personal use")
-    vehicle_personal_no: Optional[str] = Field(None, description="No checkbox for personal use")
-    
-    another_vehicle_yes: Optional[str] = Field(None, description="Yes checkbox for another vehicle")
-    another_vehicle_no: Optional[str] = Field(None, description="No checkbox for another vehicle")
-    
-    evidence_yes: Optional[str] = Field(None, description="Yes checkbox for written evidence")
-    evidence_no: Optional[str] = Field(None, description="No checkbox for written evidence")
-    
-    evidence_written_yes: Optional[str] = Field(None, description="Yes checkbox for written evidence")
-    evidence_written_no: Optional[str] = Field(None, description="No checkbox for written evidence")
+    L43: Optional[str] = Field(None, description="Vehicle service date")
+    L44a: Optional[Decimal] = Field(None, description="Business miles")
+    L44b: Optional[Decimal] = Field(None, description="Commuting miles")
+    L44c: Optional[Decimal] = Field(None, description="Other miles")
+    L45_yes: Optional[str] = Field(None, description="Personal use Yes")
+    L45_no: Optional[str] = Field(None, description="Personal use No")
+    L46_yes: Optional[str] = Field(None, description="Another vehicle Yes")
+    L46_no: Optional[str] = Field(None, description="Another vehicle No")
+    L47a_yes: Optional[str] = Field(None, description="Evidence Yes")
+    L47a_no: Optional[str] = Field(None, description="Evidence No")
+    L47b_yes: Optional[str] = Field(None, description="Written evidence Yes")
+    L47b_no: Optional[str] = Field(None, description="Written evidence No")
 
-    @field_validator('vehicle_personal_yes', 'vehicle_personal_no',
-                    'another_vehicle_yes', 'another_vehicle_no',
-                    'evidence_yes', 'evidence_no',
-                    'evidence_written_yes', 'evidence_written_no')
+    @field_validator('L45_yes', 'L45_no', 'L46_yes', 'L46_no',
+                    'L47a_yes', 'L47a_no', 'L47b_yes', 'L47b_no')
     @classmethod
     def validate_checkbox(cls, v):
         if v is not None and v not in ["/1", "/Off"]:
@@ -334,45 +321,41 @@ class VehicleInformation(BaseModel):
         """Validate that vehicle information is consistent."""
         # If any vehicle information is provided, validate all required fields
         has_vehicle_info = any([
-            self.vehicle_description,
-            self.date_placed_in_service,
-            self.business_miles is not None,
-            self.commuting_miles is not None,
-            self.other_miles is not None
+            self.L43,
+            self.L44a is not None,
+            self.L44b is not None,
+            self.L44c is not None
         ])
         
         if has_vehicle_info:
             missing_fields = []
             
-            if not self.vehicle_description:
-                missing_fields.append("vehicle_description")
+            if not self.L43:
+                missing_fields.append("L43")
             
-            if not self.date_placed_in_service:
-                missing_fields.append("date_placed_in_service")
+            if self.L44a is None:
+                missing_fields.append("L44a")
             
-            if self.business_miles is None:
-                missing_fields.append("business_miles")
+            if self.L44b is None:
+                missing_fields.append("L44b")
             
-            if self.commuting_miles is None:
-                missing_fields.append("commuting_miles")
-            
-            if self.other_miles is None:
-                missing_fields.append("other_miles")
+            if self.L44c is None:
+                missing_fields.append("L44c")
             
             if missing_fields:
                 raise ValueError(f"If any vehicle information is provided, the following fields must also be provided: {', '.join(missing_fields)}")
             
             # Validate yes/no pairs
-            if not self._validate_yes_no_pair(self.vehicle_personal_yes, self.vehicle_personal_no, "vehicle personal use"):
+            if not self._validate_yes_no_pair(self.L45_yes, self.L45_no, "vehicle personal use"):
                 raise ValueError("Must select either Yes or No for vehicle personal use")
             
-            if not self._validate_yes_no_pair(self.another_vehicle_yes, self.another_vehicle_no, "another vehicle"):
+            if not self._validate_yes_no_pair(self.L46_yes, self.L46_no, "another vehicle"):
                 raise ValueError("Must select either Yes or No for another vehicle")
             
-            if not self._validate_yes_no_pair(self.evidence_yes, self.evidence_no, "evidence"):
+            if not self._validate_yes_no_pair(self.L47a_yes, self.L47a_no, "evidence"):
                 raise ValueError("Must select either Yes or No for evidence")
             
-            if not self._validate_yes_no_pair(self.evidence_written_yes, self.evidence_written_no, "written evidence"):
+            if not self._validate_yes_no_pair(self.L47b_yes, self.L47b_no, "written evidence"):
                 raise ValueError("Must select either Yes or No for written evidence")
         
         return self
@@ -394,25 +377,36 @@ class VehicleInformation(BaseModel):
         return True
 
 
-class HomeOfficeInformation(BaseModel):
-    """Home Office Information section of Schedule C."""
-    simplified_method_used: Optional[str] = Field(None, description="Checkbox for simplified method")
-    home_business_percentage: Optional[Decimal] = Field(None, description="Percentage of home used for business")
-    home_office_deduction: Optional[Decimal] = Field(None, description="Home office deduction")
-
-    @field_validator('simplified_method_used')
-    @classmethod
-    def validate_checkbox(cls, v):
-        if v is not None and v not in ["/1", "/Off"]:
-            raise ValueError(f"Checkbox value must be '/1' (checked) or '/Off' (unchecked), got '{v}'")
-        return v
+class OtherExpenses(BaseModel):
+    """Other expenses section of Schedule C."""
+    other_expense_1_desc: Optional[str] = Field(None, description="Expense 1 description")
+    other_expense_1_amount: Optional[Decimal] = Field(None, description="Expense 1 amount")
+    other_expense_2_desc: Optional[str] = Field(None, description="Expense 2 description")
+    other_expense_2_amount: Optional[Decimal] = Field(None, description="Expense 2 amount")
+    other_expense_3_desc: Optional[str] = Field(None, description="Expense 3 description")
+    other_expense_3_amount: Optional[Decimal] = Field(None, description="Expense 3 amount")
+    other_expense_4_desc: Optional[str] = Field(None, description="Expense 4 description")
+    other_expense_4_amount: Optional[Decimal] = Field(None, description="Expense 4 amount")
+    other_expense_5_desc: Optional[str] = Field(None, description="Expense 5 description")
+    other_expense_5_amount: Optional[Decimal] = Field(None, description="Expense 5 amount")
+    other_expense_6_desc: Optional[str] = Field(None, description="Expense 6 description")
+    other_expense_6_amount: Optional[Decimal] = Field(None, description="Expense 6 amount")
+    other_expense_7_desc: Optional[str] = Field(None, description="Expense 7 description")
+    other_expense_7_amount: Optional[Decimal] = Field(None, description="Expense 7 amount")
+    other_expense_8_desc: Optional[str] = Field(None, description="Expense 8 description")
+    other_expense_8_amount: Optional[Decimal] = Field(None, description="Expense 8 amount")
+    L48: Decimal = Field(default=Decimal('0'), description="Total other expenses")
     
-    @field_validator('home_business_percentage')
-    @classmethod
-    def validate_percentage(cls, v):
-        if v is not None and (v < 0 or v > 100):
-            raise ValueError(f"Home business percentage must be between 0 and 100, got {v}")
-        return v
+    @model_validator(mode='after')
+    def calculate_total(self):
+        """Calculate the total of all other expenses."""
+        total = Decimal('0')
+        for i in range(1, 9):
+            amount = getattr(self, f"other_expense_{i}_amount", None)
+            if amount is not None:
+                total += amount
+        self.L48 = total
+        return self
 
 
 class F1040scDocument(BaseModel):
@@ -421,61 +415,78 @@ class F1040scDocument(BaseModel):
     business_information: BusinessInformation
     income: Income
     expenses: Expenses
-    other_expenses: Optional[OtherExpenses] = None
+    home_office: Optional[HomeOfficeInformation] = None
+    net_profit_loss: Optional[NetProfitLoss] = None
     cost_of_goods_sold: Optional[CostOfGoodsSold] = None
     vehicle_information: Optional[VehicleInformation] = None
-    home_office_information: Optional[HomeOfficeInformation] = None
+    other_expenses: Optional[OtherExpenses] = None
     
-    net_profit_loss: Decimal = Field(default=Decimal('0'), description="Net profit or loss")
-
     @model_validator(mode='after')
-    def calculate_net_profit_loss(self):
-        """Calculate net profit or loss."""
+    def calculate_all_totals(self):
+        """Calculate all totals throughout the document."""
         # Calculate total expenses
         total_expenses = sum([
-            self.expenses.advertising,
-            self.expenses.car_truck_expenses,
-            self.expenses.commissions_fees,
-            self.expenses.contract_labor,
-            self.expenses.depletion,
-            self.expenses.depreciation,
-            self.expenses.employee_benefits,
-            self.expenses.insurance,
-            self.expenses.interest_mortgage,
-            self.expenses.interest_other,
-            self.expenses.legal_professional,
-            self.expenses.office_expense,
-            self.expenses.pension_profit_sharing,
-            self.expenses.rent_lease_vehicles,
-            self.expenses.rent_lease_other,
-            self.expenses.repairs_maintenance,
-            self.expenses.supplies,
-            self.expenses.taxes_licenses,
-            self.expenses.travel,
-            self.expenses.meals,
-            self.expenses.utilities,
-            self.expenses.wages
+            self.expenses.L8,
+            self.expenses.L9,
+            self.expenses.L10,
+            self.expenses.L11,
+            self.expenses.L12,
+            self.expenses.L13,
+            self.expenses.L14,
+            self.expenses.L15,
+            self.expenses.L16a,
+            self.expenses.L16b,
+            self.expenses.L17,
+            self.expenses.L18,
+            self.expenses.L19,
+            self.expenses.L20a,
+            self.expenses.L20b,
+            self.expenses.L21,
+            self.expenses.L22,
+            self.expenses.L23,
+            self.expenses.L24a,
+            self.expenses.L24b,
+            self.expenses.L25,
+            self.expenses.L26,
+            self.expenses.L27a,
+            self.expenses.L27b
         ])
         
-        # Add other expenses if provided
-        if self.other_expenses:
-            other_expenses_total = self.other_expenses.calculate_total()
-            self.expenses.other_expenses_total = other_expenses_total
-            total_expenses += other_expenses_total
+        self.expenses.L28 = total_expenses
         
-        # Set total expenses
-        self.expenses.total_expenses = total_expenses
+        # Calculate tentative profit/loss
+        self.expenses.L29 = self.income.L7 - total_expenses
         
-        # Add cost of goods sold if provided
-        cost_of_goods = Decimal('0')
-        if self.cost_of_goods_sold:
-            cost_of_goods = self.cost_of_goods_sold.total_cost
+        # Initialize or update net_profit_loss
+        if self.net_profit_loss is None:
+            self.net_profit_loss = NetProfitLoss()
         
-        # Calculate net profit or loss
-        self.net_profit_loss = self.income.gross_income - self.expenses.total_expenses - cost_of_goods
+        # Calculate final net profit/loss
+        home_office_deduction = Decimal('0')
+        if self.home_office and self.home_office.L30 is not None:
+            home_office_deduction = self.home_office.L30
+        
+        self.net_profit_loss.L31 = self.expenses.L29 - home_office_deduction
+        
+        # Calculate cost of goods sold if provided
+        if self.cost_of_goods_sold is not None:
+            self.income.L4 = self.cost_of_goods_sold.L42
+            # Recalculate income after updating cost of goods sold
+            self.income = self.income.calculate_income()
+        
+        # REMOVE THIS RECURSIVE CALL
+        # Calculate other expenses total if provided
+        # if self.other_expenses is not None:
+        #     self.expenses.L27a = self.other_expenses.L48
+        #     # Recalculate expenses after updating other expenses
+        #     self.calculate_all_totals()  # THIS IS THE PROBLEM - RECURSIVE CALL
+
+        # For other expenses, just set L27a once
+        if self.other_expenses is not None:
+            self.expenses.L27a = self.other_expenses.L48
+            # Don't call self.calculate_all_totals() again!
         
         return self
-
 
 # Add this helper function before the main function
 class DecimalEncoder(json.JSONEncoder):
@@ -562,31 +573,36 @@ def create_F1040sc_pdf(F1040sc_doc: F1040scDocument, template_F1040sc_pdf_path: 
     writer = PdfWriter()
     writer.append(reader)
 
-    # TODO: Define the actual tags for Schedule C in tax_form_tags.py module
-    # and use them here to write to the PDF
-    F1040sc_dict = F1040sc_doc.model_dump()
+    # Import tax_form_tags_dict here to avoid circular imports
+    try:
+        from tax_form_tags import tax_form_tags_dict
+        
+        F1040sc_dict = F1040sc_doc.model_dump()
 
-    # This is a placeholder that would be implemented with actual PDF field tags
-    """
-    for key in F1040sc_dict:
-        if key == "configuration":
-            continue
-            
-        # Process any additional sub-keys that have corresponding tag fields
-        for sub_key, sub_value in F1040sc_dict[key].items():
-            # Skip special keys
-            if sub_key == '_comment' in sub_key:
+        for key in F1040sc_dict:
+            if key == "configuration":
                 continue
-            else:
-                tag_key = f"{sub_key}_tag"
-                if tag_key in tax_form_tags_dict["F1040SC"][key]:
-                    write_field_pdf(writer, tax_form_tags_dict["F1040SC"][key][tag_key], sub_value)
+
+            # Skip None values
+            if F1040sc_dict[key] is None:
+                continue
+                
+            # Process any additional sub-keys that have corresponding tag fields
+            for sub_key, sub_value in F1040sc_dict[key].items():
+                # Skip special keys
+                if '_comment' in sub_key:
+                    continue
                 else:
-                    raise ValueError(f"Cannot find tag_key: {tag_key} in tax_form_tags_dict")
-    """
-    
-    print("NOTE: PDF field mapping not yet implemented for Schedule C")
-    print("You'll need to add Schedule C tags to the tax_form_tags.py dictionary")
+                    tag_key = f"{sub_key}_tag"
+                    # if tag_key in tax_form_tags_dict["F1040SC"][key]:
+                    if key in tax_form_tags_dict["F1040SC"] and tag_key in tax_form_tags_dict["F1040SC"][key]:
+                        write_field_pdf(writer, tax_form_tags_dict["F1040SC"][key][tag_key], sub_value)
+                    else:
+                        print(f"Warning: Cannot find tag_key: {tag_key} in tax_form_tags_dict")
+    except (ImportError, KeyError) as e:
+        print(f"Warning: Error mapping PDF fields: {str(e)}")
+        print("PDF field mapping not yet fully implemented for Schedule C")
+        print("You'll need to ensure Schedule C tags are properly defined in tax_form_tags.py dictionary")
 
     # now save the PDF
     with open(output_F1040sc_pdf_path, "wb") as output_stream:                          
@@ -637,7 +653,6 @@ def main():
         "--debug-json", 
         help="Path where to save debug JSON output (overrides the path in config file)"
     )
-    
     parser.add_argument(
         "--verbose", 
         action="store_true",
@@ -664,7 +679,7 @@ def main():
         print(f"✅ Schedule C file validated successfully: {args.config}")
         print(f"Tax year: {validated_data.configuration.tax_year}")
         print(f"Business: {validated_data.business_information.business_name}")
-        print(f"Net profit/loss: {validated_data.net_profit_loss}")
+        print(f"Net profit/loss: {validated_data.net_profit_loss.L31}")
         
         # Create the Schedule C PDF
         print(f"Creating PDF at {args.output}...")
