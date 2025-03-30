@@ -172,126 +172,123 @@ tax_form_tags_dict = {
         "configuration": {
             # No tag fields in configuration section
         },
-        "business_info": {
-            "name_of_proprietor_tag": "f1_01[0]",
-            "ssn_tag": "f1_02[0]",
-            "principal_business_tag": "f1_03[0]",
-            "business_code_tag": "f1_04[0]",
-            "business_name_tag": "f1_05[0]",
-            "ein_tag": "f1_06[0]",
-            "business_address_tag": "f1_07[0]",
-            "city_state_zip_tag": "f1_08[0]"
-        },
-        "accounting_method": {
-            "cash_tag": "c1_1[0]",
-            "accrual_tag": "c1_1[1]",
-            "other_tag": "c1_1[2]",
-            "other_specify_tag": "f1_09[0]"
-        },
-        "questions": {
-            "material_participation_yes_tag": "c1_2[0]",
-            "material_participation_no_tag": "c1_2[1]",
-            "started_acquired_tag": "c1_3[0]",
-            "payments_requiring_1099_yes_tag": "c1_4[0]",
-            "payments_requiring_1099_no_tag": "c1_4[1]",
-            "filed_required_1099_yes_tag": "c1_5[0]",
-            "filed_required_1099_no_tag": "c1_5[1]"
+        "business_information": {
+            "business_name_tag": "f1_01[0]",             # Name of proprietor 
+            "ssn_tag": "f1_02[0]",                       # SSN
+            "principal_business_tag": "f1_03[0]",        # Principal business
+            "business_code_tag": "f1_04[0]",             # Business code
+            "business_name_separate_tag": "f1_05[0]",    # Business name 
+            "ein_tag": "f1_06[0]",                       # EIN
+            "business_address_tag": "f1_07[0]",          # Business address
+            "business_city_state_zip_tag": "f1_08[0]",   # City, state, ZIP
+            "accounting_method_cash_tag": "c1_1[0]",     # Cash
+            "accounting_method_accrual_tag": "c1_1[1]",  # Accrual
+            "accounting_method_other_tag": "c1_1[2]",    # Other
+            "accounting_method_other_text_tag": "f1_09[0]", # Other specified
+            "material_participation_yes_tag": "c1_2[0]", # Participate - Yes
+            "material_participation_no_tag": "c1_2[1]",  # Participate - No
+            "not_started_business_tag": "c1_3[0]",       # Started business
+            "issued_1099_required_yes_tag": "c1_4[0]",   # 1099 payments - Yes
+            "issued_1099_required_no_tag": "c1_4[1]",    # 1099 payments - No
+            "issued_1099_not_required_yes_tag": "c1_5[0]", # Filed 1099 - Yes
+            "issued_1099_not_required_no_tag": "c1_5[1]"   # Filed 1099 - No
         },
         "income": {
-            "statutory_employee_tag": "c1_6[0]",
-            "gross_receipts_tag": "f1_10[0]",
-            "returns_allowances_tag": "f1_11[0]",
-            "subtract_line2_from_line1_tag": "f1_12[0]",
-            "cost_of_goods_sold_tag": "f1_13[0]",
-            "gross_profit_tag": "f1_14[0]",
-            "other_income_tag": "f1_15[0]",
-            "gross_income_tag": "f1_16[0]"
+            "statutory_employee_tag": "c1_6[0]",         # Statutory employee
+            "L1_tag": "f1_10[0]",                        # Gross receipts/sales
+            "L2_tag": "f1_11[0]",                        # Returns and allowances
+            "L3_tag": "f1_12[0]",                        # Subtract line 2 from line 1
+            "L4_tag": "f1_13[0]",                        # Cost of goods sold
+            "L5_tag": "f1_14[0]",                        # Gross profit
+            "L6_tag": "f1_15[0]",                        # Other income
+            "L7_tag": "f1_16[0]"                         # Gross income
         },
         "expenses": {
-            "advertising_tag": "f1_17[0]",
-            "car_truck_expenses_tag": "f1_18[0]",
-            "commissions_fees_tag": "f1_19[0]",
-            "contract_labor_tag": "f1_20[0]",
-            "depletion_tag": "f1_21[0]",
-            "depreciation_tag": "f1_22[0]",
-            "employee_benefits_tag": "f1_23[0]",
-            "insurance_tag": "f1_24[0]",
-            "mortgage_interest_tag": "f1_25[0]",
-            "other_interest_tag": "f1_26[0]",
-            "legal_professional_tag": "f1_27[0]",
-            "office_expense_tag": "f1_28[0]",
-            "pension_profit_sharing_tag": "f1_29[0]",
-            "rent_lease_vehicles_tag": "f1_30[0]",
-            "rent_lease_other_tag": "f1_31[0]",
-            "repairs_maintenance_tag": "f1_32[0]",
-            "supplies_tag": "f1_33[0]",
-            "taxes_licenses_tag": "f1_34[0]",
-            "travel_tag": "f1_35[0]",
-            "meals_tag": "f1_36[0]",
-            "utilities_tag": "f1_37[0]",
-            "wages_tag": "f1_38[0]",
-            "other_expenses_tag": "f1_39[0]",
-            "energy_efficient_bldg_tag": "f1_40[0]",
-            "total_expenses_tag": "f1_41[0]",
-            "tentative_profit_loss_tag": "f1_42[0]"
+            "L8_tag": "f1_17[0]",                        # Advertising
+            "L9_tag": "f1_18[0]",                        # Car and truck expenses
+            "L10_tag": "f1_19[0]",                       # Commissions and fees
+            "L11_tag": "f1_20[0]",                       # Contract labor
+            "L12_tag": "f1_21[0]",                       # Depletion
+            "L13_tag": "f1_22[0]",                       # Depreciation
+            "L14_tag": "f1_23[0]",                       # Employee benefits
+            "L15_tag": "f1_24[0]",                       # Insurance
+            "L16a_tag": "f1_25[0]",                      # Mortgage interest
+            "L16b_tag": "f1_26[0]",                      # Other interest
+            "L17_tag": "f1_27[0]",                       # Legal and professional
+            "L18_tag": "f1_28[0]",                       # Office expense
+            "L19_tag": "f1_29[0]",                       # Pension plans
+            "L20a_tag": "f1_30[0]",                      # Rent/lease vehicles
+            "L20b_tag": "f1_31[0]",                      # Rent/lease other
+            "L21_tag": "f1_32[0]",                       # Repairs and maintenance
+            "L22_tag": "f1_33[0]",                       # Supplies
+            "L23_tag": "f1_34[0]",                       # Taxes and licenses
+            "L24a_tag": "f1_35[0]",                      # Travel
+            "L24b_tag": "f1_36[0]",                      # Deductible meals
+            "L25_tag": "f1_37[0]",                       # Utilities
+            "L26_tag": "f1_38[0]",                       # Wages
+            "L27a_tag": "f1_39[0]",                      # Other expenses
+            "L27b_tag": "f1_40[0]",                      # Energy efficient bldgs
+            "L28_tag": "f1_41[0]",                       # Total expenses
+            "L29_tag": "f1_42[0]"                        # Tentative profit/loss
         },
         "home_office": {
-            "home_total_area_tag": "f1_43[0]",
-            "home_business_area_tag": "f1_44[0]",
-            "home_office_expenses_tag": "f1_45[0]"
+            "simplified_method_tag": "c1_7[0]",          # Simplified method
+            "home_total_area_tag": "f1_43[0]",           # Total sq footage
+            "home_business_area_tag": "f1_44[0]",        # Business sq footage
+            "L30_tag": "f1_45[0]"                        # Home office expenses
         },
         "net_profit_loss": {
-            "net_profit_loss_tag": "f1_46[0]",
-            "all_investment_at_risk_tag": "c1_7[0]",
-            "some_investment_not_at_risk_tag": "c1_7[1]"
+            "L31_tag": "f1_46[0]",                       # Net profit or loss
+            "L32a_tag": "c1_7[0]",                       # All investment at risk
+            "L32b_tag": "c1_7[1]"                        # Some investment not at risk
         },
-        "cost_of_goods": {
-            "cost_method_tag": "c2_1[0]",
-            "lower_cost_market_tag": "c2_1[1]",
-            "other_method_tag": "c2_1[2]",
-            "change_in_inventory_yes_tag": "c2_2[0]",
-            "change_in_inventory_no_tag": "c2_2[1]",
-            "inventory_beginning_tag": "f2_01[0]",
-            "purchases_tag": "f2_02[0]",
-            "cost_of_labor_tag": "f2_03[0]",
-            "materials_supplies_tag": "f2_04[0]",
-            "other_costs_tag": "f2_05[0]",
-            "sum_lines_35_39_tag": "f2_06[0]",
-            "inventory_end_tag": "f2_07[0]",
-            "cost_of_goods_sold_tag": "f2_08[0]"
+        "cost_of_goods_sold": {
+            "L33a_tag": "c2_1[0]",                       # Cost method
+            "L33b_tag": "c2_1[1]",                       # Lower of cost or market
+            "L33c_tag": "c2_1[2]",                       # Other method
+            "L34_yes_tag": "c2_2[0]",                    # Inventory change Yes
+            "L34_no_tag": "c2_2[1]",                     # Inventory change No
+            "L35_tag": "f2_01[0]",                       # Beginning inventory
+            "L36_tag": "f2_02[0]",                       # Purchases
+            "L37_tag": "f2_03[0]",                       # Cost of labor
+            "L38_tag": "f2_04[0]",                       # Materials and supplies
+            "L39_tag": "f2_05[0]",                       # Other costs
+            "L40_tag": "f2_06[0]",                       # Sum lines 35-39
+            "L41_tag": "f2_07[0]",                       # Ending inventory
+            "L42_tag": "f2_08[0]"                        # Cost of goods sold
         },
-        "vehicle_info": {
-            "vehicle_service_date_tag": "f2_09[0]",
-            "business_miles_tag": "f2_10[0]",
-            "commuting_miles_tag": "f2_11[0]",
-            "other_miles_tag": "f2_12[0]",
-            "personal_use_yes_tag": "c2_3[0]",
-            "personal_use_no_tag": "c2_3[1]",
-            "another_vehicle_yes_tag": "c2_4[0]",
-            "another_vehicle_no_tag": "c2_4[1]",
-            "evidence_yes_tag": "c2_5[0]",
-            "evidence_no_tag": "c2_5[1]",
-            "written_evidence_yes_tag": "c2_6[0]",
-            "written_evidence_no_tag": "c2_6[1]"
+        "vehicle_information": {
+            "L43_tag": "f2_09[0]",                       # Vehicle service date
+            "L44a_tag": "f2_10[0]",                      # Business miles
+            "L44b_tag": "f2_11[0]",                      # Commuting miles
+            "L44c_tag": "f2_12[0]",                      # Other miles
+            "L45_yes_tag": "c2_3[0]",                    # Personal use Yes
+            "L45_no_tag": "c2_3[1]",                     # Personal use No
+            "L46_yes_tag": "c2_4[0]",                    # Another vehicle Yes
+            "L46_no_tag": "c2_4[1]",                     # Another vehicle No
+            "L47a_yes_tag": "c2_5[0]",                   # Evidence Yes
+            "L47a_no_tag": "c2_5[1]",                    # Evidence No
+            "L47b_yes_tag": "c2_6[0]",                   # Written evidence Yes
+            "L47b_no_tag": "c2_6[1]"                     # Written evidence No
         },
         "other_expenses": {
-            "other_expenses_line1_desc_tag": "f2_13[0]",
-            "other_expenses_line1_amount_tag": "f2_14[0]",
-            "other_expenses_line2_desc_tag": "f2_15[0]",
-            "other_expenses_line2_amount_tag": "f2_16[0]",
-            "other_expenses_line3_desc_tag": "f2_17[0]",
-            "other_expenses_line3_amount_tag": "f2_18[0]",
-            "other_expenses_line4_desc_tag": "f2_19[0]",
-            "other_expenses_line4_amount_tag": "f2_20[0]",
-            "other_expenses_line5_desc_tag": "f2_21[0]",
-            "other_expenses_line5_amount_tag": "f2_22[0]",
-            "other_expenses_line6_desc_tag": "f2_23[0]",
-            "other_expenses_line6_amount_tag": "f2_24[0]",
-            "other_expenses_line7_desc_tag": "f2_25[0]",
-            "other_expenses_line7_amount_tag": "f2_26[0]",
-            "other_expenses_line8_desc_tag": "f2_27[0]",
-            "other_expenses_line8_amount_tag": "f2_28[0]",
-            "total_other_expenses_tag": "f2_29[0]"
+            "other_expense_1_desc_tag": "f2_13[0]",      # Expense 1 description
+            "other_expense_1_amount_tag": "f2_14[0]",    # Expense 1 amount
+            "other_expense_2_desc_tag": "f2_15[0]",      # Expense 2 description
+            "other_expense_2_amount_tag": "f2_16[0]",    # Expense 2 amount
+            "other_expense_3_desc_tag": "f2_17[0]",      # Expense 3 description
+            "other_expense_3_amount_tag": "f2_18[0]",    # Expense 3 amount
+            "other_expense_4_desc_tag": "f2_19[0]",      # Expense 4 description
+            "other_expense_4_amount_tag": "f2_20[0]",    # Expense 4 amount
+            "other_expense_5_desc_tag": "f2_21[0]",      # Expense 5 description
+            "other_expense_5_amount_tag": "f2_22[0]",    # Expense 5 amount
+            "other_expense_6_desc_tag": "f2_23[0]",      # Expense 6 description
+            "other_expense_6_amount_tag": "f2_24[0]",    # Expense 6 amount
+            "other_expense_7_desc_tag": "f2_25[0]",      # Expense 7 description
+            "other_expense_7_amount_tag": "f2_26[0]",    # Expense 7 amount
+            "other_expense_8_desc_tag": "f2_27[0]",      # Expense 8 description
+            "other_expense_8_amount_tag": "f2_28[0]",    # Expense 8 amount
+            "L48_tag": "f2_29[0]"                        # Total other expenses
         }
     }
 }
