@@ -21,6 +21,7 @@ from decimal import Decimal
 from pydantic import BaseModel, Field, field_validator, model_validator
 from pathlib import Path
 import tempfile
+from datetime import datetime
 
 # PDF Imports used to create the PDF
 from pypdf import PdfReader, PdfWriter
@@ -338,6 +339,36 @@ class VehicleInformation(BaseModel):
         if v is not None and v not in ["/1", "/Off"]:
             raise ValueError(f"Checkbox value must be '/1' (checked) or '/Off' (unchecked), got '{v}'")
         return v
+
+    def _validate_date(self, month, day, year):
+        """Helper method to validate that the date components form a valid date."""
+        try:
+            # Clean up the input - strip any non-digit characters
+            month_clean = ''.join(c for c in month if c.isdigit())
+            day_clean = ''.join(c for c in day if c.isdigit())
+            year_clean = ''.join(c for c in year if c.isdigit())
+            
+            # Convert to integers
+            month_int = int(month_clean)
+            day_int = int(day_clean)
+            
+            # Handle 2-digit years (assuming 20xx if < 50, 19xx if >= 50)
+            if len(year_clean) == 2:
+                year_int = 2000 + int(year_clean) if int(year_clean) < 50 else 1900 + int(year_clean)
+            else:
+                year_int = int(year_clean)
+            
+            # Attempt to create a datetime object
+            datetime(year_int, month_int, day_int)
+            
+            # Also check for reasonable range (e.g., not in the future)
+            current_year = datetime.now().year
+            if year_int > current_year:
+                return False
+            
+            return True
+        except (ValueError, TypeError):
+            return False
     
     @model_validator(mode='after')
     def validate_vehicle_information(self):
@@ -388,6 +419,11 @@ class VehicleInformation(BaseModel):
             
             if not self._validate_yes_no_pair(self.L47b_yes, self.L47b_no, "written evidence"):
                 raise ValueError("Must select either Yes or No for written evidence")
+
+            # Validate that the date is valid
+            if self.L43_month and self.L43_day and self.L43_year:
+                if not self._validate_date(self.L43_month, self.L43_day, self.L43_year):
+                    raise ValueError(f"Invalid date: {self.L43_month}/{self.L43_day}/{self.L43_year}")
         
         return self
     
