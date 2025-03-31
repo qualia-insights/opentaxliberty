@@ -474,8 +474,8 @@ class F1040Document(BaseModel):
         # Only calculate if income section exists and has L12 field
         if hasattr(self, 'income') and hasattr(self.income, 'L12'):
             # Skip if L12 is already set to a non-zero value
-            #if self.income.L12 and self.income.L12 != 0:
-            #    return self
+            if self.income.L12 and self.income.L12 != 0:
+                return self
                 
             # Determine standard deduction based on filing status
             filing_status = self.filing_status

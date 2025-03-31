@@ -93,8 +93,14 @@ class BusinessInformation(BaseModel):
             raise ValueError(f"Checkbox value must be '/3' (checked) or '/Off' (unchecked): got '{v}'")
         return v
 
-    @field_validator('not_started_business', 
-                    'material_participation_yes', 'material_participation_no',
+    @field_validator('not_started_business')
+    @classmethod
+    def validate_checkbox_yes_or_blank(cls, v):
+        if v not in ["/1", "/Off"]:
+            raise ValueError(f"Checkbox value must be '/1' (checked) or '/Off' (unchecked), or '/No': got '{v}'")
+        return v
+
+    @field_validator('material_participation_yes', 'material_participation_no',
                     'issued_1099_required_yes', 'issued_1099_required_no',
                     'issued_1099_not_required_yes', 'issued_1099_not_required_no')
     @classmethod

@@ -36,18 +36,10 @@ tax form that it can process.
 
 At some point we have to stop playing around and get our own taxes DONE :-)
 
-- [X] rename F1040_validator.py to F1040.py
-- [X] rename W2_validator.py to W2.py
-- [X] put pdf writer logic into F1040.py
-- [X] use argparse in F1040.py instead of sys
-- [X] F1040.py should stand on its own being able to validate json config files and make a complete F1040 pdf
-- [X] make opentaxliberty.py work with the new and improved F1040.py
-- [X] change name of opentaxliberty.py OpenAPI call to F1040....we can make a OpenAPI call for each form we support!
-- [X] make sure mypy is still working 
-- [X] Refactor code to use Pydantic more
-    - [X] validate that every field in the json config file has a tag, should this live in F1040_validator.py?
-    - [X] We need to review the tests
-- [ ] pytests for F1040.py
+- [ ] Eat own dog food
+    - [ ] change F1040sc line h to a better name
+- [X] pytests for F1040.py
+- [X] pytests for F1040sc.py
 - [ ] pytests for W2.py
 - [ ] update the README.md in tests...how do we run all the tests? how do we run a single test
 - [X] complete the json config file for schedule C
