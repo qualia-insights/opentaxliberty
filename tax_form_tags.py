@@ -258,7 +258,9 @@ tax_form_tags_dict = {
             "L42_tag": "f2_08[0]"                        # Cost of goods sold
         },
         "vehicle_information": {
-            "L43_tag": "f2_11[0]",                       # Vehicle service date
+            "L43_month_tag": "f2_9[0]",                 # Vehicle service date Month
+            "L43_day_tag": "f2_10[0]",                   # Vehicle service date Day
+            "L43_year_tag": "f2_11[0]",                  # Vehicle service date Year
             "L44a_tag": "f2_12[0]",                      # Business miles
             "L44b_tag": "f2_13[0]",                      # Commuting miles
             "L44c_tag": "f2_14[0]",                      # Other miles

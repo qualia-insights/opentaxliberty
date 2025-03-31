@@ -316,7 +316,9 @@ class CostOfGoodsSold(BaseModel):
 
 class VehicleInformation(BaseModel):
     """Vehicle Information section of Schedule C."""
-    L43: Optional[str] = Field(None, description="Vehicle service date")
+    L43_month: Optional[str] = Field(None, description="Vehicle service date")
+    L43_day: Optional[str] = Field(None, description="Vehicle service date")
+    L43_year: Optional[str] = Field(None, description="Vehicle service date")
     L44a: Optional[Decimal] = Field(None, description="Business miles")
     L44b: Optional[Decimal] = Field(None, description="Commuting miles")
     L44c: Optional[Decimal] = Field(None, description="Other miles")
@@ -342,7 +344,9 @@ class VehicleInformation(BaseModel):
         """Validate that vehicle information is consistent."""
         # If any vehicle information is provided, validate all required fields
         has_vehicle_info = any([
-            self.L43,
+            self.L43_month,
+            self.L43_day,
+            self.L43_year,
             self.L44a is not None,
             self.L44b is not None,
             self.L44c is not None
@@ -351,8 +355,14 @@ class VehicleInformation(BaseModel):
         if has_vehicle_info:
             missing_fields = []
             
-            if not self.L43:
-                missing_fields.append("L43")
+            if not self.L43_month:
+                missing_fields.append("L43_month")
+
+            if not self.L43_day:
+                missing_fields.append("L43_day")
+
+            if not self.L43_year:
+                missing_fields.append("L43_year")
             
             if self.L44a is None:
                 missing_fields.append("L44a")
