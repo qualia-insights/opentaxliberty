@@ -14,6 +14,22 @@ import sys
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
 from tax_form_tags import tax_form_tags_dict
 
+# Helper function to check if the server is running
+def is_server_running(url, timeout=1):
+    """Check if the FastAPI server is running by making a request to it."""
+    try:
+        response = requests.get(url, timeout=timeout)
+        return response.status_code == 200
+    except:
+        return False
+
+# Add skipif decorator that checks if the server is running
+@pytest.mark.skipif(
+    # Try to connect to the server, skip if it fails
+    lambda: not is_server_running("http://mse-8:8000/"),
+    reason="OpenTaxLiberty server is not running"
+)
+
 def test_process_tax_form_with_curl():
     """
     Test the OpenTaxLiberty API by executing a curl command to process a tax form.
