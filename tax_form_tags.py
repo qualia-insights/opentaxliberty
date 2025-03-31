@@ -272,23 +272,25 @@ tax_form_tags_dict = {
             "L47b_no_tag": "c2_6[1]"                     # Written evidence No
         },
         "other_expenses": {
-            "other_expense_1_desc_tag": "f2_13[0]",      # Expense 1 description
-            "other_expense_1_amount_tag": "f2_14[0]",    # Expense 1 amount
-            "other_expense_2_desc_tag": "f2_15[0]",      # Expense 2 description
-            "other_expense_2_amount_tag": "f2_16[0]",    # Expense 2 amount
-            "other_expense_3_desc_tag": "f2_17[0]",      # Expense 3 description
-            "other_expense_3_amount_tag": "f2_18[0]",    # Expense 3 amount
-            "other_expense_4_desc_tag": "f2_19[0]",      # Expense 4 description
-            "other_expense_4_amount_tag": "f2_20[0]",    # Expense 4 amount
-            "other_expense_5_desc_tag": "f2_21[0]",      # Expense 5 description
-            "other_expense_5_amount_tag": "f2_22[0]",    # Expense 5 amount
-            "other_expense_6_desc_tag": "f2_23[0]",      # Expense 6 description
-            "other_expense_6_amount_tag": "f2_24[0]",    # Expense 6 amount
-            "other_expense_7_desc_tag": "f2_25[0]",      # Expense 7 description
-            "other_expense_7_amount_tag": "f2_26[0]",    # Expense 7 amount
-            "other_expense_8_desc_tag": "f2_27[0]",      # Expense 8 description
-            "other_expense_8_amount_tag": "f2_28[0]",    # Expense 8 amount
-            "L48_tag": "f2_29[0]"                        # Total other expenses
+            "other_expense_1_desc_tag": "f2_15[0]",      # Expense 1 description
+            "other_expense_1_amount_tag": "f2_16[0]",    # Expense 1 amount
+            "other_expense_2_desc_tag": "f2_17[0]",      # Expense 2 description
+            "other_expense_2_amount_tag": "f2_18[0]",    # Expense 2 amount
+            "other_expense_3_desc_tag": "f2_19[0]",      # Expense 3 description
+            "other_expense_3_amount_tag": "f2_20[0]",    # Expense 3 amount
+            "other_expense_4_desc_tag": "f2_21[0]",      # Expense 4 description
+            "other_expense_4_amount_tag": "f2_22[0]",    # Expense 4 amount
+            "other_expense_5_desc_tag": "f2_23[0]",      # Expense 5 description
+            "other_expense_5_amount_tag": "f2_24[0]",    # Expense 5 amount
+            "other_expense_6_desc_tag": "f2_25[0]",      # Expense 6 description
+            "other_expense_6_amount_tag": "f2_26[0]",    # Expense 6 amount
+            "other_expense_7_desc_tag": "f2_27[0]",      # Expense 7 description
+            "other_expense_7_amount_tag": "f2_28[0]",    # Expense 7 amount
+            "other_expense_8_desc_tag": "f2_29[0]",      # Expense 8 description
+            "other_expense_8_amount_tag": "f2_30[0]",    # Expense 8 amount
+            "other_expense_9_desc_tag": "f2_31[0]",      # Expense 9 description
+            "other_expense_9_amount_tag": "f2_32[0]",    # Expense 9 amount
+            "L48_tag": "f2_33[0]"                        # Total other expenses
         }
     }
 }

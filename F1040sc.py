@@ -416,13 +416,15 @@ class OtherExpenses(BaseModel):
     other_expense_7_amount: Optional[Decimal] = Field(None, description="Expense 7 amount")
     other_expense_8_desc: Optional[str] = Field(None, description="Expense 8 description")
     other_expense_8_amount: Optional[Decimal] = Field(None, description="Expense 8 amount")
+    other_expense_9_desc: Optional[str] = Field(None, description="Expense 9 description")
+    other_expense_9_amount: Optional[Decimal] = Field(None, description="Expense 9 amount")
     L48: Decimal = Field(default=Decimal('0'), description="Total other expenses")
     
     @model_validator(mode='after')
     def calculate_total(self):
         """Calculate the total of all other expenses."""
         total = Decimal('0')
-        for i in range(1, 9):
+        for i in range(1, 10):
             amount = getattr(self, f"other_expense_{i}_amount", None)
             if amount is not None:
                 total += amount
