@@ -287,15 +287,6 @@
 	    "L32a": "/1",
 	    "L32b": "/Off"
 	  },
-	  "other_expenses": {
-	    "other_expense_1_desc": "Software subscriptions",
-	    "other_expense_1_amount": 1450.00,
-	    "other_expense_2_desc": "Professional development",
-	    "other_expense_2_amount": 950.00,
-	    "other_expense_3_desc": "Industry conferences",
-	    "other_expense_3_amount": 750.00,
-	    "L48": 3150.00
-	  },
 	  "vehicle_information": {
 	    "L43": "06/15/2022",
 	    "L44a": 6250,
@@ -309,6 +300,15 @@
 	    "L47a_no": "/Off",
 	    "L47b_yes": "/1",
 	    "L47b_no": "/Off"
+	  },
+	  "other_expenses": {
+	    "other_expense_1_desc": "Software subscriptions",
+	    "other_expense_1_amount": 1450.00,
+	    "other_expense_2_desc": "Professional development",
+	    "other_expense_2_amount": 950.00,
+	    "other_expense_3_desc": "Industry conferences",
+	    "other_expense_3_amount": 750.00,
+	    "L48": 3150.00
 	  }
 	}
 }

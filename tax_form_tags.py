@@ -258,18 +258,18 @@ tax_form_tags_dict = {
             "L42_tag": "f2_08[0]"                        # Cost of goods sold
         },
         "vehicle_information": {
-            "L43_tag": "f2_09[0]",                       # Vehicle service date
-            "L44a_tag": "f2_10[0]",                      # Business miles
-            "L44b_tag": "f2_11[0]",                      # Commuting miles
-            "L44c_tag": "f2_12[0]",                      # Other miles
-            "L45_yes_tag": "c2_3[0]",                    # Personal use Yes
-            "L45_no_tag": "c2_3[1]",                     # Personal use No
-            "L46_yes_tag": "c2_4[0]",                    # Another vehicle Yes
-            "L46_no_tag": "c2_4[1]",                     # Another vehicle No
-            "L47a_yes_tag": "c2_5[0]",                   # Evidence Yes
-            "L47a_no_tag": "c2_5[1]",                    # Evidence No
-            "L47b_yes_tag": "c2_6[0]",                   # Written evidence Yes
-            "L47b_no_tag": "c2_6[1]"                     # Written evidence No
+            "L43_tag": "f2_11[0]",                       # Vehicle service date
+            "L44a_tag": "f2_12[0]",                      # Business miles
+            "L44b_tag": "f2_13[0]",                      # Commuting miles
+            "L44c_tag": "f2_14[0]",                      # Other miles
+            "L45_yes_tag": "c2_5[0]",                    # Personal use Yes /1 for check /Off for no check
+            "L45_no_tag": "c2_5[1]",                     # Personal use No /2 for check /Off for no check
+            "L46_yes_tag": "c2_6[0]",                    # Another vehicle Yes /1 for check /Off for no check
+            "L46_no_tag": "c2_6[1]",                     # Another vehicle No /2 for check /Off for no check
+            "L47a_yes_tag": "c2_7[0]",                   # Evidence Yes /1 for check /Off for no check
+            "L47a_no_tag": "c2_7[1]",                    # Evidence No /2 for check /Off for no check
+            "L47b_yes_tag": "c2_8[0]",                   # Written evidence Yes /1 for check /Off for no check
+            "L47b_no_tag": "c2_8[1]"                     # Written evidence No /2 for check /Off for no check
         },
         "other_expenses": {
             "other_expense_1_desc_tag": "f2_15[0]",      # Expense 1 description
