@@ -17,6 +17,7 @@ import json
 # pypdf dependencies
 from pypdf import PdfReader, PdfWriter
 from pypdf.constants import AnnotationDictionaryAttributes
+from decimal import Decimal
 
 def write_field_pdf(writer: PdfWriter, field_name: str, field_value: str):
     """
@@ -31,7 +32,33 @@ def write_field_pdf(writer: PdfWriter, field_name: str, field_value: str):
         return
     elif field_value == 0:
         return
-        
+
+    # Format decimal numbers to remove trailing .00 or .0
+    
+    # Convert field_value to string if it's not already
+    if not isinstance(field_value, str):
+        # For Decimal objects or other numeric types
+        try:
+            # Check if it's a whole number
+            num_value = Decimal(str(field_value))
+            if num_value == num_value.to_integral_value():
+                field_value = str(int(num_value))
+            else:
+                field_value = str(field_value)
+        except:
+            field_value = str(field_value)
+    else:
+        # For string representations of numbers
+        try:
+            if '.' in field_value:
+                # Check if it ends with .0 or .00
+                if field_value.endswith('.0') or field_value.endswith('.00'):
+                    num_value = Decimal(field_value)
+                    field_value = str(int(num_value))
+        except:
+            # Keep original string value if conversion fails
+            pass
+         
     # Try to update the field on each page
     field_found = False
     for page_num in range(len(writer.pages)):
