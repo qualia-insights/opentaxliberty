@@ -63,7 +63,7 @@ class BusinessInformation(BaseModel):
     accounting_method_accrual: str = Field("/Off", description="Accrual accounting method checkbox")
     accounting_method_other: str = Field("/Off", description="Other accounting method checkbox")
     accounting_method_other_text: Optional[str] = Field(None, description="Other accounting method description")
-    material_participation_yes: str = Field("/Off", description="Yes checkbox for material participation")
+    material_participation_yes: str = Field("/Yes", description="Yes checkbox for material participation")
     material_participation_no: str = Field("/Off", description="No checkbox for material participation")
     not_started_business: str = Field("/Off", description="Not started business checkbox")
     issued_1099_required_yes: str = Field("/Off", description="Yes checkbox for issued 1099s when required")
@@ -71,15 +71,35 @@ class BusinessInformation(BaseModel):
     issued_1099_not_required_yes: str = Field("/Off", description="Yes checkbox for required to file 1099s")
     issued_1099_not_required_no: str = Field("/Off", description="No checkbox for required to file 1099s")
 
-    @field_validator('accounting_method_cash', 'accounting_method_accrual', 'accounting_method_other',
-                    'not_started_business', 
+    @field_validator('accounting_method_cash')
+    @classmethod
+    def validate_checkbox_1_or_off(cls, v):
+        if v not in ["/1", "/Off"]:
+            raise ValueError(f"Checkbox value must be '/1' (checked) or '/Off' (unchecked): got '{v}'")
+        return v
+
+    @field_validator('accounting_method_accrual')
+    @classmethod
+    def validate_checkbox_2_or_off(cls, v):
+        if v not in ["/2", "/Off"]:
+            raise ValueError(f"Checkbox value must be '/2' (checked) or '/Off' (unchecked): got '{v}'")
+        return v
+
+    @field_validator('accounting_method_other')
+    @classmethod
+    def validate_checkbox_3_or_off(cls, v):
+        if v not in ["/3", "/Off"]:
+            raise ValueError(f"Checkbox value must be '/3' (checked) or '/Off' (unchecked): got '{v}'")
+        return v
+
+    @field_validator('not_started_business', 
                     'material_participation_yes', 'material_participation_no',
                     'issued_1099_required_yes', 'issued_1099_required_no',
                     'issued_1099_not_required_yes', 'issued_1099_not_required_no')
     @classmethod
-    def validate_checkbox(cls, v):
-        if v not in ["/1", "/Off"]:
-            raise ValueError(f"Checkbox value must be '/1' (checked) or '/Off' (unchecked), got '{v}'")
+    def validate_checkbox_yes_off_no(cls, v):
+        if v not in ["/Yes", "/Off", "/No"]:
+            raise ValueError(f"Checkbox value must be '/Yes' (checked) or '/Off' (unchecked), or '/No': got '{v}'")
         return v
     
     @model_validator(mode='after')
@@ -101,12 +121,12 @@ class BusinessInformation(BaseModel):
             raise ValueError("If 'Other' accounting method is selected, description must be provided")
             
         return self
-    
+    ''' 
     @model_validator(mode='after')
     def validate_material_participation(self):
         """Validate that exactly one material participation option is selected."""
-        yes_selected = self.material_participation_yes == "/1"
-        no_selected = self.material_participation_no == "/1"
+        yes_selected = self.material_participation_yes == "/Yes"
+        no_selected = self.material_participation_no == "/No"
         
         if yes_selected and no_selected:
             raise ValueError("Cannot select both Yes and No for material participation")
@@ -143,6 +163,7 @@ class BusinessInformation(BaseModel):
             raise ValueError("Must select either Yes or No for 1099 filing requirement")
             
         return self
+     '''
 
 
 class Income(BaseModel):

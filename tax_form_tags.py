@@ -173,18 +173,18 @@ tax_form_tags_dict = {
             # No tag fields in configuration section
         },
         "business_information": {
-            "business_name_tag": "f1_01[0]",             # Name of proprietor 
-            "ssn_tag": "f1_02[0]",                       # SSN
-            "principal_business_tag": "f1_03[0]",        # Principal business
-            "business_code_tag": "f1_04[0]",             # Business code
-            "business_name_separate_tag": "f1_05[0]",    # Business name 
-            "ein_tag": "f1_06[0]",                       # EIN
-            "business_address_tag": "f1_07[0]",          # Business address
-            "business_city_state_zip_tag": "f1_08[0]",   # City, state, ZIP
+            "business_name_tag": "f1_1[0]",             # Name of proprietor 
+            "ssn_tag": "f1_2[0]",                       # SSN
+            "principal_business_tag": "f1_3[0]",        # Principal business
+            "business_code_tag": "f1_4[0]",             # Business code
+            "business_name_separate_tag": "f1_5[0]",    # Business name 
+            "ein_tag": "f1_6[0]",                       # EIN
+            "business_address_tag": "f1_7[0]",          # Business address
+            "business_city_state_zip_tag": "f1_8[0]",   # City, state, ZIP
             "accounting_method_cash_tag": "c1_1[0]",     # Cash
             "accounting_method_accrual_tag": "c1_1[1]",  # Accrual
             "accounting_method_other_tag": "c1_1[2]",    # Other
-            "accounting_method_other_text_tag": "f1_09[0]", # Other specified
+            "accounting_method_other_text_tag": "f1_9[0]", # Other specified
             "material_participation_yes_tag": "c1_2[0]", # Participate - Yes
             "material_participation_no_tag": "c1_2[1]",  # Participate - No
             "not_started_business_tag": "c1_3[0]",       # Started business

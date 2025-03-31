@@ -230,13 +230,13 @@
 	    "accounting_method_accrual": "/Off",
 	    "accounting_method_other": "/Off",
 	    "accounting_method_other_text": "",
-	    "material_participation_yes": "/1",
+	    "material_participation_yes": "/Yes",
 	    "material_participation_no": "/Off",
 	    "not_started_business": "/Off",
-	    "issued_1099_required_yes": "/1",
+	    "issued_1099_required_yes": "/Yes",
 	    "issued_1099_required_no": "/Off",
-	    "issued_1099_not_required_yes": "/Off",
-	    "issued_1099_not_required_no": "/1"
+	    "issued_1099_not_required_yes": "/Yes",
+	    "issued_1099_not_required_no": "/Off"
 	  },
 	  "income": {
 	    "statutory_employee": "/Off",
