@@ -50,8 +50,9 @@ At some point we have to stop playing around and get our own taxes DONE :-)
 - [ ] pytests for F1040.py
 - [ ] pytests for W2.py
 - [ ] update the README.md in tests...how do we run all the tests? how do we run a single test
-- [ ] complete the json config file for schedule C
+- [X] complete the json config file for schedule C
 - [ ] schedule 1, this is where schedule C profit or loss goes, maybe ? we should look into this more
+    - work on the validation of the first part of the form....we don't need a field for all yes/no do we?
 - [ ] complete the json config file for State of Ohio
 - [ ] complete the json config file for schedule A
 - [ ] complete the json config file for schedule B
