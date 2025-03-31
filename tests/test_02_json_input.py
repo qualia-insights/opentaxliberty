@@ -4,6 +4,7 @@ import os
 import shlex                                                                    
 from pathlib import Path                                                        
 import time
+import requests
 
 # Helper function to check if the server is running
 def is_server_running(url, timeout=1):
@@ -17,7 +18,7 @@ def is_server_running(url, timeout=1):
 # Add skipif decorator that checks if the server is running
 @pytest.mark.skipif(
     # Try to connect to the server, skip if it fails
-    lambda: not is_server_running("http://mse-8:8000"),
+    not is_server_running("http://mse-8:8000"),
     reason="OpenTaxLiberty server is not running"
 )
 def test_bad_json():

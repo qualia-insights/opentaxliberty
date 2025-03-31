@@ -9,6 +9,7 @@ from io import StringIO
 from decimal import Decimal
 from pypdf import PdfReader
 import sys
+import requests
 
 # Add the parent directory to sys.path
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
@@ -26,7 +27,7 @@ def is_server_running(url, timeout=1):
 # Add skipif decorator that checks if the server is running
 @pytest.mark.skipif(
     # Try to connect to the server, skip if it fails
-    lambda: not is_server_running("http://mse-8:8000/"),
+    not is_server_running("http://mse-8:8000/"),
     reason="OpenTaxLiberty server is not running"
 )
 

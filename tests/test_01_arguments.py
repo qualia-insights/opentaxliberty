@@ -4,6 +4,7 @@ import shlex
 import os
 from pathlib import Path
 import time
+import requests
 
 # Helper function to check if the server is running
 def is_server_running(url, timeout=1):
@@ -13,8 +14,6 @@ def is_server_running(url, timeout=1):
         return response.status_code == 200
     except:
         return False
-
-
 
 '''
 # this test has been removed because it is a repeat of test_06
@@ -51,7 +50,7 @@ def test_perfect_arguments():
 # Add skipif decorator that checks if the server is running
 @pytest.mark.skipif(
     # Try to connect to the server, skip if it fails
-    lambda: not is_server_running("http://mse-8:8000"),
+    not is_server_running("http://mse-8:8000/"),
     reason="OpenTaxLiberty server is not running"
 )
 def test_missing_pdf_form():
@@ -71,7 +70,7 @@ def test_missing_pdf_form():
 # Add skipif decorator that checks if the server is running
 @pytest.mark.skipif(
     # Try to connect to the server, skip if it fails
-    lambda: not is_server_running("http://mse-8:8000"),
+    not is_server_running("http://mse-8:8000"),
     reason="OpenTaxLiberty server is not running"
 )
 def test_missing_config_file():

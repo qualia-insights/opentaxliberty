@@ -21,13 +21,13 @@
 # includes Python, ipython, pytest, and pypdf
 #
 # To build container:
-#	nohup podman image build -f Containerfile -t opentaxliberty:20250316 . > ~/temp/20250316_opentaxliberty.log 2>&1 &
+#	nohup podman image build -f Containerfile -t opentaxliberty:20250331 . > ~/temp/20250331_opentaxliberty.log 2>&1 &
 #
 # run container and produce a shell:
-#   podman run -it --rm --mount type=bind,source=$HOME,target=/workspace opentaxliberty:20250316 
+#   podman run -it --rm --mount type=bind,source=$HOME,target=/workspace opentaxliberty:20250331 
 #
 # run the container with FastAPI development mode
-#   podman run -it --rm -p 8000:8000 --mount type=bind,source=$HOME,target=/workspace opentaxliberty:20250316 sh -c "cd /workspace/code/qualia_insights/opentaxliberty && fastapi dev opentaxliberty.py --host 0.0.0.0"
+#   podman run -it --rm -p 8000:8000 --mount type=bind,source=$HOME,target=/workspace opentaxliberty:20250331 sh -c "cd /workspace/code/qualia_insights/opentaxliberty && fastapi dev opentaxliberty.py --host 0.0.0.0"
 FROM alpine:latest
 
 MAINTAINER rovitotv@gmail.com
@@ -38,9 +38,11 @@ RUN apk add --no-cache py3-pytest
 RUN apk add --no-cache py3-mypy
 RUN apk add --no-cache ipython
 RUN apk add --no-cache curl
+RUN apk add --no-cache py3-requests
 
 RUN pip3 install --upgrade --break-system-packages pip 
 RUN pip3 install --break-system-packages pypdf
 RUN pip3 install --break-system-packages "fastapi[standard]"
+RUN pip3 install --break-system-packages types-requests
 
 ENV SHELL /bin/ash
