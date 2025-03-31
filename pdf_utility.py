@@ -148,7 +148,8 @@ def main():
             output_lines.append(f"\nField: {field_name}")
             if isinstance(field_value, dict):
                 for k, v in field_value.items():
-                    output_lines.append(f"  {k}: {v}")
+                    if "/Parent" not in k and "/Kids" not in k:
+                        output_lines.append(f"  {k}: {v}")
             else:
                 output_lines.append(f"  Value: {field_value}")
         
