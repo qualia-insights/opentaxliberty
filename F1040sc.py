@@ -332,12 +332,18 @@ class VehicleInformation(BaseModel):
     L47b_yes: Optional[str] = Field(None, description="Written evidence Yes")
     L47b_no: Optional[str] = Field(None, description="Written evidence No")
 
-    @field_validator('L45_yes', 'L45_no', 'L46_yes', 'L46_no',
-                    'L47a_yes', 'L47a_no', 'L47b_yes', 'L47b_no')
+    @field_validator('L45_yes', 'L46_yes', 'L47a_yes', 'L47b_yes')
     @classmethod
-    def validate_checkbox(cls, v):
+    def validate_checkbox_yes(cls, v):
         if v is not None and v not in ["/1", "/Off"]:
-            raise ValueError(f"Checkbox value must be '/1' (checked) or '/Off' (unchecked), got '{v}'")
+            raise ValueError(f"Yes checkbox value must be '/1' (checked) or '/Off' (unchecked), got '{v}'")
+        return v
+
+    @field_validator('L45_no', 'L46_no', 'L47a_no', 'L47b_no')
+    @classmethod
+    def validate_checkbox_no(cls, v):
+        if v is not None and v not in ["/2", "/Off"]:
+            raise ValueError(f"No checkbox value must be '/2' (checked) or '/Off' (unchecked), got '{v}'")
         return v
 
     def _validate_date(self, month, day, year):
@@ -433,7 +439,7 @@ class VehicleInformation(BaseModel):
             return False
         
         yes_selected = yes_value == "/1"
-        no_selected = no_value == "/1"
+        no_selected = no_value == "/2"
         
         if yes_selected and no_selected:
             raise ValueError(f"Cannot select both Yes and No for {field_name}")
