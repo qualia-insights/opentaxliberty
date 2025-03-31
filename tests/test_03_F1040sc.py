@@ -17,7 +17,7 @@ def test_F1040sc_execution():
     4. The script correctly calculates profit/loss and expense totals
     """
     # Define paths
-    config_file = "../bob_student_big.json"
+    config_file = "../bob_student.json"
     template_file = "/workspace/code/taxes/2024/f1040sc_blank.pdf"
     output_file = "/workspace/temp/f1040sc.pdf"
     debug_json_file = "/workspace/temp/bob_student_schedule_c_debug.json"

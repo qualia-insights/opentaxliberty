@@ -209,5 +209,111 @@
       "phone_no": "(111)222-3333",
       "email": "bob_student@univ.edu"
     }
-  }
+  },
+	"F1040SC": {
+	  "configuration": {
+	    "tax_year": 2024,
+	    "form": "F1040SC",
+	    "output_file_name": "bob_student_schedule_c.pdf",
+	    "debug_json_output": "/workspace/temp/bob_student_schedule_c_debug.json"
+	  },
+	  "business_information": {
+	    "business_name": "Bob S Example",
+	    "ssn": "222        22        2222",
+	    "principal_business": "Computer Consulting",
+	    "business_code": " 5    4     1    5     1     9",
+	    "business_name_separate": "Example Tech Solutions",
+	    "ein": "98-7654321",
+	    "business_address": "9370 Liberty Street, Apt. 10",
+	    "business_city_state_zip": "Dayton, OH 45468",
+	    "accounting_method_cash": "/1",
+	    "accounting_method_accrual": "/Off",
+	    "accounting_method_other": "/Off",
+	    "accounting_method_other_text": "",
+	    "material_participation_yes": "/Yes",
+	    "material_participation_no": "/Off",
+	    "not_started_business": "/Off",
+	    "issued_1099_required_yes": "/Yes",
+	    "issued_1099_required_no": "/Off",
+	    "issued_1099_not_required_yes": "/Yes",
+	    "issued_1099_not_required_no": "/Off"
+	  },
+	  "income": {
+	    "statutory_employee": "/Off",
+	    "L1": 42500.00,
+	    "L2": 350.00,
+	    "L3": 42150.00,
+	    "L4": 0.00,
+	    "L5": 42150.00,
+	    "L6": 750.00,
+	    "L7": 42900.00
+	  },
+	  "expenses": {
+	    "L8": 450.00,
+	    "L9": 2800.00,
+	    "L10": 0.00,
+	    "L11": 3500.00,
+	    "L12": 0.00,
+	    "L13": 1800.00,
+	    "L14": 0.00,
+	    "L15": 1200.00,
+	    "L16a": 0.00,
+	    "L16b": 300.00,
+	    "L17": 950.00,
+	    "L18": 780.00,
+	    "L19": 0.00,
+	    "L20a": 0.00,
+	    "L20b": 0.00,
+	    "L21": 250.00,
+	    "L22": 1860.00,
+	    "L23": 580.00,
+	    "L24a": 1200.00,
+	    "L24b": 950.00,
+	    "L25": 1800.00,
+	    "L26": 0.00,
+	    "L27a": 3150.00,
+	    "L27b": 0.00,
+	    "L28": 21570.00,
+	    "L29": 21330.00
+	  },
+	  "home_office": {
+	    "simplified_method": "/1",
+	    "home_total_area": "1800",
+	    "home_business_area": "270",
+	    "L30": 1500.00
+	  },
+	  "net_profit_loss": {
+	    "L31": 19830.00,
+	    "L32a": "/1",
+	    "L32b": "/Off"
+	  },
+	  "cost_of_good_sold": {
+             "_comment": "if your business is a service business leave this section blank"
+          },
+	  "vehicle_information": {
+	    "L43_month": "6",
+	    "L43_day": "15",
+            "L43_year": "2022",
+	    "L44a": 6250,
+	    "L44b": 1050,
+	    "L44c": 3200,
+	    "L45_yes": "/1",
+	    "L45_no": "/Off",
+	    "L46_yes": "/Off",
+	    "L46_no": "/2",
+	    "L47a_yes": "/1",
+	    "L47a_no": "/Off",
+	    "L47b_yes": "/1",
+	    "L47b_no": "/Off"
+	  },
+	  "other_expenses": {
+	    "other_expense_1_desc": "Software subscriptions",
+	    "other_expense_1_amount": 1450.00,
+	    "other_expense_2_desc": "Professional development",
+	    "other_expense_2_amount": 950.00,
+	    "other_expense_3_desc": "Industry conferences",
+	    "other_expense_3_amount": 750.00,
+	    "L48": 3150.00
+	  }
+	}
 }
