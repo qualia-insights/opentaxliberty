@@ -69,6 +69,14 @@ Python considers the hypen a minus sign, To keep things simple we will use W2
 _EVERYWHERE_. The name of this form has caused alot of pain for this effort
 so we are going to simplify to W2.  
 
+## Notes on OpenTaxSolver
+
+- source file taxsolve_routines.c has a few functions of interest:
+    - intercept_any_pdf_markups: 
+    - exude_pdf_markups
+    - grab_any_pdf_markupsa
+- this location https://sourceforge.net/p/opentaxsolver/SrcCodeRepo/HEAD/tree/trunk/OTS_2024/src/formdata/OH_PIT_IT1040_meta.dat has meta data for OH IT1040 that looks useful
+
 ## License
 
 This project is licensed under the GNU Affero General Public License v3.0 (AGPL-3.0).
