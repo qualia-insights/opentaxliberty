@@ -505,6 +505,10 @@ class F1040scDocument(BaseModel):
     @model_validator(mode='after')
     def calculate_all_totals(self):
         """Calculate all totals throughout the document."""
+
+        if self.other_expenses is not None:
+            self.expenses.L27a = self.other_expenses.L48
+
         # Calculate total expenses
         total_expenses = sum([
             self.expenses.L8,
@@ -554,18 +558,6 @@ class F1040scDocument(BaseModel):
             self.income.L4 = self.cost_of_goods_sold.L42
             # Recalculate income after updating cost of goods sold
             self.income = self.income.calculate_income()
-        
-        # REMOVE THIS RECURSIVE CALL
-        # Calculate other expenses total if provided
-        # if self.other_expenses is not None:
-        #     self.expenses.L27a = self.other_expenses.L48
-        #     # Recalculate expenses after updating other expenses
-        #     self.calculate_all_totals()  # THIS IS THE PROBLEM - RECURSIVE CALL
-
-        # For other expenses, just set L27a once
-        if self.other_expenses is not None:
-            self.expenses.L27a = self.other_expenses.L48
-            # Don't call self.calculate_all_totals() again!
         
         return self
 
