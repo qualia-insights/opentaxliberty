@@ -322,9 +322,9 @@ class Payments(BaseModel):
 
 class Refund(BaseModel):
     """Refund section of the 1040 form."""
-    L34: Decimal = Field(default=Decimal('0'), description="Line 34 subtraction result")
+    L34: Optional[Union[str, Decimal]] = Field(None, description="Line 34 subtraction result")
     L35a_check: Optional[str] = Field(None, description="Amount applied to estimated tax")
-    L35a: Decimal = Field(default=Decimal('0'), description="Line 35a sum result")
+    L35a: Optional[Decimal] = Field(None, description="Line 35a sum result")
     L35a_b: Optional[str] = Field(None, description="Routing number for direct deposit")
     L35c_checking: Optional[str] = Field(None, description="Checking account checkbox")
     L35c_savings: Optional[str] = Field(None, description="Savings account checkbox")
@@ -575,7 +575,7 @@ class F1040Document(BaseModel):
     @model_validator(mode='after')
     def calculate_refund(self):
         """
-        Calculate the Redund section of the F1040
+        Calculate the Refund section of the F1040
         """
         if hasattr(self, 'tax_and_credits') and hasattr(self.refund, 'L34'):
             if isinstance(self.payments.L33, Decimal) and isinstance(self.tax_and_credits.L24, Decimal):
