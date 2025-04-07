@@ -579,7 +579,10 @@ class F1040Document(BaseModel):
         """
         if hasattr(self, 'tax_and_credits') and hasattr(self.refund, 'L34'):
             if isinstance(self.payments.L33, Decimal) and isinstance(self.tax_and_credits.L24, Decimal):
-                self.refund.L34 = self.payments.L33 - self.tax_and_credits.L24 
+                if self.payments.L33 > self.tax_and_credits.L24:
+                    self.refund.L34 = self.payments.L33 - self.tax_and_credits.L24 
+                else:
+                    self.refund.L34 = None
             elif isinstance(self.tax_and_credits.L24, str):
                 self.refund.L34 = self.payments.L33
         
