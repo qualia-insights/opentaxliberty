@@ -714,7 +714,7 @@ def create_F1040_pdf(F1040_doc: F1040Document, template_F1040_pdf_path: str, out
         for sub_key, sub_value in F1040_dict[key].items():
             # Skip special keys
             # we skip the _tag because we use that information within the operations below
-            if sub_key == '_comment' in sub_key:
+            if '_comment' in sub_key or sub_value is None or sub_value == "None":
                 continue
             else:
                 tag_key = f"{sub_key}_tag"

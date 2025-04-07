@@ -28,11 +28,12 @@ def write_field_pdf(writer: PdfWriter, field_name: str, field_value: str):
         field_name (str): The name of the field to update
         field_value (str): The value to set the field to
     """
-    if field_value == "":
+    # Skip writing if the value is None or "None" string
+    if field_value is None or field_value == "None" or field_value == "":
         return
     elif field_value == 0:
         return
-
+    
     # Format decimal numbers to remove trailing .00 or .0
     
     # Convert field_value to string if it's not already
