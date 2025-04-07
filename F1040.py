@@ -575,18 +575,33 @@ class F1040Document(BaseModel):
     @model_validator(mode='after')
     def calculate_refund(self):
         """
-        Calculate the Refund section of the F1040
+        Calculate the Refund section of the F1040 and Amount You Owe if needed
         """
-        if hasattr(self, 'tax_and_credits') and hasattr(self.refund, 'L34'):
-            if isinstance(self.payments.L33, Decimal) and isinstance(self.tax_and_credits.L24, Decimal):
-                if self.payments.L33 > self.tax_and_credits.L24:
-                    self.refund.L34 = self.payments.L33 - self.tax_and_credits.L24 
-                else:
-                    self.refund.L34 = None
-            elif isinstance(self.tax_and_credits.L24, str):
-                self.refund.L34 = self.payments.L33
+        # Initialize amount_you_owe if it doesn't exist
+        if self.amount_you_owe is None:
+            self.amount_you_owe = AmountYouOwe()
+            
+        if isinstance(self.payments.L33, Decimal) and isinstance(self.tax_and_credits.L24, Decimal):
+            # If payments exceed taxes, calculate refund
+            if self.payments.L33 > self.tax_and_credits.L24:
+                if self.refund is None:
+                    self.refund = Refund()
+                self.refund.L34 = self.payments.L33 - self.tax_and_credits.L24
+                self.amount_you_owe.L37 = Decimal('0')  # Set amount owed to zero
+            # If taxes exceed payments, calculate amount owed
+            else:
+                if self.refund is not None:
+                    self.refund.L34 = None  # Clear any refund amount
+                self.amount_you_owe.L37 = self.tax_and_credits.L24 - self.payments.L33
+        elif isinstance(self.tax_and_credits.L24, str) and self.tax_and_credits.L24 == "-0-":
+            # If tax is zero, all payments become refund
+            if self.refund is None:
+                self.refund = Refund()
+            self.refund.L34 = self.payments.L33
+            self.amount_you_owe.L37 = Decimal('0')  # Set amount owed to zero
         
-        if hasattr(self, 'tax_and_credits') and hasattr(self.refund, 'L35a'):
+        # Calculate L35a if refund exists and L34 is populated
+        if self.refund is not None and self.refund.L34 is not None:
             self.refund.L35a = self.refund.L34
 
         return self
